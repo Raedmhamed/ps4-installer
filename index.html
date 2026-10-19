@@ -60,7 +60,7 @@
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
-            <button id="download-btn" onclick="startBlobBypassInstall('#', this)">
+            <button id="download-btn" onclick="startDirectDownload('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
                 Download & Install Package
             </button>
             
@@ -86,12 +86,9 @@
     window.addEventListener('DOMContentLoaded', function() {
         var userAgent = navigator.userAgent;
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
+        var debugBypass = window.location.hash === '#debug';
 
-        // Bypass for local testing if needed (remove or comment out for strict production)
-        var bypassCheck = window.location.hash === '#debug';
-
-        if (!isPS4 && !bypassCheck) {
-            // Added debug bypass notice to help developers test locally
+        if (!isPS4 && !debugBypass) {
             triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.<br><br><small style='color:#777;'>Add #debug to URL to preview locally.</small>");
             return;
         }
@@ -114,7 +111,7 @@
         document.getElementById('lock-desc').innerHTML = description;
     }
 
-    function startBlobBypassInstall(directPkgUrl, buttonEl) {
+    function startDirectDownload(packageUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
         var progressContainer = document.getElementById('progress-container');
         var progressBar = document.getElementById('my-bar');
@@ -122,25 +119,43 @@
         buttonEl.disabled = true;
         progressContainer.style.display = "block";
         
-        showToast("Preparing package installation stream...");
-        statusText.innerText = "Processing package...";
+        showToast("Handing package stream over to browser manager...");
+        statusText.innerText = "Connecting to download source...";
         statusText.style.color = "#ffcc00";
 
-        // Simulated progressive feedback for safe execution flow
+        // Simulating visual progress feedback while triggering the native download anchor
         var progress = 0;
         var interval = setInterval(function() {
-            progress += 10;
+            progress += 15;
+            if (progress > 90) progress = 90;
             progressBar.style.width = progress + '%';
-            statusText.innerText = "Configuring package stream: " + progress + "%";
+            statusText.innerText = "Requesting Package Stream: " + progress + "%";
+        }, 200);
 
-            if (progress >= 100) {
-                clearInterval(interval);
-                statusText.innerText = "Package ready for system installation.";
+        setTimeout(function() {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+            
+            // Native handoff to PS4 WebKit download engine via hidden anchor
+            var hiddenAnchor = document.createElement('a');
+            hiddenAnchor.href = packageUrl;
+            hiddenAnchor.setAttribute('download', 'DolphinPS4-v04.16.pkg');
+            hiddenAnchor.style.display = 'none';
+            document.body.appendChild(hiddenAnchor);
+            
+            try {
+                hiddenAnchor.click();
+                statusText.innerText = "Redirected to Download Manager!";
                 statusText.style.color = "#00ff00";
-                showToast("Initialization Complete.");
+                showToast("Package handed to PS4 download manager.");
+            } catch (e) {
+                statusText.innerText = "Download trigger failed. Try manual link.";
+                statusText.style.color = "#ff3333";
                 buttonEl.disabled = false;
             }
-        }, 150);
+            
+            document.body.removeChild(hiddenAnchor);
+        }, 1200);
     }
     </script>
 </body>
