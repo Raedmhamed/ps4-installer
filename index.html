@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Control</title>
+    <title>PS4 GoldHEN Direct Target</title>
     <style>
         body {
             background-color: #1a1a1a;
@@ -46,24 +46,21 @@
 
     <div class="container">
         <h1>PS4 GoldHEN Portal</h1>
-        <p>Bypassing HTTPS/CORS Restrictions</p>
+        <p>Direct Submission Mode</p>
 
-        <!-- Hidden Target Frame -->
-        <iframe name="api_frame" id="api_frame" style="display:none;"></iframe>
-
-        <!-- Notification Form -->
-        <form id="notifyForm" action="http://127.0.0.1:9090/api/notify" method="POST" target="api_frame">
+        <!-- Notification Trigger -->
+        <form action="http://127.0.0.1:9090/api/notify" method="POST">
             <input type="hidden" name="message" value="Hello from PS4 Portal!">
-            <button class="btn-notify" type="submit" onclick="updateStatus('Sending Notification...')">Test PS4 Notification</button>
+            <button class="btn-notify" type="submit" onclick="showStatus('Dispatching Notification...')">Test PS4 Notification</button>
         </form>
 
         <br>
 
-        <!-- Install Form -->
-        <form id="installForm" action="http://127.0.0.1:9090/api/install" method="POST" target="api_frame">
+        <!-- Install Trigger -->
+        <form action="http://127.0.0.1:9090/api/install" method="POST">
             <input type="hidden" name="type" value="direct">
             <input type="hidden" name="packages" id="packagesInput">
-            <button class="btn-install" type="submit" onclick="updateStatus('Sending Install Request...')">Install Store-R2.pkg</button>
+            <button class="btn-install" type="submit" onclick="showStatus('Dispatching Install Package...')">Install Store-R2.pkg</button>
         </form>
 
         <div id="status"></div>
@@ -72,10 +69,10 @@
     <script>
         var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
 
-        // Format payload for GoldHEN API
+        // Set the packages payload
         document.getElementById('packagesInput').value = JSON.stringify([directPkgUrl]);
 
-        function updateStatus(msg) {
+        function showStatus(msg) {
             document.getElementById('status').innerText = msg;
         }
     </script>
