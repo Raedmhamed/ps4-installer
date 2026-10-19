@@ -65,7 +65,7 @@
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
-            <button id="install-btn" class="install-btn" onclick="sendToInstaller()">
+            <button id="install-btn" class="install-btn" onclick="triggerInstallFlow()">
                 Install Package (Background)
             </button>
             
@@ -74,14 +74,15 @@
     </div>
 
 <script>
-    var goldhenApiUrl = "http://127.0.0.1:9090/api/";
+    var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
 
-    // Sends a native system notification popup directly to the PS4 UI
     function sendPS4Notification(msg) {
-        var notifyXhr = new XMLHttpRequest();
-        notifyXhr.open('POST', goldhenApiUrl + 'notify', true);
-        notifyXhr.setRequestHeader('Content-Type', 'application/json');
-        notifyXhr.send(JSON.stringify({ message: msg }));
+        try {
+            var notifyXhr = new XMLHttpRequest();
+            notifyXhr.open('POST', 'http://127.0.0.1:9090/api/notify', true);
+            notifyXhr.setRequestHeader('Content-Type', 'application/json');
+            notifyXhr.send(JSON.stringify({ message: msg }));
+        } catch(e) {}
     }
 
     window.addEventListener('DOMContentLoaded', function() {
@@ -90,7 +91,7 @@
         var debugBypass = window.location.hash === '#debug';
 
         if (!isPS4 && !debugBypass) {
-            document.getElementById('lock-animation').style.display = "none";
+            document.getElementById('loader-animation').style.display = "none";
             document.getElementById('lock-title').innerHTML = "❌ Access Denied";
             document.getElementById('lock-title').style.color = "#ff3333";
             document.getElementById('lock-desc').innerHTML = "This portal can only be opened from a modified PS4 console browser.";
@@ -100,62 +101,54 @@
         setTimeout(function() {
             document.getElementById('lock-screen').style.display = "none";
             document.getElementById('main-content').style.display = "block";
-            // Trigger native welcome notification on the PS4 screen
             sendPS4Notification("GoldHEN Zone Loaded Successfully.");
         }, 800);
     });
 
-    function sendToInstaller() {
+    function triggerInstallFlow() {
         var btn = document.getElementById('install-btn');
         var statusText = document.getElementById('status-text');
         
         btn.disabled = true;
-        statusText.innerText = "Triggering background installation...";
+        statusText.innerText = "Sending download request...";
         statusText.style.color = "#ffcc00";
 
-        // Send immediate native notification that download process is starting
-        sendPS4Notification("DolphinPS4 Download Started! Check Downloads...");
+        sendPS4Notification("DolphinPS4 Download Started!");
 
-        var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
-
-        var payloadData = {
-            type: "direct",
-            uri: pkgUrl
-        };
-
+        // 1. Try local JSON-RPC POST API
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', goldhenApiUrl + 'install', true);
+        xhr.open('POST', 'http://127.0.0.1:9090/api/install', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 20000;
+        xhr.timeout = 3000;
 
         xhr.onload = function() {
             if (xhr.status === 200) {
-                statusText.innerText = "Successfully Queued! Check PS4 Notifications.";
+                statusText.innerText = "Queued via API! Check PS4 Notifications.";
                 statusText.style.color = "#00ff00";
-                sendPS4Notification("Installation Queued Successfully!");
             } else {
-                statusText.innerText = "Server responded with an error code.";
-                statusText.style.color = "#ff3333";
-                sendPS4Notification("Error: GoldHEN install request failed.");
-                btn.disabled = false;
+                fallbackDirectRedirect();
             }
         };
 
         xhr.onerror = function() {
-            statusText.innerText = "Connection failed. Ensure GoldHEN is running.";
-            statusText.style.color = "#ff3333";
-            sendPS4Notification("Error: Could not reach GoldHEN server.");
-            btn.disabled = false;
+            fallbackDirectRedirect();
         };
 
         xhr.ontimeout = function() {
-            statusText.innerText = "Timeout: MediaFire took too long to respond.";
-            statusText.style.color = "#ff3333";
-            sendPS4Notification("Error: Download request timed out.");
-            btn.disabled = false;
+            fallbackDirectRedirect();
         };
 
-        xhr.send(JSON.stringify(payloadData));
+        xhr.send(JSON.stringify({ type: "direct", uri: pkgUrl }));
+    }
+
+    // 2. Direct browser redirection fallback if JavaScript local XHR fails instantly
+    function fallbackDirectRedirect() {
+        var statusText = document.getElementById('status-text');
+        statusText.innerText = "Redirecting directly to GoldHEN Installer service...";
+        statusText.style.color = "#00ff00";
+        
+        // Directly navigate the window to GoldHEN's background installation URL handler
+        window.location.href = "http://127.0.0.1:9090/api/install?uri=" + encodeURIComponent(pkgUrl);
     }
 </script>
 </body>
