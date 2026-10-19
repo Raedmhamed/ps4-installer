@@ -3,42 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Homebrew Store Installer</title>
+    <title>PS4 Homebrew Store - Direct Installer</title>
     <style>
-        body { 
-            background: #121212; 
-            color: #fff; 
-            font-family: sans-serif; 
-            text-align: center; 
-            padding-top: 50px; 
+        body {
+            background: linear-gradient(135deg, #0f0f13, #1a1a24);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
-            background: #1e1e1e;
-            border: 1px solid #333;
-            display: inline-block;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.7);
-            max-width: 90%;
+            background: rgba(30, 30, 45, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 450px;
+            width: 100%;
+            backdrop-filter: blur(10px);
         }
-        button { 
-            background: #0070d1; 
-            color: #fff; 
-            border: 0; 
-            padding: 16px 32px; 
-            font-size: 18px; 
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        p {
+            color: #a0a0b0;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #0070d1, #005fb8);
+            color: white;
+            border: none;
+            padding: 18px 32px;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 6px; 
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 15px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 112, 209, 0.4);
+            transition: all 0.3s ease;
         }
-        button:hover {
-            background: #005fb8;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 112, 209, 0.6);
         }
-        #status { 
-            margin-top: 20px; 
-            color: #00ffcc; 
-            font-weight: bold; 
+        .btn:active {
+            transform: translateY(0);
+        }
+        #statusContainer {
+            margin-top: 25px;
+            display: none;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #00ffcc;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #statusText {
+            font-weight: bold;
+            color: #00ffcc;
+            font-size: 15px;
         }
     </style>
 </head>
@@ -46,35 +84,44 @@
 
     <div class="container">
         <h1>PS4 Store Installer</h1>
-        <p>Target Port: 9090 (GoldHEN)</p>
+        <p>Target: Internal Storage (/data/pkg)</p>
 
-        <!-- Hidden frame captures local daemon response to bypass CORS -->
-        <iframe name="target_frame" id="target_frame" style="display:none;"></iframe>
+        <!-- Hidden frame to process local POST submission without page redirect -->
+        <iframe name="hidden_frame" id="hidden_frame" style="display:none;"></iframe>
 
-        <!-- Form posting directly to local GoldHEN daemon -->
-        <form action="http://127.0.0.1:9090/api/install" method="POST" target="target_frame">
+        <!-- Direct Form targeting GoldHEN Daemon on Port 9090 -->
+        <form id="goldhenForm" action="http://127.0.0.1:9090/api/install" method="POST" target="hidden_frame">
             <input type="hidden" name="type" value="direct">
-            <input type="hidden" name="packages" id="pkgPayload">
-            <button type="submit" onclick="updateStatus()">Install Store-R2.pkg</button>
+            <input type="hidden" name="packages" value='["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"]'>
+            <input type="hidden" name="path" value="/data/pkg">
+            <button type="button" class="btn" onclick="triggerInstall()">Install Store-R2.pkg</button>
         </form>
 
-        <div id="status">Page loaded. Ready to install.</div>
+        <div id="statusContainer">
+            <div class="spinner"></div>
+            <div id="statusText">Dispatching payload to GoldHEN...</div>
+        </div>
     </div>
 
     <script>
-        // Direct raw GitHub package URL (23MB)
-        var pkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
-
-        // Pre-populate JSON array required by GoldHEN
-        document.getElementById('pkgPayload').value = JSON.stringify([pkgUrl]);
-
-        function updateStatus() {
-            var statusEl = document.getElementById('status');
-            statusEl.innerText = "Transmitting payload to GoldHEN (Port 9090)...";
+        function triggerInstall() {
+            var container = document.getElementById('statusContainer');
+            var statusText = document.getElementById('statusText');
             
+            container.style.display = "block";
+            statusText.innerText = "Transmitting to Port 9090...";
+
+            // Submit the native form to bypass browser fetch/XHR CORS blocks
+            document.getElementById('goldhenForm').submit();
+
+            // Animated status sequence
             setTimeout(function() {
-                statusEl.innerText = "Command sent! Check PS4 Notifications > Downloads.";
-            }, 3000);
+                statusText.innerText = "Queueing package into /data/pkg...";
+            }, 1500);
+
+            setTimeout(function() {
+                statusText.innerText = "Success! Check PS4 Notifications > Downloads.";
+            }, 3200);
         }
     </script>
 
