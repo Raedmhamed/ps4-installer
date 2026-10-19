@@ -73,10 +73,7 @@
         </div>
     </div>
 
-    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
-
 <script>
-    // REPLACE THIS URL with a true direct-download file host link (not MediaFire)
     var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
 
     function sendPS4Notification(msg) {
@@ -113,10 +110,16 @@
         var statusText = document.getElementById('status-text');
         
         btn.disabled = true;
-        statusText.innerText = "Sending command to GoldHEN...";
+        statusText.innerText = "Transmitting to GoldHEN...";
         statusText.style.color = "#ffcc00";
 
-        sendPS4Notification("DolphinPS4 Download Started!");
+        sendPS4Notification("Sending DolphinPS4 to Installer...");
+
+        // Updated JSON structure required by newer GoldHEN background daemons
+        var payloadData = {
+            type: "url",
+            url: pkgUrl
+        };
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'http://127.0.0.1:9090/api/install', true);
@@ -124,40 +127,30 @@
         xhr.timeout = 5000;
 
         xhr.onload = function() {
-            statusText.innerText = "Command received! Check PS4 Notifications.";
-            statusText.style.color = "#00ff00";
-            btn.disabled = false;
+            if (xhr.status === 200) {
+                statusText.innerText = "Queued Successfully! Check PS4 Notifications.";
+                statusText.style.color = "#00ff00";
+                sendPS4Notification("Download Queued! Check Notifications.");
+            } else {
+                statusText.innerText = "API Error: Server returned code " + xhr.status;
+                statusText.style.color = "#ff3333";
+                btn.disabled = false;
+            }
         };
 
         xhr.onerror = function() {
-            useHiddenFrameFallback();
+            statusText.innerText = "Connection failed. Check GoldHEN settings.";
+            statusText.style.color = "#ff3333";
+            btn.disabled = false;
         };
 
         xhr.ontimeout = function() {
-            useHiddenFrameFallback();
+            statusText.innerText = "Request timed out.";
+            statusText.style.color = "#ff3333";
+            btn.disabled = false;
         };
 
-        xhr.send(JSON.stringify({ type: "direct", uri: pkgUrl }));
-    }
-
-    function useHiddenFrameFallback() {
-        var statusText = document.getElementById('status-text');
-        statusText.innerText = "Queueing installer...";
-        statusText.style.color = "#00ff00";
-
-        var form = document.createElement('form');
-        form.action = "http://127.0.0.1:9090/api/install?uri=" + encodeURIComponent(pkgUrl);
-        form.method = "GET";
-        form.target = "hidden-iframe";
-        
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-
-        setTimeout(function() {
-            statusText.innerText = "Request sent to system installer.";
-            document.getElementById('install-btn').disabled = false;
-        }, 2000);
+        xhr.send(JSON.stringify(payloadData));
     }
 </script>
 </body>
