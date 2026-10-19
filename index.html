@@ -5,107 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PS4 Custom Directory Installer</title>
     <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: sans-serif;
-            text-align: center;
-            padding-top: 50px;
-        }
-        .container {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            display: inline-block;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.7);
-            max-width: 90%;
-        }
-        button {
-            background-color: #0070d1;
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover {
-            background-color: #005fb8;
-        }
-        #status {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #00ffcc;
-            font-size: 15px;
-        }
-        .spinner {
-            display: none;
-            width: 30px;
-            height: 30px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #00ffcc;
-            animation: spin 1s ease-in-out infinite;
-            margin: 15px auto 0 auto;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        body { background-color:#121212; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px; }
+        .container { background-color:#1e1e1e; border:1px solid #333; display:inline-block; padding:30px; border-radius:12px; box-shadow:0 6px 15px rgba(0,0,0,0.7); max-width:90%; }
+        button { background-color:#0070d1; color:#fff; border:none; padding:16px 32px; font-size:18px; font-weight:bold; border-radius:6px; cursor:pointer; margin-top:15px; }
+        button:hover { background-color:#005fb8; }
+        button:disabled { background-color:#555; cursor:default; }
+        #status { margin-top:20px; font-weight:bold; color:#00ffcc; font-size:15px; }
+        #status.error { color:#ff6b6b; }
+        .spinner { display:none; width:30px; height:30px; border:4px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#00ffcc; animation:spin 1s linear infinite; margin:15px auto 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>PS4 Store Installer</h1>
-        <p>Target Directory: /data/pkg/</p>
-
-        <button onclick="sendInstallCommand()">Install Store-R2.pkg</button>
-
+        <p>Package: Store-R2.pkg</p>
+        <button id="installBtn" onclick="sendInstallCommand()">Install Store-R2.pkg</button>
         <div class="spinner" id="loadingSpinner"></div>
         <div id="status">Ready to install.</div>
     </div>
 
     <script>
         var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+        var daemonUrl = "http://127.0.0.1:9090/api/install";
+
+        function setState(busy, msg, isError) {
+            document.getElementById('loadingSpinner').style.display = busy ? "block" : "none";
+            document.getElementById('installBtn').disabled = busy;
+            var s = document.getElementById('status');
+            s.innerText = msg;
+            s.className = isError ? "error" : "";
+        }
 
         function sendInstallCommand() {
-            var statusEl = document.getElementById('status');
-            var spinnerEl = document.getElementById('loadingSpinner');
-            
-            spinnerEl.style.display = "block";
-            statusEl.innerText = "Dispatching package to /data/pkg/ ...";
+            setState(true, "Contacting installer daemon...", false);
 
-            // Payload configured with custom directory path for GoldHEN daemon
             var payload = {
                 "type": "direct",
-                "packages": [directPkgUrl],
-                "path": "/data/pkg"
+                "packages": [directPkgUrl]
+                // , "path": "/data/pkg"   // only add if your daemon build supports it
             };
 
-            fetch("http://127.0.0.1:9090/api/install", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(function(response) {
-                setTimeout(function() {
-                    spinnerEl.style.display = "none";
-                    statusEl.innerText = "Queued to /data/pkg! Check PS4 Downloads.";
-                }, 2000);
-            })
-            .catch(function(error) {
-                setTimeout(function() {
-                    spinnerEl.style.display = "none";
-                    statusEl.innerText = "Command sent to system daemon.";
-                }, 2000);
-            });
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", daemonUrl, true);
+            // text/plain avoids a CORS preflight, which the daemon likely doesn't answer
+            xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+            xhr.timeout = 10000;
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    setState(false, "Queued! Check Notifications / Downloads on your PS4.", false);
+                } else {
+                    setState(false, "Daemon replied with HTTP " + xhr.status + ": " + xhr.responseText, true);
+                }
+            };
+            xhr.onerror = function () {
+                // Can mean the daemon is down, OR the request went through but CORS hid the reply
+                setState(false, "No readable response. Make sure the installer is running on port 9090, then check Downloads in case it queued anyway.", true);
+            };
+            xhr.ontimeout = function () {
+                setState(false, "Timed out. Is the installer daemon running?", true);
+            };
+
+            xhr.send(JSON.stringify(payload));
         }
     </script>
-
 </body>
 </html>
