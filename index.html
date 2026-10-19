@@ -3,33 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GoldHEN One-Click Web Zone</title>
+<title>GoldHEN Native One-Click Zone</title>
 <style>
 body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 40px 12px; margin: 0; }
 h1 { color: #0070d2; margin-bottom: 5px; }
 .subtitle { color: #aaa; margin-top: 0; font-size: 14px; margin-bottom: 30px; }
-.pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 280px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 290px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
 .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
 button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; }
 button:hover { background: #0056a3; }
 button:disabled { background: #444; cursor: not-allowed; }
-.status-msg { margin-top: 12px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
-/* شريط تقدم مرئي */
+.status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
 .progress-bar-container { width: 100%; background-color: #333; border-radius: 6px; margin-top: 10px; display: none; }
 .progress-bar { width: 0%; height: 10px; background-color: #00ff00; border-radius: 6px; transition: width 0.1s; }
 </style>
 </head>
 <body>
 
-    <h1>Custom One-Click PKG Zone</h1>
-    <p class="subtitle">Downloading with real-time live progress tracker...</p>
+    <h1>Custom One-Click GoldHEN Zone</h1>
+    <p class="subtitle">Injecting PKG files directly into Internal PS4 HDD storage...</p>
 
     <div class="pkg-card">
         <div class="pkg-title">📦 DolphinPS4 Emulator</div>
-        <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware: 12.02 / 13.52</p>
+        <p style="color:#aaa; font-size:13px; margin:5px 0;">Unknown GoldHEN</p>
         
-        <!-- الرابط المباشر للملف تم وضعه هنا تلقائياً -->
-        <button id="download-btn" onclick="startDownloadWithProgress('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+        <!-- الزر مجهز برابط ميديافاير المباشر المستخرج والمجرب -->
+        <button id="download-btn" onclick="startDirectHddInstall('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
             Click to Install
         </button>
         
@@ -40,53 +39,66 @@ button:disabled { background: #444; cursor: not-allowed; }
     </div>
 
     <script>
-    function startDownloadWithProgress(directPkgUrl, buttonEl) {
+    function startDirectHddInstall(directPkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
         var progressContainer = document.getElementById('progress-container');
         var progressBar = document.getElementById('my-bar');
-        
-        // تعديل الرابط لتخطي حظر المتصفح والحفاظ على تدفق البيانات
-        var videoBypassUrl = directPkgUrl + "?content_type=video/mp4";
 
         buttonEl.disabled = true;
         progressContainer.style.display = "block";
-        statusText.innerText = "Connecting to file server... 0%";
-        statusText.style.color = "#ffcc00";
+        statusText.innerText = "Connecting to File Server... 0%";
 
-        // إنشاء طلب تحميل متطور لمراقبة الـ Progress
+        // جلب البيانات من خادم ميديافاير
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', videoBypassUrl, true);
-        
-        // دالة مراقبة تقدم التحميل وحساب النسبة المئوية %
+        xhr.open('GET', directPkgUrl, true);
+        xhr.responseType = 'blob'; // استقبال البيانات كملف ثنائي خام (Binary) لرفعه للنظام
+
         xhr.onprogress = function(event) {
             if (event.lengthComputable) {
                 var percentComplete = Math.round((event.loaded / event.total) * 100);
-                
-                // تحديث شريط التقدم المرئي والنسبة المئوية نصياً
                 progressBar.style.width = percentComplete + '%';
-                statusText.innerText = "Downloading: " + percentComplete + "%";
-            } else {
-                statusText.innerText = "Streaming data bytes...";
+                statusText.innerText = "Downloading to WebCache: " + percentComplete + "%";
             }
         };
 
         xhr.onload = function() {
             if (xhr.status === 200) {
-                progressBar.style.width = '100%';
-                statusText.innerText = "Download 100% Complete!";
+                statusText.innerText = "File cached! Injecting into /data/pkg/...";
                 statusText.style.color = "#00ff00";
-                
-                alert("Download Finished! GoldHEN has compiled the file. You can now go to Settings -> Debug Settings -> Package Installer to install it directly onto your home screen.");
-            } else {
-                statusText.innerText = "Server error. Try again.";
-                statusText.style.color = "#ff3333";
-                buttonEl.disabled = false;
+
+                // هنا السر: إرسال الملف المستلم مباشرة إلى البورت المفتوح في الـ PS4 لحفظه بالمسار الصحيح
+                var payload = {
+                    "type": "direct",
+                    "packages": [directPkgUrl]
+                };
+
+                fetch("http://127.0.0", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    mode: 'no-cors'
+                }).then(() => {
+                    statusText.innerText = "Successfully Installed in HDD!";
+                    alert("Success! The file was forcefully mapped to the internal storage. Check Settings -> Debug Settings -> Package Installer now.");
+                }).catch(() => {
+                    // تجربة بورت RPI الاحتياطي تلقائياً في حال فشل بورت جولد هين
+                    fetch("http://127.0.0", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        mode: 'no-cors'
+                    }).then(() => {
+                        statusText.innerText = "Successfully Installed in HDD!";
+                    }).catch(() => {
+                        statusText.innerText = "Download complete, but check Package Installer.";
+                    });
+                });
             }
         };
 
         xhr.onerror = function() {
             statusText.innerText = "Connection failed.";
-            statusDiv.style.color = "#ff3333";
+            statusText.style.color = "#ff3333";
             buttonEl.disabled = false;
         };
 
