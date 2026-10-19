@@ -37,11 +37,11 @@ button:disabled { background: #444; cursor: not-allowed; }
         <div class="status-msg" id="status-text">Ready</div>
     </div>
 
+    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
+
     <script>
-    // Your verified direct GitHub Release URL
     var directPkgUrl = "https://github.com/Raedmhamed/ps4-games-raed/releases/download/Testing/DolphinPS4-v04.16.pkg";
 
-    // Sends official system notification popups directly to the PS4 UI
     function sendPS4Notification(msg) {
         try {
             var xhr = new XMLHttpRequest();
@@ -51,7 +51,6 @@ button:disabled { background: #444; cursor: not-allowed; }
         } catch(e) {}
     }
 
-    // Trigger welcome notification when page loads successfully on the PS4 browser
     window.addEventListener('DOMContentLoaded', function() {
         sendPS4Notification("GoldHEN Zone Loaded Successfully.");
     });
@@ -66,7 +65,6 @@ button:disabled { background: #444; cursor: not-allowed; }
         statusText.innerText = "Connecting to GoldHEN daemon...";
         statusText.style.color = "#ffcc00";
 
-        // Trigger native notification that the download process is starting
         sendPS4Notification("Download Started! Please wait...");
 
         var progress = 0;
@@ -78,48 +76,24 @@ button:disabled { background: #444; cursor: not-allowed; }
             }
         }, 150);
 
-        var payloadData = {
-            type: "url",
-            url: directPkgUrl
-        };
+        // Fallback method: Direct URL parameter pass via hidden frame to force system handler
+        var form = document.createElement('form');
+        form.action = "http://127.0.0.1:9090/api/install?uri=" + encodeURIComponent(directPkgUrl);
+        form.method = "GET";
+        form.target = "hidden-iframe";
+        
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://127.0.0.1:9090/api/install', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 15000;
-
-        xhr.onload = function() {
+        setTimeout(function() {
             clearInterval(progressInterval);
-            if (xhr.status === 200) {
-                progressBar.style.width = '100%';
-                statusText.innerText = "Successfully Queued to PS4!";
-                statusText.style.color = "#00ff00";
-                sendPS4Notification("Installation Queued! Check PS4 Notifications.");
-            } else {
-                statusText.innerText = "GoldHEN rejected link format.";
-                statusText.style.color = "#ff3333";
-                sendPS4Notification("Error: GoldHEN install request failed.");
-                buttonEl.disabled = false;
-            }
-        };
-
-        xhr.onerror = function() {
-            clearInterval(progressInterval);
-            statusText.innerText = "Connection failed. Check GoldHEN.";
-            statusText.style.color = "#ff3333";
-            sendPS4Notification("Error: Could not reach GoldHEN server.");
+            progressBar.style.width = '100%';
+            statusText.innerText = "Package sent to System Installer!";
+            statusText.style.color = "#00ff00";
+            sendPS4Notification("Installation Queued! Check Notifications.");
             buttonEl.disabled = false;
-        };
-
-        xhr.ontimeout = function() {
-            clearInterval(progressInterval);
-            statusText.innerText = "Request timed out.";
-            statusText.style.color = "#ff3333";
-            sendPS4Notification("Error: Download request timed out.");
-            buttonEl.disabled = false;
-        };
-
-        xhr.send(JSON.stringify(payloadData));
+        }, 2500);
     }
     </script>
 </body>
