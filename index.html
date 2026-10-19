@@ -12,38 +12,31 @@
     .pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 340px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
     
-    button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.2s; }
-    button:hover { background: #0056a3; }
-    button:disabled { background: #333; color: #666; cursor: not-allowed; border: 1px dashed #555; }
+    /* Styled link acting as a bulletproof native installer button */
+    .install-btn { 
+        display: block;
+        padding: 12px; 
+        font-size: 15px; 
+        background: #0070d2; 
+        color: white; 
+        text-decoration: none;
+        text-align: center;
+        border-radius: 6px; 
+        font-weight: bold; 
+        width: 100%; 
+        box-sizing: border-box;
+        margin-top: 15px; 
+        transition: 0.2s; 
+    }
+    .install-btn:hover { background: #0056a3; }
     
-    .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 13px; text-align: center; font-weight: bold; line-height: 1.4; }
+    .status-msg { margin-top: 15px; font-style: italic; color: #00ff00; font-size: 13px; text-align: center; font-weight: bold; line-height: 1.4; }
     .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
     
     #lock-screen { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
     .lock-box { background: #151515; border: 2px solid #0070d2; padding: 40px; border-radius: 12px; max-width: 400px; box-shadow: 0 0 20px rgba(0, 112, 210, 0.15); text-align: center; display: flex; flex-direction: column; align-items: center; }
     
     .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1.5s linear infinite; animation: spin 1.5s linear infinite; margin-bottom: 20px; }
-    
-    .fallback-box {
-        margin-top: 15px;
-        padding: 10px;
-        background: #151515;
-        border: 1px dashed #444;
-        border-radius: 6px;
-        display: none;
-        font-size: 12px;
-        text-align: left;
-    }
-    .fallback-box input {
-        width: 100%;
-        padding: 6px;
-        background: #222;
-        border: 1px solid #333;
-        color: #ddd;
-        border-radius: 4px;
-        margin-top: 5px;
-        font-size: 11px;
-    }
 
     @keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
 </style>
@@ -70,117 +63,48 @@
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
-            <button id="download-btn" onclick="sendToGoldHENInstaller('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+            <!-- Native GoldHEN background installer URI Scheme format used by homebrew stores -->
+            <a id="install-link" class="install-btn" href="#" onclick="triggerInstall()">
                 Install Package (Background)
-            </button>
+            </a>
             
-            <div id="status-text" class="status-msg" style="color:#00ff00;">Ready for background installation.</div>
-
-            <div id="fallback-container" class="fallback-box">
-                <span style="color:#ffcc00; font-weight:bold;">⚠️ GoldHEN API Unreachable</span>
-                <p style="color:#aaa; margin:5px 0 3px 0;">Copy direct link for alternative usage:</p>
-                <input type="text" id="pkg-link-input" readonly onclick="this.select();" value="https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg">
-            </div>
+            <div id="status-text" class="status-msg">Ready for background installation.</div>
         </div>
     </div>
 
 <script>
-    // Dynamically captures your friend's console IP if hosted locally, with fallback to their specific .12 segment
-    var currentHost = window.location.hostname;
-    var goldhenHost = (currentHost && currentHost !== "" && currentHost !== "localhost") ? currentHost : "192.168.1.12";
-    var goldhenApiUrl = "http://" + goldhenHost + ":9090/api/";
-
-    function sendPS4Notification(messageText) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', goldhenApiUrl + 'notify', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 4000;
-        xhr.send(JSON.stringify({ message: messageText }));
-    }
-
+    // Dynamically builds the GoldHEN background installer link using the console's local server IP
     window.addEventListener('DOMContentLoaded', function() {
         var userAgent = navigator.userAgent;
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
         var debugBypass = window.location.hash === '#debug';
 
         if (!isPS4 && !debugBypass) {
-            triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.<br><br><small style='color:#777;'>Add #debug to URL to preview locally.</small>");
+            document.getElementById('lock-animation').style.display = "none";
+            document.getElementById('lock-title').innerHTML = "❌ Access Denied";
+            document.getElementById('lock-title').style.color = "#ff3333";
+            document.getElementById('lock-desc').innerHTML = "This portal can only be opened from a modified PS4 console browser.<br><br><small style='color:#777;'>Add #debug to URL to preview locally.</small>";
             return;
         }
 
+        // Set up the dynamic GoldHEN background install link
+        var currentHost = window.location.hostname;
+        var goldhenHost = (currentHost && currentHost !== "" && currentHost !== "localhost") ? currentHost : "192.168.1.12";
+        var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
+        
+        // GoldHEN native background package installer API redirection URL
+        var goldhenInstallUrl = "http://" + goldhenHost + ":9090/api/install?uri=" + encodeURIComponent(pkgUrl);
+        
+        document.getElementById('install-link').href = goldhenInstallUrl;
+
         setTimeout(function() {
-            unlockWebsite();
+            document.getElementById('lock-screen').style.display = "none";
+            document.getElementById('main-content').style.display = "block";
         }, 800);
     });
 
-    function unlockWebsite() {
-        document.getElementById('lock-screen').style.display = "none";
-        document.getElementById('main-content').style.display = "block";
-        sendPS4Notification("GoldHEN detected! Connection secure.");
-    }
-
-    function triggerPermanentLock(title, description) {
-        document.getElementById('loader-animation').style.display = "none"; 
-        document.getElementById('lock-title').innerHTML = title;
-        document.getElementById('lock-title').style.color = "#ff3333";
-        document.getElementById('lock-desc').innerHTML = description;
-    }
-
-    function sendToGoldHENInstaller(pkgUrl, buttonEl) {
-        var statusText = document.getElementById('status-text');
-        var fallbackBox = document.getElementById('fallback-container');
-        buttonEl.disabled = true;
-        
-        statusText.innerText = "Sending to GoldHEN background installer...";
-        statusText.style.color = "#ffcc00";
-        sendPS4Notification("Transmitting package link to system...");
-
-        var payloadData = {
-            type: "direct",
-            uri: pkgUrl
-        };
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', goldhenApiUrl + 'install', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 5000;
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                statusText.innerText = "Installation Queued! Check your PS4 Notifications.";
-                statusText.style.color = "#00ff00";
-                sendPS4Notification("Package successfully queued to background installer!");
-                
-                setTimeout(function() {
-                    buttonEl.disabled = false;
-                }, 5000);
-            } else {
-                activateFallback(buttonEl, "GoldHEN API returned an error.");
-            }
-        };
-
-        xhr.onerror = function() {
-            activateFallback(buttonEl, "GoldHEN server unreachable.");
-        };
-
-        xhr.ontimeout = function() {
-            activateFallback(buttonEl, "Connection timed out.");
-        };
-
-        xhr.send(JSON.stringify(payloadData));
-    }
-
-    function activateFallback(buttonEl, errorMsg) {
-        var statusText = document.getElementById('status-text');
-        var fallbackBox = document.getElementById('fallback-container');
-        
-        statusText.innerText = errorMsg + " Use link below.";
-        statusText.style.color = "#ff3333";
-        sendPS4Notification("GoldHEN communication failed.");
-        
-        fallbackBox.style.display = "block";
-        buttonEl.disabled = false;
-        buttonEl.innerText = "Retry Installation";
+    function triggerInstall() {
+        document.getElementById('status-text').innerText = "Command sent! Check your PS4 Notifications / Downloads.";
     }
 </script>
 </body>
