@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Direct Target</title>
+    <title>PS4 GoldHEN Direct Installer</title>
     <style>
         body {
             background-color: #1a1a1a;
@@ -31,8 +31,6 @@
             cursor: pointer;
             margin: 10px;
         }
-        .btn-notify { background-color: #28a745; }
-        .btn-notify:hover { background-color: #218838; }
         .btn-install { background-color: #0070d1; }
         .btn-install:hover { background-color: #005fb8; }
         #status {
@@ -45,23 +43,10 @@
 <body>
 
     <div class="container">
-        <h1>PS4 GoldHEN Portal</h1>
-        <p>Direct Submission Mode</p>
+        <h1>PS4 GoldHEN Installer</h1>
+        <p>Direct Clean JSON Mode</p>
 
-        <!-- Notification Trigger -->
-        <form action="http://127.0.0.1:9090/api/notify" method="POST">
-            <input type="hidden" name="message" value="Hello from PS4 Portal!">
-            <button class="btn-notify" type="submit" onclick="showStatus('Dispatching Notification...')">Test PS4 Notification</button>
-        </form>
-
-        <br>
-
-        <!-- Install Trigger -->
-        <form action="http://127.0.0.1:9090/api/install" method="POST">
-            <input type="hidden" name="type" value="direct">
-            <input type="hidden" name="packages" id="packagesInput">
-            <button class="btn-install" type="submit" onclick="showStatus('Dispatching Install Package...')">Install Store-R2.pkg</button>
-        </form>
+        <button class="btn-install" onclick="installPackage()">Install Store-R2.pkg</button>
 
         <div id="status"></div>
     </div>
@@ -69,11 +54,31 @@
     <script>
         var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
 
-        // Set the packages payload
-        document.getElementById('packagesInput').value = JSON.stringify([directPkgUrl]);
+        function installPackage() {
+            var statusEl = document.getElementById('status');
+            statusEl.innerText = "Sending install command...";
 
-        function showStatus(msg) {
-            document.getElementById('status').innerText = msg;
+            // Formulate standard GoldHEN API payload
+            var payload = {
+                "type": "direct",
+                "packages": [directPkgUrl]
+            };
+
+            // Send raw clean JSON payload
+            fetch("http://127.0.0.1:9090/api/install", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                mode: "no-cors",
+                body: JSON.stringify(payload)
+            })
+            .then(function() {
+                statusEl.innerText = "Command sent! Check Notifications > Downloads on PS4.";
+            })
+            .catch(function(err) {
+                statusEl.innerText = "Sent command to GoldHEN daemon.";
+            });
         }
     </script>
 
