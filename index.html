@@ -13,16 +13,16 @@
 <body>
 
     <h1>Welcome to the One-Click PKG Zone</h1>
-    <p>Make sure GoldHEN BinLoader is turned ON before clicking!</p>
+    <p>Ensure GoldHEN Payload Server is toggled ON before clicking download!</p>
     <br>
 
     <div id="pkg-list">
         <div class="pkg-card">
-            <h3 style="margin-top:0;">📦 Test.</h3>
+            <h3 style="margin-top:0;">Testing</h3>
             <p style="color:#aaa; font-size:14px;">Version: v04.16</p>
             
-            <!-- PASTE YOUR CONVERTED DIRECT LINK INSTEAD OF THE URL BELOW -->
-            <button onclick="sendToConsole('https://download1532.mediafire.com/pp1gecczl0fg3qKXnY2sEledPziQACloL1B0p4rUmM5H7hMMOQ3jlu-1Uv7JoJFOmMDdi08WRL6x7TCViJBeKw0mh7ZJcYU7iB_gWg78slMtp_YGmDzfakvfFOdhnBO2kilWkwEPDKsUHZB8iZ3O5wuhS5BXe_MzarqPuaNmYuCM6HE/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+            <!-- PASTE YOUR EXACT MEDIAFIRE DIRECT LINK INSIDE THE SINGLE QUOTES BELOW -->
+            <button onclick="sendToConsole('https://www.mediafire.com/file/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg/file', this)">
                 Click to Download
             </button>
             <div class="status-msg">Ready</div>
@@ -34,14 +34,14 @@
         var statusDiv = buttonEl.nextElementSibling;
         
         if(pkgUrl === "PASTE_YOUR_DIRECT_PKG_LINK_HERE") {
-            alert("Error: You haven't added your direct download link inside the code yet!");
+            alert("Error: You haven't pasted your actual file download link into the code yet!");
             return;
         }
 
-        statusDiv.innerText = "Sending file path directly to your PS4 queue...";
+        statusDiv.innerText = "Injecting download task into PS4 background queue...";
         statusDiv.style.color = "#ffcc00";
 
-        // Uses the official GoldHEN port 9090 on the local device 
+        // Targets localhost (127.0.0.1) over GoldHEN's active Payload Server Port (9090)
         var targetUrl = "http://127.0.0"; 
         
         var payload = {
@@ -61,7 +61,7 @@
         .catch(error => {
             statusDiv.innerText = "Connection Failed.";
             statusDiv.style.color = "#ff3333";
-            alert("Could not talk to the console. Check if GoldHEN BinLoader is listening on Port 9090!");
+            alert("Could not talk to the console. Check if GoldHEN Payload Server is running on Port 9090!");
         });
     }
     </script>
