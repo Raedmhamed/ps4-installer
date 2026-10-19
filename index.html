@@ -3,52 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Direct Target</title>
+    <title>PS4 Homebrew Streamer</title>
     <style>
         body {
-            background-color: #1a1a1a;
+            background-color: #121212;
             color: #ffffff;
             font-family: sans-serif;
             text-align: center;
-            padding-top: 40px;
+            padding-top: 50px;
         }
         .container {
-            background-color: #2a2a2a;
-            border: 1px solid #444;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
             display: inline-block;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.7);
             max-width: 90%;
         }
-        a.btn {
-            display: inline-block;
+        button {
+            background-color: #e50914;
             color: white;
-            text-decoration: none;
-            padding: 15px 25px;
-            font-size: 16px;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
             font-weight: bold;
-            border-radius: 5px;
-            margin: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
         }
-        .btn-notify { background-color: #28a745; }
-        .btn-install { background-color: #0070d1; }
+        button:hover {
+            background-color: #b20710;
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #46d369;
+            font-size: 15px;
+        }
+        iframe {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>PS4 GoldHEN Control</h1>
-        <p>Bypassing Browser Payload Restrictions</p>
+        <h1>PS4 Direct Stream Installer</h1>
+        <p>Bypassing Browser CORS & Daemon Blocks</p>
 
-        <!-- Direct Link for Notification -->
-        <a class="btn btn-notify" href="http://127.0.0.1:9090/api/notify?message=Portal%20Connected">1. Test Notification</a>
+        <!-- Hidden frame targeting GoldHEN API stream directly -->
+        <iframe name="stream_frame" id="stream_frame"></iframe>
 
-        <br><br>
+        <!-- Standard form posting directly to local GoldHEN installer daemon -->
+        <form id="streamForm" action="http://127.0.0.1:9090/api/install" method="POST" target="stream_frame">
+            <input type="hidden" name="type" value="direct">
+            <input type="hidden" name="packages" id="pkgPayload">
+            <button type="submit" onclick="showProgress()">Stream & Install Store-R2.pkg</button>
+        </form>
 
-        <!-- Direct Link for Package Installation -->
-        <a class="btn btn-install" href="http://127.0.0.1:9090/api/install?type=direct&packages=%5B%22https%3A%2F%2Fraw.githubusercontent.com%2FRaedmhamed%2Fps4-games-raed%2Fmain%2FStore-R2.pkg%22%5D">2. Install Store-R2.pkg</a>
+        <div id="status">Ready to transmit payload.</div>
     </div>
+
+    <script>
+        // Direct Raw Package URL hosted on your GitHub repository
+        var pkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+
+        // Format as strict JSON string array required by GoldHEN daemon
+        document.getElementById('pkgPayload').value = JSON.stringify([pkgUrl]);
+
+        function showProgress() {
+            document.getElementById('status').innerText = "Streaming package payload to system daemon...";
+            
+            // Fallback timeout message in case iframe response is opaque
+            setTimeout(function() {
+                document.getElementById('status').innerText = "Request transmitted. Check PS4 Notifications > Downloads!";
+            }, 3000);
+        }
+    </script>
 
 </body>
 </html>
