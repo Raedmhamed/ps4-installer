@@ -1,37 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Personal PKG Installer Zone</title>
+    <title>My Personal One-Click PKG Zone</title>
     <style>
         body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        input { padding: 10px; font-size: 16px; margin: 10px; width: 250px; }
-        button { padding: 10px 20px; font-size: 16px; background: #0070d2; color: white; border: none; cursor: pointer; }
+        .pkg-card { background: #1e1e1e; display: inline-block; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; width: 320px; }
+        button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 10px; }
         button:hover { background: #0056a3; }
+        .status-msg { margin-top: 15px; font-style: italic; color: #aaa; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <h1>Welcome to the Custom PKG Zone</h1>
-    <p>Enter your PS4 Local IP Address below:</p>
-    <!-- Your friend types their PS4 IP here, e.g., 192.168.1.15 -->
-    <input type="text" id="ps4_ip" placeholder="e.g. 192.168.1.15"><br><br>
+    <h1>Welcome to the One-Click PKG Zone</h1>
+    <p>Make sure GoldHEN's BinLoader or Remote Package Installer is open before clicking!</p>
+    <br>
 
-    <h3>Available Downloads</h3>
-    <p>DolphinPS4 Emulator (v04.16)</p>
-    <button onclick="installPKG('https://qiwi.gg')">Click to Install on PS4</button>
+    <div id="pkg-list">
+        <!-- ITEM 1 -->
+        <div class="pkg-card">
+            <h3 style="margin-top:0;">📦 DolphinPS4 Emulator</h3>
+            <p style="color:#aaa; font-size:14px;">Version: v04.16</p>
+            
+            <!-- PASTE YOUR STANDARD MEDIAFIRE LINK INSIDE THE SINGLE QUOTES BELOW -->
+            <button onclick="autoInstall('https://mediafire.com', this)">
+                Click to Download
+            </button>
+            <div class="status-msg">Ready</div>
+        </div>
+    </div>
 
     <script>
-    function installPKG(pkgUrl) {
-        var ps4IP = document.getElementById('ps4_ip').value;
-        if (!ps4IP) {
-            alert('Please enter your PS4 IP address first!');
-            return;
-        }
-
-        // GoldHEN / Remote Package Installer default port is usually 12800 or 9090
-        var targetUrl = "http://" + ps4IP + ":12800/api/install"; 
+    function autoInstall(mediafireUrl, buttonEl) {
+        var statusDiv = buttonEl.nextElementSibling;
         
-        // This payload tells the PS4 kernel to download the file directly from your link
+        statusDiv.innerText = "Extracting link... please wait.";
+        statusDiv.style.color = "#ffcc00";
+
+        // Step 1: Bypasses the MediaFire webpage layout using a proxy
+        var proxyUrl = "https://allorigins.win" + encodeURIComponent(mediafireUrl);
+
+        fetch(proxyUrl)
+            .then(response => {
+                if (response.ok) return response.json();
+                throw new Error('Proxy connection failure.');
+            })
+            .then(data => {
+                var htmlContent = data.contents;
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(htmlContent, 'text/html');
+                var downloadButton = doc.getElementById('downloadButton');
+
+                if (downloadButton && downloadButton.getAttribute('href')) {
+                    var directPkgUrl = downloadButton.getAttribute('href');
+                    statusDiv.innerText = "Sending target directly to PS4 system queue...";
+                    statusDiv.style.color = "#00ff00";
+                    
+                    // Step 2: Handoff to console kernel
+                    sendToConsoleLoopback(directPkgUrl, statusDiv);
+                } else {
+                    throw new Error('Could not parse download URL.');
+                }
+            })
+            .catch(error => {
+                statusDiv.innerText = "Error: Failed to process MediaFire link.";
+                statusDiv.style.color = "#ff3333";
+            });
+    }
+
+    function sendToConsoleLoopback(pkgUrl, statusDiv) {
+        // "127.0.0.1" is the loopback IP. It forces the PS4 browser to send the download file command to itself.
+        var targetUrl = "http://127.0.0"; 
+        
         var payload = {
             "type": "direct",
             "url": pkgUrl
@@ -42,8 +82,15 @@
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'application/json' }
         })
-        .then(response => alert('Installation command sent successfully! Check your PS4 notifications.'))
-        .catch(error => alert('Error: Could not connect to PS4. Check if GoldHEN BinLoader/RPI port is active.'));
+        .then(response => {
+            statusDiv.innerText = "Success! Check your PS4 notifications.";
+            statusDiv.style.color = "#00ff00";
+        })
+        .catch(error => {
+            statusDiv.innerText = "Error: Couldn't wake up background installer.";
+            statusDiv.style.color = "#ff3333";
+            alert("Make sure GoldHEN Package Installer / Port 12800 is active on your console!");
+        });
     }
     </script>
 
