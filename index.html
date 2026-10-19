@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Direct Installer</title>
+    <title>PS4 GoldHEN Direct Target</title>
     <style>
         body {
             background-color: #1a1a1a;
@@ -21,14 +21,14 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             max-width: 90%;
         }
-        button {
+        a.btn {
+            display: inline-block;
             color: white;
-            border: none;
+            text-decoration: none;
             padding: 15px 25px;
             font-size: 16px;
             font-weight: bold;
             border-radius: 5px;
-            cursor: pointer;
             margin: 10px;
         }
         .btn-notify { background-color: #28a745; }
@@ -39,22 +39,15 @@
 
     <div class="container">
         <h1>PS4 GoldHEN Control</h1>
-        <p>Direct Browser Navigation Mode</p>
+        <p>Bypassing Browser Payload Restrictions</p>
 
-        <!-- Test Notification Form -->
-        <form action="http://127.0.0.1:9090/api/notify" method="POST" target="_self">
-            <input type="hidden" name="message" value="Portal connected successfully!">
-            <button class="btn-notify" type="submit">1. Test Notification</button>
-        </form>
+        <!-- Direct Link for Notification -->
+        <a class="btn btn-notify" href="http://127.0.0.1:9090/api/notify?message=Portal%20Connected">1. Test Notification</a>
 
-        <br>
+        <br><br>
 
-        <!-- Package Install Form -->
-        <form action="http://127.0.0.1:9090/api/install" method="POST" target="_self">
-            <input type="hidden" name="type" value="direct">
-            <input type="hidden" name="packages" value='["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"]'>
-            <button class="btn-install" type="submit">2. Install Store-R2.pkg</button>
-        </form>
+        <!-- Direct Link for Package Installation -->
+        <a class="btn btn-install" href="http://127.0.0.1:9090/api/install?type=direct&packages=%5B%22https%3A%2F%2Fraw.githubusercontent.com%2FRaedmhamed%2Fps4-games-raed%2Fmain%2FStore-R2.pkg%22%5D">2. Install Store-R2.pkg</a>
     </div>
 
 </body>
