@@ -1,121 +1,99 @@
-Copy the code below into `index.html`. The default `/rpi` endpoint requires the [local relay](outputs/relay.py).
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Custom One-Click PKG Zone</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom One-Click GoldHEN Zone</title>
 <style>
-body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 50px 12px; }
-.pkg-card { background: #1e1e1e; display: inline-block; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; width: 320px; max-width: calc(100% - 80px); text-align: left; }
-.pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
-.pkg-info { color: #aaa; font-size: 13px; margin: 5px 0; }
-button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; }
-button:hover { background: #0056a3; } button:disabled { opacity: .5; cursor: wait; }
-.status-msg { margin-top: 15px; font-style: italic; color: #bbb; font-size: 13px; text-align: center; min-height: 18px; overflow-wrap: anywhere; }
-input { box-sizing: border-box; width: 100%; padding: 10px; margin-top: 8px; background: #121212; color: white; border: 1px solid #666; border-radius: 6px; }
-label { display: block; margin-top: 15px; font-size: 14px; } a { color: #66b7ff; }
-.error { color: #ff9999; } .ok { color: #99d9ac; } .settings { margin: auto; }
+body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 40px 12px; margin: 0; }
+h1 { color: #0070d2; margin-bottom: 5px; }
+.subtitle { color: #aaa; margin-top: 0; font-size: 14px; margin-bottom: 30px; }
+.pkg-container { display: flex; flex-wrap: wrap; justify-content: center; max-width: 1000px; margin: 0 auto; padding: 10px; }
+.pkg-card { background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; margin: 15px; width: 280px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.pkg-title { font-size: 18px; font-weight: bold; margin: 0 0 5px 0; color: #fff; }
+.pkg-info { color: #888; font-size: 13px; margin: 5px 0; }
+button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; transition: background 0.2s; }
+button:hover { background: #0056a3; }
+.status-msg { margin-top: 12px; font-style: italic; color: #666; font-size: 13px; text-align: center; min-height: 18px; }
 </style>
 </head>
 <body>
-<h1 style="color:#0070d2">Custom One-Click PKG Zone</h1>
-<p style="color:#aaa">Send a direct PKG URL to Remote Package Installer on your PS4.</p>
-<section class="pkg-card settings" aria-label="Connection settings">
-<label for="endpoint">Remote Package Installer endpoint</label>
-<input id="endpoint" value="/rpi" placeholder="http://192.168.1.50:12800" spellcheck="false">
-<p class="pkg-info">Use /rpi with the included local relay, or enter a CORS-enabled HTTP(S) API base URL. Keep Remote Package Installer open on the PS4.</p>
-<button id="connect">Test Connection</button>
-<div id="connection" class="status-msg" role="status" aria-live="polite">Not tested</div>
-</section>
-<div style="display:flex;justify-content:center;flex-wrap:wrap">
-<section class="pkg-card">
-<div class="pkg-title">📦 DolphinPS4 Emulator</div>
-<div class="pkg-info"><b>Version:</b> v04.16</div>
-<div class="pkg-info"><b>Firmware:</b> 12.02 / 13.52 / GoldHEN</div>
-<p class="pkg-info">Original listing metadata; compatibility has not been verified.</p>
-<p class="pkg-info"><a href="https://www.mediafire.com/file/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg/file" target="_blank" rel="noopener noreferrer">Original MediaFire download page</a></p>
-<label for="pkg">Direct PKG URL</label>
-<input id="pkg" type="url" placeholder="http://192.168.1.10:8080/DolphinPS4-v04.16.pkg" spellcheck="false">
-<p class="pkg-info">Must serve PKG bytes without login or a download webpage, and be reachable by the PS4. Localhost refers to the PS4 itself.</p>
-<button id="install">Send Install Request</button>
-<div id="status" class="status-msg" role="status" aria-live="polite">Ready — enter a direct PKG URL.</div>
-</section>
-</div>
-<script>
-'use strict';
-var busy = false;
-function el(id) { return document.getElementById(id); }
-function message(id, text, kind) { el(id).textContent = text; el(id).className = 'status-msg ' + (kind || ''); }
-function httpURL(value) {
-    var url;
-    try { url = new URL(value); } catch (_) { throw new Error('Enter a complete HTTP(S) URL.'); }
-    if (!/^https?:$/.test(url.protocol) || url.username || url.password || url.hash) throw new Error('Use HTTP(S) without credentials or a fragment.');
-    return url;
-}
-function baseURL() {
-    var value = el('endpoint').value.trim().replace(/\/+$/, '');
-    if (value === '/rpi') {
-        if (!/^https?:$/.test(location.protocol)) throw new Error('Start relay.py and open its local address to use /rpi.');
-        return value;
+
+    <h1>Welcome to the One-Click GoldHEN Zone</h1>
+    <p class="subtitle">Ensure GoldHEN "Payload Server" is active inside your PS4 Server Settings!</p>
+
+    <div class="pkg-container">
+        <!-- CARD 1: DOLPHIN PS4 -->
+        <div class="pkg-card">
+            <div class="pkg-title">📦 DolphinPS4 Emulator</div>
+            <div class="pkg-info"><b>Version:</b> v04.16</div>
+            <div class="pkg-info"><b>Firmware:</b> 12.02 / 13.52 / GoldHEN</div>
+            
+            <!-- ضَعْ رَابِطْ مِيدْيَافَايِرْ العَادِي أَوْ رَابِطْ التَّحْمِيلِ المُبَاشِرِ هُنَا -->
+            <button onclick="autoDecodeAndInstall('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+                Click to Install
+            </button>
+            <div class="status-msg">Ready</div>
+        </div>
+    </div>
+
+    <script>
+    function autoDecodeAndInstall(mediafireUrl, buttonEl) {
+        var statusDiv = buttonEl.nextElementSibling;
+        statusDiv.innerText = "Extracting live file token...";
+        statusDiv.style.color = "#ffcc00";
+
+        // استخدام سيرفر وسيط لتخطي حماية CORS وقراءة كود ميديافاير بالخلفية
+        var decodeServer = "https://allorigins.win" + encodeURIComponent(mediafireUrl);
+
+        fetch(decodeServer)
+            .then(res => {
+                if (res.ok) return res.json();
+                throw new Error("Proxy connection failed.");
+            })
+            .then(data => {
+                var htmlRaw = data.contents;
+                // جلب رابط الـ CDN المباشر تلقائياً من الصفحة بدون تدخل منك
+                var urlMatch = htmlRaw.match(/href="([^"]*mediafire\.com\/[a-zA-Z0-9_\-\.\/]*\.pkg)"/i);
+                
+                if (urlMatch && urlMatch[1]) {
+                    var absoluteCdnUrl = urlMatch[1];
+                    statusDiv.innerText = "CDN Link Grabbed! Routing to GoldHEN...";
+                    statusDiv.style.color = "#00ff00";
+                    
+                    // تمرير الرابط المباشر إلى خادم التثبيت الداخلي للـ PS4
+                    sendToGoldHEN(absoluteCdnUrl, statusDiv);
+                } else {
+                    throw new Error("Could not parse direct download token.");
+                }
+            })
+            .catch(error => {
+                statusDiv.innerText = "Failed to process MediaFire link.";
+                statusDiv.style.color = "#ff3333";
+            });
     }
-    var url = httpURL(value);
-    if (url.search) throw new Error('The API base URL must not contain a query string.');
-    return value;
-}
-function pkgURL() {
-    var url = httpURL(el('pkg').value.trim());
-    if (/(^|\.)mediafire\.com$/i.test(url.hostname) && /^\/file\//i.test(url.pathname)) throw new Error('This is a MediaFire sharing page. Supply a direct PKG URL instead.');
-    if (/^(localhost|127\.|\[?::1\]?$)/i.test(url.hostname) || url.hostname.indexOf('127.') === 0) throw new Error('Use a file-server address reachable from the PS4, not localhost.');
-    return url.href;
-}
-function lock(value) { busy = value; ['connect','install','endpoint','pkg'].forEach(function(id) { el(id).disabled = value; }); }
-async function request(base, path, payload) {
-    var controller = new AbortController();
-    var timer = setTimeout(function() { controller.abort(); }, 15000);
-    try {
-        var response = await fetch(base + '/api/' + path, {
-            method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(payload), signal: controller.signal, credentials: 'omit', redirect: 'error'
+
+    function sendToGoldHEN(pkgUrl, statusDiv) {
+        // تحويل الرابط إلى صيغة مصفوفة بايتات خام متوافقة مع نواة جولد هين
+        var arrayData = new TextEncoder().encode(pkgUrl + "\n");
+
+        // إرسال البيانات مباشرة للبورت الداخلي المفتوح في الـ PS4 (9090)
+        fetch("http://127.0.0", {
+            method: 'POST',
+            body: arrayData,
+            headers: { 'Content-Type': 'text/plain' },
+            mode: 'no-cors' // تخطي حماية كرت المتصفح الداخلي للكونسول
+        })
+        .then(() => {
+            statusDiv.innerText = "Success! Check your PS4 Notifications drawer.";
+            statusDiv.style.color = "#00ff00";
+        })
+        .catch(err => {
+            statusDiv.innerText = "Connection failed. Check your Payload Server!";
+            statusDiv.style.color = "#ff3333";
+            alert("Could not reach GoldHEN! Ensure 'Payload Server' is enabled on port 9090 inside GoldHEN settings.");
         });
-        var data;
-        try { data = await response.json(); } catch (_) { throw new Error('Endpoint returned non-JSON data; confirm the API address.'); }
-        if (!response.ok) throw new Error('HTTP ' + response.status + (data.error ? ': ' + data.error : ' from endpoint.'));
-        if (!data || data.status !== 'success') throw new Error('Installer rejected the request: ' + JSON.stringify(data));
-        return data;
-    } catch (error) {
-        if (error.name === 'AbortError') throw new Error('Request timed out.');
-        if (error instanceof TypeError) throw new Error('Cannot read the endpoint response. Check IP, app, firewall, CORS, mixed-content rules, and browser local-network permissions. Use the included relay for browser restrictions.');
-        throw error;
-    } finally { clearTimeout(timer); }
-}
-el('endpoint').addEventListener('input', function() { message('connection', 'Endpoint changed — not tested'); });
-el('connect').addEventListener('click', async function() {
-    if (busy) return;
-    lock(true); message('connection', 'Connecting…');
-    try {
-        await request(baseURL(), 'is_exists', {title_id:'FLTZ00003'});
-        message('connection', 'Connected — installer API responded.', 'ok');
-    } catch (error) { message('connection', error.message, 'error'); }
-    finally { lock(false); }
-});
-el('install').addEventListener('click', async function() {
-    if (busy) return;
-    var sent = false;
-    lock(true); message('status', 'Validating…');
-    try {
-        var base = baseURL(), url = pkgURL();
-        message('status', 'Sending install request…'); sent = true;
-        var data = await request(base, 'install', {type:'direct', packages:[url]});
-        message('connection', 'Connected — installer API responded.', 'ok');
-        message('status', 'Request accepted' + (data.task_id != null ? ' (task ' + data.task_id + ')' : '') + '. Installation is not confirmed. Check PS4 Notifications / Downloads for progress and completion.', 'ok');
-    } catch (error) {
-        message('status', error.message + (sent ? ' Installation is unconfirmed; check PS4 tasks before retrying to avoid duplicates.' : ''), 'error');
-        if (sent) message('connection', 'Last install request did not receive a confirmed acceptance.', 'error');
-    } finally { lock(false); }
-});
-</script>
+    }
+    </script>
 </body>
 </html>
-```
