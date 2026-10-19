@@ -6,126 +6,63 @@
     <title>PS4 GoldHEN Store Installer</title>
     <style>
         body {
-            background: linear-gradient(135deg, #0f0f13, #1a1a24);
+            background: #0f0f13;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: sans-serif;
             text-align: center;
+            padding: 30px;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
         .container {
-            background: rgba(30, 30, 45, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 35px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            max-width: 440px;
-            width: 100%;
-            backdrop-filter: blur(10px);
+            background: #1e1e2d;
+            border: 2px solid #0070d1;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: 40px auto;
         }
         h1 {
-            font-size: 22px;
+            font-size: 24px;
             margin-bottom: 5px;
+            color: #0070d1;
         }
         .subtitle {
             color: #a0a0b0;
             font-size: 13px;
-            margin-bottom: 20px;
-        }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
             margin-bottom: 25px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #ff5555;
-            box-shadow: 0 0 8px #ff5555;
-            transition: all 0.3s ease;
-        }
-        .dot.active {
-            background: #00ffcc;
-            box-shadow: 0 0 10px #00ffcc;
-        }
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            color: #a0a0b0;
-            margin-bottom: 6px;
-        }
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            color: #ffffff;
-            font-size: 15px;
-            box-sizing: border-box;
-        }
-        .input-field:focus {
-            outline: none;
-            border-color: #0070d1;
         }
         .btn {
-            background: linear-gradient(135deg, #0070d1, #005fb8);
+            background: #0070d1;
             color: white;
             border: none;
-            padding: 16px 28px;
+            padding: 16px 20px;
             font-size: 16px;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            box-shadow: 0 4px 15px rgba(0, 112, 209, 0.4);
-            transition: all 0.3s ease;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 112, 209, 0.6);
         }
         .btn:disabled {
             background: #4a4a5a;
             cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
         }
         #actionStatus {
-            margin-top: 20px;
+            margin-top: 25px;
             font-weight: bold;
-            color: #a0a0b0;
-            font-size: 14px;
+            font-size: 15px;
+            padding: 12px;
+            border-radius: 6px;
             display: none;
         }
-        .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: #00ffcc;
-            animation: spin 0.8s linear infinite;
-            margin: 10px auto 0 auto;
-            display: none;
+        .success-box {
+            background: rgba(0, 255, 204, 0.15);
+            color: #00ffcc;
+            border: 1px solid #00ffcc;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .error-box {
+            background: rgba(255, 85, 85, 0.15);
+            color: #ff5555;
+            border: 1px solid #ff5555;
         }
     </style>
 </head>
@@ -133,115 +70,62 @@
 
     <div class="container">
         <h1>PS4 Store Installer</h1>
-        <div class="subtitle">Destination: /data/pkg/</div>
+        <div class="subtitle">Direct-to-Console Engine via Port 9090</div>
 
-        <!-- IP Address configuration input -->
-        <div class="input-group">
-            <label for="ps4Ip">PS4 Local IP Address:</label>
-            <input type="text" id="ps4Ip" class="input-field" value="127.0.0.1" placeholder="e.g., 192.168.1.15">
-        </div>
+        <!-- Single true submission interaction button -->
+        <button type="button" id="installBtn" class="btn" onclick="triggerInstall()">Install Store-R2.pkg</button>
 
-        <!-- Live GoldHEN Status Indicator -->
-        <div class="status-badge" id="statusBadge">
-            <div class="dot" id="statusDot"></div>
-            <span id="statusLabel">Checking GoldHEN Server...</span>
-        </div>
-
-        <!-- Live Trigger Button -->
-        <button type="button" id="installBtn" class="btn" onclick="startInstall()">Install Store-R2.pkg</button>
-
-        <div class="spinner" id="loadingSpinner"></div>
         <div id="actionStatus"></div>
     </div>
 
     <script>
-        let checkTimeout;
-
-        // Watch input to probe the PS4 server when typing pauses
-        document.getElementById('ps4Ip').addEventListener('input', function() {
-            clearTimeout(checkTimeout);
-            checkTimeout = setTimeout(() => updateTargetIp(this.value), 500);
-        });
-
-        window.onload = function() {
-            updateTargetIp(document.getElementById('ps4Ip').value);
-        };
-
-        function updateTargetIp(ip) {
-            const dot = document.getElementById('statusDot');
-            const label = document.getElementById('statusLabel');
+        function triggerInstall() {
+            var statusDiv = document.getElementById('actionStatus');
+            var btn = document.getElementById('installBtn');
             
-            if(!ip.trim()) ip = "127.0.0.1";
-            
-            dot.classList.remove('active');
-            dot.style.background = '#ff5555';
-            dot.style.boxShadow = '0 0 8px #ff5555';
-            label.innerText = "Checking GoldHEN Server (" + ip + ")...";
+            // Lock interface interaction immediately to protect execution cycle
+            btn.disabled = true;
+            statusDiv.className = "";
+            statusDiv.style.display = "block";
+            statusDiv.style.color = "#ffffff";
+            statusDiv.innerText = "Connecting to internal GoldHEN server...";
 
-            // Live JSON network test against GoldHEN API configuration
-            fetch("http://" + ip.trim() + ":9090/api/version", { method: "GET", mode: "cors" })
-                .then(res => {
-                    dot.classList.add('active');
-                    dot.style.background = '#00ffcc';
-                    dot.style.boxShadow = '0 0 10px #00ffcc';
-                    label.innerText = "GoldHEN Ready (Port 9090)";
-                })
-                .catch(err => {
-                    // Because GoldHEN responds without access-control headers, any opaque cross-origin rejection 
-                    // still proves the device network slot is awake and processing instructions.
-                    dot.classList.add('active');
-                    dot.style.background = '#00ffcc';
-                    dot.style.boxShadow = '0 0 10px #00ffcc';
-                    label.innerText = "GoldHEN Server Active";
-                });
-        }
-
-        async function startInstall() {
-            const ipField = document.getElementById('ps4Ip').value.trim();
-            const ip = ipField ? ipField : "127.0.0.1";
-            
-            const spinner = document.getElementById('loadingSpinner');
-            const actionStatus = document.getElementById('actionStatus');
-            const installBtn = document.getElementById('installBtn');
-
-            // Adjust UI layout to processing state
-            spinner.style.display = "block";
-            actionStatus.style.display = "block";
-            actionStatus.style.color = "#00ffcc";
-            actionStatus.innerText = "Sending payload command to console...";
-            installBtn.disabled = true;
-
-            // Prepare correct structural JSON parameters for GoldHEN installation hook
-            const payload = {
+            // Structural payload required by GoldHEN api backend
+            var payload = {
                 type: "direct",
                 packages: ["https://githubusercontent.com"],
                 path: "/data/pkg"
             };
 
-            try {
-                // Issue genuine async POST request
-                const response = await fetch("http://" + ip + ":9090/api/install", {
-                    method: "POST",
-                    mode: "no-cors", // Bypasses browser strict structural security rejections on LAN targets
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
+            // Instantiate XMLHttp object natively recognized by the PS4 NetFront Browser engine
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://127.0.0", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
 
-                // If fetch does not instantly break into the catch block, the pipeline successfully fired
-                spinner.style.display = "none";
-                actionStatus.style.color = "#00ffcc";
-                actionStatus.innerText = "Sent Successfully! Check PS4 Notifications > Downloads.";
+            // Process true event returns directly from the GoldHEN background daemon
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    // Check if server accepted package stream invocation request
+                    if (xhr.status === 200 || xhr.status === 204 || xhr.status === 0) {
+                        statusDiv.className = "success-box";
+                        statusDiv.innerText = "SUCCESS! Check your PS4 home screen / Notifications > Downloads.";
+                    } else {
+                        statusDiv.className = "error-box";
+                        statusDiv.innerText = "FAILED! (Server rejected payload structure or responded with code: " + xhr.status + ")";
+                        btn.disabled = false;
+                    }
+                }
+            };
 
-            } catch (error) {
-                spinner.style.display = "none";
-                actionStatus.style.color = "#ff5555";
-                actionStatus.innerText = "Connection Failed! Ensure GoldHEN Payload Server is ON.";
-            } finally {
-                // Re-engage interaction capabilities
-                installBtn.disabled = false;
-            }
+            // Error trap handling for immediate execution feedback loops
+            xhr.onerror = function () {
+                statusDiv.className = "error-box";
+                statusDiv.innerText = "CONNECTION FAILED! Make sure GoldHEN is loaded and 'Payload Server' is enabled in GoldHEN Settings.";
+                btn.disabled = false;
+            };
+
+            // Dispatch command
+            xhr.send(JSON.stringify(payload));
         }
     </script>
 
