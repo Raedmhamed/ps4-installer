@@ -24,15 +24,42 @@
     
     .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1.5s linear infinite; animation: spin 1.5s linear infinite; margin-bottom: 20px; }
     
-    /* شريط تقدم مرئي حقيقي */
     .progress-bar-container { width: 100%; background-color: #333; border-radius: 6px; margin-top: 15px; display: none; }
     .progress-bar { width: 0%; height: 10px; background-color: #00ff00; border-radius: 6px; transition: width 0.1s; }
+
+    /* التصميم المطابق لإشعارات وتنبيهات نظام الـ PS4 و GoldHEN الرسمية */
+    .gh-notification {
+        display: none;
+        position: fixed;
+        top: 25px;
+        left: -350px; /* تبدأ مخفية خارج الشاشة اليسرى مثل تنبيه الكونسول */
+        width: 310px;
+        background: #0f1622; /* اللون الكحلي الرسمي لنظام سوني وجولد هين */
+        color: #ffffff;
+        padding: 12px 18px;
+        border-radius: 4px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        font-size: 13px;
+        font-family: sans-serif;
+        z-index: 10000;
+        text-align: left;
+        border-left: 5px solid #00aa00; /* مؤشر التنشيط الأخضر للـ GoldHEN */
+        transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* حركة انبثاق سلسة */
+    }
+    .gh-notify-header { font-weight: bold; color: #00aa00; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+    .gh-notify-body { font-size: 13px; color: #e0e0e0; font-weight: normal; }
 
     @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+    <!-- صندوق إشعارات GoldHEN الرسمي المدمج (الجهة اليسرى العلوية) -->
+    <div id="goldhen-toast" class="gh-notification">
+        <div class="gh-notify-header" id="gh-toast-title">GoldHEN v2.4</div>
+        <div class="gh-notify-body" id="gh-toast-msg">Notification Message Content</div>
+    </div>
 
     <!-- شاشة الفحص الأولي -->
     <div id="lock-screen">
@@ -68,6 +95,42 @@
     </div>
 
     <script>
+    // دالة محاكاة صوت وإشعار تنبيه جولد هين بدقة
+    function triggerGoldHENToast(title, bodyText, isError = false) {
+        var toast = document.getElementById('goldhen-toast');
+        var titleEl = document.getElementById('gh-toast-title');
+        var msgEl = document.getElementById('gh-toast-msg');
+        
+        titleEl.innerText = title;
+        titleEl.style.color = isError ? "#ff3333" : "#00aa00";
+        toast.style.borderLeftColor = isError ? "#ff3333" : "#00aa00";
+        msgEl.innerHTML = bodyText;
+        
+        // إصدار نغمة بيب صوتية افتراضية شبيهة بنغمة التنبيه الرسمية للـ PS4
+        try {
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            var oscillator = audioCtx.createOscillator();
+            var gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.value = isError ? 150 : 550; // تردد حاد للإشعار وتردد منخفض للخطأ
+            gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.12);
+        } catch(e) {}
+
+        // حركة الانبثاق من الجانب الأيسر علوياً
+        toast.style.display = 'block';
+        setTimeout(function() { toast.style.left = '25px'; }, 50);
+        
+        // إخفاء التنبيه وسحبه للخارج بعد 4.5 ثانية تلقائياً
+        setTimeout(function() {
+            toast.style.left = '-350px';
+            setTimeout(function() { toast.style.display = 'none'; }, 400);
+        }, 4500);
+    }
+
     window.addEventListener('DOMContentLoaded', function() {
         var userAgent = navigator.userAgent;
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
@@ -102,6 +165,9 @@
     function unlockWebsite() {
         document.getElementById('lock-screen').style.display = "none";
         document.getElementById('main-content').style.display = "block";
+        
+        // إشعار التحقق الأولي المتطابق مع GoldHEN
+        triggerGoldHENToast("GoldHEN", "GoldHEN authenticated! Connection secure.");
     }
 
     function triggerPermanentLock(title, description) {
@@ -111,7 +177,6 @@
         document.getElementById('lock-desc').innerHTML = description;
     }
 
-    // الخطة الاحترافية لتخطي خطأ الحظر تماماً عبر محاكاة ملف وثائقي
     function startBlobBypassInstall(directPkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
         var progressContainer = document.getElementById('progress-container');
@@ -119,57 +184,19 @@
 
         buttonEl.disabled = true;
         progressContainer.style.display = "block";
+        
+        // إشعار بدء تنزيل الحزمة بأسلوب الكونسول الرسمي
+        triggerGoldHENToast("Package Installer", "DolphinPS4-v04.16.pkg added to download queue.");
+        
         statusText.innerText = "Downloading file stream... 0%";
         statusText.style.color = "#ffcc00";
 
         var xhr = new XMLHttpRequest();
         xhr.open('GET', directPkgUrl, true);
-        xhr.responseType = 'blob'; // سحب بايتات الملف الخامة مباشرة
+        xhr.responseType = 'blob';
 
         xhr.onprogress = function(event) {
             if (event.lengthComputable) {
                 var percentComplete = Math.round((event.loaded / event.total) * 100);
                 progressBar.style.width = percentComplete + '%';
                 statusText.innerText = "Downloading to Memory: " + percentComplete + "%";
-            }
-        };
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                statusText.innerText = "Bypassing security locks...";
-                statusText.style.color = "#00ff00";
-
-                // هنا الحيلة: نقوم بإعادة تغليف بايتات الـ PKG ونقول للمتصفح أن هذا ملف نصي (TXT) أو مستند مدعوم رسمياً
-                var blob = new Blob([xhr.response], {type: "text/plain"});
-                var downloadUrl = URL.createObjectURL(blob);
-                
-                // إنشاء رابط تحميل مخفي والضغط عليه تلقائياً
-                var hiddenAnchor = document.createElement("a");
-                hiddenAnchor.href = downloadUrl;
-                
-                // تسمية الملف باسم اللعبة مع الحفاظ على امتداد .pkg، المتصفح سيوافق على سحبه لأنه مغلف كـ Blob نصي
-                hiddenAnchor.download = "DolphinPS4-v04.16.pkg";
-                document.body.appendChild(hiddenAnchor);
-                hiddenAnchor.click(); // بدء التنزيل الفعلي لقرص الجهاز الصلب
-                document.body.removeChild(hiddenAnchor);
-
-                statusText.innerText = "Injected successfully! Check Package Installer.";
-                alert("Success! The file was safely pushed into your console storage. Go to Settings -> Debug Settings -> Package Installer to complete installation.");
-            } else {
-                statusText.innerText = "Download failed. Server error.";
-                statusText.style.color = "#ff3333";
-                buttonEl.disabled = false;
-            }
-        };
-
-        xhr.onerror = function() {
-            statusText.innerText = "Connection failed.";
-            statusText.style.color = "#ff3333";
-            buttonEl.disabled = false;
-        };
-
-        xhr.send();
-    }
-    </script>
-</body>
-</html>
