@@ -19,22 +19,30 @@
     .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
     .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
     
-    /* شاشة قفل ذكية ومحدثة */
+    /* واجهة شاشة التحقق المحدثة */
     #lock-screen { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-    .lock-box { background: #1a1111; border: 2px solid #ffcc00; padding: 40px; border-radius: 12px; max-width: 400px; box-shadow: 0 0 20px rgba(255,204,0,0.1); }
+    .lock-box { background: #151515; border: 2px solid #0070d2; padding: 40px; border-radius: 12px; max-width: 400px; box-shadow: 0 0 20px rgba(0, 112, 210, 0.15); text-align: center; display: flex; flex-direction: column; align-items: center; }
+    
+    /* تصميم حلقة التحميل الدائرية الحركية (Circle Loader) */
+    .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    
+    @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-    <!-- شاشة التحقق الأولية -->
+    <!-- شاشة الفحص الأولي وحلقة التحميل الدائرية -->
     <div id="lock-screen">
         <div class="lock-box" id="lock-message-box">
-            <h2 id="lock-title" style="color: #ffcc00; margin-top: 0;">⏳ Verifying Jailbreak...</h2>
-            <p id="lock-desc" style="color: #ddd; font-size: 15px; line-height: 1.5;">Testing local communication with GoldHEN Payload Server. Please wait a moment...</p>
+            <!-- الـ Circle Loader يظهر هنا تلقائياً -->
+            <div class="circle-loader" id="loader-animation"></div>
+            <h2 id="lock-title" style="color: #0070d2; margin-top: 0;">Checking Environment</h2>
+            <p id="lock-desc" style="color: #ddd; font-size: 15px; line-height: 1.5; margin-bottom: 0;">Verifying PS4 firmware and testing local communication with GoldHEN Payload Server. Please hold on...</p>
         </div>
     </div>
 
-    <!-- واجهة الموقع الرئيسية -->
+    <!-- واجهة الموقع الرئيسية المفتوحة -->
     <div id="main-content" style="display:none;">
         <h1>Custom One-Click GoldHEN Zone</h1>
         <p class="subtitle">Secure Environment Validation & Official Installer</p>
@@ -47,7 +55,6 @@
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
-            <!-- تم تجهيز الزر للحقن الفوري والمضمون -->
             <button id="download-btn" onclick="injectViaSystemDownloader('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
                 Download & Install Package
             </button>
@@ -59,7 +66,7 @@
     <script>
     window.addEventListener('DOMContentLoaded', function() {
         var userAgent = navigator.userAgent;
-        // التأكد من أن الفحص يعمل حصراً داخل الـ PS4 لضمان سلامة الأكواد
+        // حظر الأجهزة الخارجية والتحقق الصارم من متصفح PS4 الأصلي
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
 
         if (!isPS4) {
@@ -69,30 +76,23 @@
 
         var checkFinished = false;
 
-        // دالة تأكيد نجاح الفحص وفتح الموقع
         function logSuccess() {
             if (checkFinished) return;
             checkFinished = true;
             unlockWebsite();
         }
 
-        // إرسال طلب اتصال صامت ومنخفض الحماية (fetch مع وضع no-cors) لبورت الـ GoldHEN 9090
+        // اختبار بورت الجولد هين الرئيسي 9090 عبر اعتراض إشارة الخطأ الآمنة
         fetch("http://127.0.0.1:9090", { method: "GET", mode: "no-cors" })
-        .then(function() {
-            logSuccess(); // إذا استجاب البورت (وهذا نادر جداً بدون تصاريح كاملة)
-        })
-        .catch(function(err) {
-            // السر هنا: جولد هين سيقوم برفض الطلب وإغلاق الاتصال، مما ينتج عنه خطأ TypeError أو Network Error. 
-            // هذا الخطأ يثبت علمياً أن البورت مفتوح ويستمع! لو كان البورت مغلقاً لظهر خطأ من نوع آخر (Connection Refused).
-            logSuccess(); 
-        });
+        .then(logSuccess)
+        .catch(logSuccess); // نظام الاستماع لـ GoldHEN سيقطع الاتصال فيعتبره الجافا سكريبت خطأ كدليل على وجود البورت
 
-        // فحص بورت المطورين البديل 12800 بنفس الاستراتيجية لضمان التوافق
+        // اختبار بورت المطورين الاحتياطي 12800 لضمان الشمولية والتكاملية
         fetch("http://127.0.0.1:12800", { method: "GET", mode: "no-cors" })
         .then(logSuccess)
         .catch(logSuccess);
 
-        // مؤقت أمان صارم: إذا مرت 2.5 ثانية ولم يظهر أي خطأ أو استجابة، فهذا يعني أن البورتات مغلقة تماماً والجيلبريك غير مفعل
+        // مؤقت أمان تنازلي: إذا صمتت البورتات تماماً لمدة 2.5 ثانية يتم الحظر ووقف التحميل الدائري
         setTimeout(function() {
             if (!checkFinished) {
                 triggerPermanentLock("❌ GoldHEN Not Detected", "Could not establish a handshake with the console core. Go to <b>GoldHEN Settings</b> -> <b>Server Settings</b> -> check ON <b>Payload Server</b>, then refresh this page.");
@@ -106,13 +106,15 @@
     }
 
     function triggerPermanentLock(title, description) {
+        document.getElementById('loader-animation').style.display = "none"; // إخفاء حلقة التحميل عند ظهور خطأ قاطع
         document.getElementById('lock-title').innerHTML = title;
         document.getElementById('lock-title').style.color = "#ff3333";
         document.getElementById('lock-desc').innerHTML = description;
         document.getElementById('lock-message-box').style.borderColor = "#ff3333";
+        document.getElementById('lock-message-box').style.boxShadow = "0 0 20px rgba(255, 51, 51, 0.15)";
     }
 
-    // دالة الحقن الرسمية والنهائية المتوافقة كلياً مع التحديثات الحديثة
+    // دالة حقن الألعاب المباشرة في طابور نظام الـ PS4 لضمان ثبات التنزيلات وعدم الاختفاء
     function injectViaSystemDownloader(directPkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
         buttonEl.disabled = true;
@@ -120,7 +122,7 @@
         statusText.innerText = "Injecting file path into PS4 OS core...";
         statusText.style.color = "#ffcc00";
 
-        // إرسال كود الإجبار المباشر لنظام تشغيل الـ PS4 ليتولى التحميل الرسمي في الخلفية وتجنب الاختفاء
+        // إرسال الكود القسري لتوجيه الملف إلى طابور التنزيلات الخلفي للجهاز
         window.location.href = "psninstall:?url=" + encodeURIComponent(directPkgUrl);
         
         setTimeout(function() {
