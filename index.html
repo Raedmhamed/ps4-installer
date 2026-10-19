@@ -14,7 +14,7 @@
     
     .install-btn { 
         display: block;
-        padding: 12px; 
+        padding: 14px; 
         font-size: 15px; 
         background: #0070d2; 
         color: white; 
@@ -30,7 +30,6 @@
         border: none;
     }
     .install-btn:hover { background: #0056a3; }
-    .install-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
     
     .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 13px; text-align: center; font-weight: bold; line-height: 1.4; }
     .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
@@ -65,17 +64,16 @@
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
-            <button id="install-btn" class="install-btn" onclick="triggerInstallFlow()">
-                Install Package (Background)
-            </button>
+            <!-- Direct link button that opens or queues the file directly -->
+            <a id="direct-dl-btn" href="https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg" class="install-btn">
+                Download Package File
+            </a>
             
-            <div id="status-text" class="status-msg" style="color:#ffcc00;">Ready for background installation.</div>
+            <div id="status-text" class="status-msg" style="color:#00ff00;">Ready. Click above to initialize.</div>
         </div>
     </div>
 
 <script>
-    var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
-
     function sendPS4Notification(msg) {
         try {
             var notifyXhr = new XMLHttpRequest();
@@ -104,54 +102,6 @@
             sendPS4Notification("GoldHEN Zone Loaded Successfully.");
         }, 800);
     });
-
-    function triggerInstallFlow() {
-        var btn = document.getElementById('install-btn');
-        var statusText = document.getElementById('status-text');
-        
-        btn.disabled = true;
-        statusText.innerText = "Transmitting to GoldHEN...";
-        statusText.style.color = "#ffcc00";
-
-        sendPS4Notification("Sending DolphinPS4 to Installer...");
-
-        // Updated JSON structure required by newer GoldHEN background daemons
-        var payloadData = {
-            type: "url",
-            url: pkgUrl
-        };
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://127.0.0.1:9090/api/install', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 5000;
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                statusText.innerText = "Queued Successfully! Check PS4 Notifications.";
-                statusText.style.color = "#00ff00";
-                sendPS4Notification("Download Queued! Check Notifications.");
-            } else {
-                statusText.innerText = "API Error: Server returned code " + xhr.status;
-                statusText.style.color = "#ff3333";
-                btn.disabled = false;
-            }
-        };
-
-        xhr.onerror = function() {
-            statusText.innerText = "Connection failed. Check GoldHEN settings.";
-            statusText.style.color = "#ff3333";
-            btn.disabled = false;
-        };
-
-        xhr.ontimeout = function() {
-            statusText.innerText = "Request timed out.";
-            statusText.style.color = "#ff3333";
-            btn.disabled = false;
-        };
-
-        xhr.send(JSON.stringify(payloadData));
-    }
 </script>
 </body>
 </html>
