@@ -1,37 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PS4 Installer</title>
+<style>
+body { background:#121212; color:#fff; font-family:sans-serif; text-align:center; padding-top:40px; }
+button { background:#0070d1; color:#fff; border:0; padding:16px 32px; font-size:18px; border-radius:6px; }
+#status { margin-top:20px; color:#00ffcc; font-weight:bold; }
+</style>
+</head>
+<body>
+<h1>PS4 Store Installer</h1>
+<div id="status">Page loaded. Ready.</div>
+<button onclick="go()">Install Store-R2.pkg</button>
+
 <script>
-    var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+window.onerror = function (msg, url, line) {
+    document.getElementById('status').innerHTML = "JS error: " + msg + " (line " + line + ")";
+};
 
-    // Change host if the page is NOT opened on the PS4 itself
-    var host = "127.0.0.1";
-    var ports = [12800, 9090];   // tried in order
+// CHANGE THESE
+var pkgUrl = "http://YOUR_PC_IP:8000/Store-R2.pkg";
+var host = "127.0.0.1";   // use the PS4's own IP if this page is NOT opened on the PS4
+var port = 12800;         // confirm the port for your payload
 
-    function setState(busy, msg, isError) {
-        document.getElementById('loadingSpinner').style.display = busy ? "block" : "none";
-        document.getElementById('installBtn').disabled = busy;
-        var s = document.getElementById('status');
-        s.innerText = msg;
-        s.className = isError ? "error" : "";
+function go() {
+    var s = document.getElementById('status');
+    s.innerHTML = "Sending to " + host + ":" + port + " ...";
+    try {
+        var x = new XMLHttpRequest();
+        x.open("POST", "http://" + host + ":" + port + "/api/install", true);
+        x.timeout = 8000;
+        x.onreadystatechange = function () {
+            if (x.readyState === 4) {
+                s.innerHTML = "Done. HTTP status: " + x.status + " " + x.responseText;
+            }
+        };
+        x.ontimeout = function () { s.innerHTML = "Timed out."; };
+        x.onerror = function () { s.innerHTML = "Request error (daemon not reachable, or reply blocked)."; };
+        x.send(JSON.stringify({ "type": "direct", "packages": [pkgUrl] }));
+    } catch (e) {
+        s.innerHTML = "Exception: " + e;
     }
-
-    function trySend(i) {
-        if (i >= ports.length) {
-            setState(false, "Could not reach any port (" + ports.join(", ") + "). Check host/IP, payload, and that the page is not on https.", true);
-            return;
-        }
-        var url = "http://" + host + ":" + ports[i] + "/api/install";
-        setState(true, "Trying " + url + " ...", false);
-
-        var body = JSON.stringify({ "type": "direct", "packages": [directPkgUrl] });
-
-        // no-cors: request is sent, reply is hidden, but we learn if the port is reachable
-        fetch(url, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: body })
-            .then(function () {
-                setState(false, "Sent to port " + ports[i] + ". Check Notifications/Downloads on the PS4.", false);
-            })
-            .catch(function () {
-                trySend(i + 1);
-            });
-    }
-
-    function sendInstallCommand() { trySend(0); }
+}
 </script>
+</body>
+</html>
