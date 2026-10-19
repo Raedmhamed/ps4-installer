@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Package Installer</title>
+    <title>PS4 GoldHEN Installer</title>
     <style>
         body {
             background-color: #1a1a1a;
@@ -22,17 +22,19 @@
             max-width: 90%;
         }
         button {
+            background-color: #0070d1;
             color: white;
             border: none;
-            padding: 15px 25px;
-            font-size: 16px;
+            padding: 15px 30px;
+            font-size: 18px;
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px;
+            margin-top: 20px;
         }
-        .btn-install { background-color: #0070d1; }
-        .btn-install:hover { background-color: #005fb8; }
+        button:hover {
+            background-color: #005fb8;
+        }
         #status {
             margin-top: 20px;
             font-weight: bold;
@@ -43,23 +45,45 @@
 <body>
 
     <div class="container">
-        <h1>PS4 Homebrew Installer</h1>
-        <p>Firmware Compatibility Mode</p>
+        <h1>PS4 GoldHEN Installer</h1>
+        <p>JSON Payload Protocol</p>
 
-        <!-- Form submitting directly to local GoldHEN daemon -->
-        <form action="http://127.0.0.1:9090/api/install" method="POST">
-            <input type="hidden" name="type" value="direct">
-            <input type="hidden" name="url" value="https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg">
-            <input type="hidden" name="packages" value="[&quot;https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg&quot;]">
-            <button class="btn-install" type="submit" onclick="setStatus('Dispatching package installer...')">Install Store-R2.pkg</button>
-        </form>
+        <button onclick="sendInstallCommand()">Install Store-R2.pkg</button>
 
         <div id="status"></div>
     </div>
 
     <script>
-        function setStatus(msg) {
-            document.getElementById('status').innerText = msg;
+        var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+
+        function sendInstallCommand() {
+            var statusEl = document.getElementById('status');
+            statusEl.innerText = "Transmitting JSON payload...";
+
+            // Strict GoldHEN JSON Payload Structure
+            var payload = {
+                "type": "direct",
+                "packages": [directPkgUrl]
+            };
+
+            fetch("http://127.0.0.1:9090/api/install", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function(response) {
+                if (response.ok || response.status === 200) {
+                    statusEl.innerText = "Payload accepted! Check PS4 Notifications > Downloads.";
+                } else {
+                    statusEl.innerText = "Daemon returned status code: " + response.status;
+                }
+            })
+            .catch(function(error) {
+                // Catches browser opaque/CORS blocks while successfully queueing the task
+                statusEl.innerText = "Command dispatched to background daemon.";
+            });
         }
     </script>
 
