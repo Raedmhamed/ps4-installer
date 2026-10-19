@@ -24,27 +24,6 @@
     
     .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1.5s linear infinite; animation: spin 1.5s linear infinite; margin-bottom: 20px; }
     
-    .fallback-box {
-        margin-top: 15px;
-        padding: 10px;
-        background: #151515;
-        border: 1px dashed #444;
-        border-radius: 6px;
-        display: none;
-        font-size: 12px;
-        text-align: left;
-    }
-    .fallback-box input {
-        width: 100%;
-        padding: 6px;
-        background: #222;
-        border: 1px solid #333;
-        color: #ddd;
-        border-radius: 4px;
-        margin-top: 5px;
-        font-size: 11px;
-    }
-
     @keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
 </style>
 </head>
@@ -75,22 +54,15 @@
             </button>
             
             <div id="status-text" class="status-msg" style="color:#00ff00;">Ready for background installation.</div>
-
-            <div id="fallback-container" class="fallback-box">
-                <span style="color:#ffcc00; font-weight:bold;">⚠️ External Preview Mode</span>
-                <p style="color:#aaa; margin:5px 0 3px 0;">Direct MediaFire link for PS4 Remote Package Installer:</p>
-                <input type="text" id="pkg-link-input" readonly onclick="this.select();" value="https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg">
-            </div>
         </div>
     </div>
 
 <script>
+    // Dynamically uses the console's active IP ending in .12 or local loopback when accessed inside the PS4
     var userAgent = navigator.userAgent;
     var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
     
-    // Target friend's console IP ending in .12 or local loopback if on console
-    var targetIP = "192.168.1.12"; 
-    var goldhenHost = isPS4 ? "127.0.0.1" : targetIP;
+    var goldhenHost = isPS4 ? "127.0.0.1" : "192.168.1.12";
     var goldhenApiUrl = "http://" + goldhenHost + ":9090/api/";
 
     function sendPS4Notification(messageText) {
@@ -98,18 +70,15 @@
         xhr.open('POST', goldhenApiUrl + 'notify', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.timeout = 3000;
-        
-        xhr.onerror = function() { console.log("Notification offline mode."); };
         xhr.send(JSON.stringify({ message: messageText }));
     }
 
     window.addEventListener('DOMContentLoaded', function() {
         var debugBypass = window.location.hash === '#debug';
 
+        // Strict PS4 validation enforcement
         if (!isPS4 && !debugBypass) {
-            document.getElementById('lock-screen').style.display = "none";
-            document.getElementById('main-content').style.display = "block";
-            document.getElementById('fallback-container').style.display = "block";
+            triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.");
             return;
         }
 
@@ -124,16 +93,21 @@
         sendPS4Notification("GoldHEN detected! Connection secure.");
     }
 
+    function triggerPermanentLock(title, description) {
+        document.getElementById('loader-animation').style.display = "none"; 
+        document.getElementById('lock-title').innerHTML = title;
+        document.getElementById('lock-title').style.color = "#ff3333";
+        document.getElementById('lock-desc').innerHTML = description;
+    }
+
     function sendToGoldHENInstaller(pkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
-        var fallbackBox = document.getElementById('fallback-container');
         buttonEl.disabled = true;
         
         statusText.innerText = "Queuing download to /data/pkg...";
         statusText.style.color = "#ffcc00";
         sendPS4Notification("Transmitting package path to data/pkg...");
 
-        // Configured payload specifying the custom path parameter supported by GoldHEN background installers
         var payloadData = {
             type: "direct",
             uri: pkgUrl,
@@ -155,31 +129,27 @@
                     buttonEl.disabled = false;
                 }, 5000);
             } else {
-                activateFallback(buttonEl, "GoldHEN API returned an error.");
+                statusText.innerText = "GoldHEN Server Error. Check API settings.";
+                statusText.style.color = "#ff3333";
+                sendPS4Notification("GoldHEN server error encountered.");
+                buttonEl.disabled = false;
             }
         };
 
         xhr.onerror = function() {
-            activateFallback(buttonEl, "GoldHEN server unreachable.");
+            statusText.innerText = "Could not reach GoldHEN server.";
+            statusText.style.color = "#ff3333";
+            sendPS4Notification("GoldHEN connection failed.");
+            buttonEl.disabled = false;
         };
 
         xhr.ontimeout = function() {
-            activateFallback(buttonEl, "Connection timed out.");
+            statusText.innerText = "Connection timed out.";
+            statusText.style.color = "#ff3333";
+            buttonEl.disabled = false;
         };
 
         xhr.send(JSON.stringify(payloadData));
-    }
-
-    function activateFallback(buttonEl, errorMsg) {
-        var statusText = document.getElementById('status-text');
-        var fallbackBox = document.getElementById('fallback-container');
-        
-        statusText.innerText = errorMsg + " Use fallback below.";
-        statusText.style.color = "#ff3333";
-        
-        fallbackBox.style.display = "block";
-        buttonEl.disabled = false;
-        buttonEl.innerText = "Retry Installation";
     }
 </script>
 </body>
