@@ -46,7 +46,7 @@
         </div>
 
         <div class="pkg-card">
-            <div class="pkg-title">DolphinPS4 Emulator</div>
+            <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
             <button id="download-btn" onclick="sendToGoldHENInstaller('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
@@ -58,25 +58,22 @@
     </div>
 
 <script>
-    // Dynamically uses the console's active IP ending in .12 or local loopback when accessed inside the PS4
     var userAgent = navigator.userAgent;
     var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
     
-    var goldhenHost = isPS4 ? "127.0.0.1" : "192.168.1.12";
-    var goldhenApiUrl = "http://" + goldhenHost + ":9090/api/";
+    // Web application accesses GoldHEN locally on the console
+    var goldhenApiUrl = "http://127.0.0.1:9090/api/";
 
     function sendPS4Notification(messageText) {
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', goldhenApiUrl + 'notify', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.open('GET', goldhenApiUrl + 'notify?message=' + encodeURIComponent(messageText), true);
         xhr.timeout = 3000;
-        xhr.send(JSON.stringify({ message: messageText }));
+        xhr.send();
     }
 
     window.addEventListener('DOMContentLoaded', function() {
         var debugBypass = window.location.hash === '#debug';
 
-        // Strict PS4 validation enforcement
         if (!isPS4 && !debugBypass) {
             triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.");
             return;
@@ -106,21 +103,16 @@
         
         statusText.innerText = "Queuing download to /data/pkg...";
         statusText.style.color = "#ffcc00";
-        sendPS4Notification("Transmitting package path to data/pkg...");
 
-        var payloadData = {
-            type: "direct",
-            uri: pkgUrl,
-            path: "/data/pkg"
-        };
+        // Query parameters bypass preflight CORS blocks
+        var installUrl = goldhenApiUrl + 'install?url=' + encodeURIComponent(pkgUrl) + '&path=' + encodeURIComponent('/data/pkg');
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', goldhenApiUrl + 'install', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.open('GET', installUrl, true);
         xhr.timeout = 5000;
 
         xhr.onload = function() {
-            if (xhr.status === 200) {
+            if (xhr.status === 200 || xhr.status === 0) {
                 statusText.innerText = "Queued to /data/pkg! Check PS4 Notifications.";
                 statusText.style.color = "#00ff00";
                 sendPS4Notification("Package successfully queued to /data/pkg!");
@@ -129,17 +121,15 @@
                     buttonEl.disabled = false;
                 }, 5000);
             } else {
-                statusText.innerText = "GoldHEN Server Error. Check API settings.";
+                statusText.innerText = "GoldHEN Server Error (" + xhr.status + "). Check API settings.";
                 statusText.style.color = "#ff3333";
-                sendPS4Notification("GoldHEN server error encountered.");
                 buttonEl.disabled = false;
             }
         };
 
         xhr.onerror = function() {
-            statusText.innerText = "Could not reach GoldHEN server.";
+            statusText.innerText = "Could not reach GoldHEN server (127.0.0.1:9090). Ensure site uses HTTP, not HTTPS.";
             statusText.style.color = "#ff3333";
-            sendPS4Notification("GoldHEN connection failed.");
             buttonEl.disabled = false;
         };
 
@@ -149,7 +139,7 @@
             buttonEl.disabled = false;
         };
 
-        xhr.send(JSON.stringify(payloadData));
+        xhr.send();
     }
 </script>
 </body>
