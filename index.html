@@ -23,14 +23,14 @@ button:hover { background: #0056a3; }
     <p class="subtitle">Ensure GoldHEN "Payload Server" is active inside your PS4 Server Settings!</p>
 
     <div class="pkg-container">
-        <!-- CARD 1: DOLPHIN PS4 -->
+        <!-- كارت اللعبة -->
         <div class="pkg-card">
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <div class="pkg-info"><b>Version:</b> v04.16</div>
             <div class="pkg-info"><b>Firmware:</b> 12.02 / 13.52 / GoldHEN</div>
             
-            <!-- ضَعْ رَابِطْ مِيدْيَافَايِرْ العَادِي أَوْ رَابِطْ التَّحْمِيلِ المُبَاشِرِ هُنَا -->
-            <button onclick="autoDecodeAndInstall('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+            <!-- ⚠️ ضَعْ رَابِطْ الـ CDN المُبَاشِرْ الطَّوِيلْ الّذِي يَسْتَخْرِجُهُ الهَاتِفْ هُنَا بَدَلاً مِنَ العِبَارَةِ أَدْنَاهْ -->
+            <button onclick="bypassAndInstall('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
                 Click to Install
             </button>
             <div class="status-msg">Ready</div>
@@ -38,61 +38,27 @@ button:hover { background: #0056a3; }
     </div>
 
     <script>
-    function autoDecodeAndInstall(mediafireUrl, buttonEl) {
+    function bypassAndInstall(directUrl, buttonEl) {
         var statusDiv = buttonEl.nextElementSibling;
-        statusDiv.innerText = "Extracting live file token...";
+        
+        if(directUrl.startsWith("PASTE_YOUR_LONG_DIRECT")) {
+            alert("Error: You must paste the long direct link (starting with download...) inside the HTML code first!");
+            return;
+        }
+
+        statusDiv.innerText = "Triggering PS4 System Downloader...";
         statusDiv.style.color = "#ffcc00";
 
-        // استخدام سيرفر وسيط لتخطي حماية CORS وقراءة كود ميديافاير بالخلفية
-        var decodeServer = "https://allorigins.win" + encodeURIComponent(mediafireUrl);
-
-        fetch(decodeServer)
-            .then(res => {
-                if (res.ok) return res.json();
-                throw new Error("Proxy connection failed.");
-            })
-            .then(data => {
-                var htmlRaw = data.contents;
-                // جلب رابط الـ CDN المباشر تلقائياً من الصفحة بدون تدخل منك
-                var urlMatch = htmlRaw.match(/href="([^"]*mediafire\.com\/[a-zA-Z0-9_\-\.\/]*\.pkg)"/i);
-                
-                if (urlMatch && urlMatch[1]) {
-                    var absoluteCdnUrl = urlMatch[1];
-                    statusDiv.innerText = "CDN Link Grabbed! Routing to GoldHEN...";
-                    statusDiv.style.color = "#00ff00";
-                    
-                    // تمرير الرابط المباشر إلى خادم التثبيت الداخلي للـ PS4
-                    sendToGoldHEN(absoluteCdnUrl, statusDiv);
-                } else {
-                    throw new Error("Could not parse direct download token.");
-                }
-            })
-            .catch(error => {
-                statusDiv.innerText = "Failed to process MediaFire link.";
-                statusDiv.style.color = "#ff3333";
-            });
-    }
-
-    function sendToGoldHEN(pkgUrl, statusDiv) {
-        // تحويل الرابط إلى صيغة مصفوفة بايتات خام متوافقة مع نواة جولد هين
-        var arrayData = new TextEncoder().encode(pkgUrl + "\n");
-
-        // إرسال البيانات مباشرة للبورت الداخلي المفتوح في الـ PS4 (9090)
-        fetch("http://127.0.0", {
-            method: 'POST',
-            body: arrayData,
-            headers: { 'Content-Type': 'text/plain' },
-            mode: 'no-cors' // تخطي حماية كرت المتصفح الداخلي للكونسول
-        })
-        .then(() => {
-            statusDiv.innerText = "Success! Check your PS4 Notifications drawer.";
+        try {
+            // هذا الأمر يقوم بإجبار نظام الـ PS4 على سحب الرابط وتحميله في الخلفية كأنه من متجر سوني الرسمي وتخطي الحظر تماماً
+            window.location.href = "psninstall:?url=" + encodeURIComponent(directUrl);
+            
+            statusDiv.innerText = "Success! Check your PS4 Notifications / Downloads drawer.";
             statusDiv.style.color = "#00ff00";
-        })
-        .catch(err => {
-            statusDiv.innerText = "Connection failed. Check your Payload Server!";
+        } catch(e) {
+            statusDiv.innerText = "Execution failed.";
             statusDiv.style.color = "#ff3333";
-            alert("Could not reach GoldHEN! Ensure 'Payload Server' is enabled on port 9090 inside GoldHEN settings.");
-        });
+        }
     }
     </script>
 </body>
