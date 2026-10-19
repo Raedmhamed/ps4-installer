@@ -76,6 +76,14 @@
 <script>
     var goldhenApiUrl = "http://127.0.0.1:9090/api/";
 
+    // Sends a native system notification popup directly to the PS4 UI
+    function sendPS4Notification(msg) {
+        var notifyXhr = new XMLHttpRequest();
+        notifyXhr.open('POST', goldhenApiUrl + 'notify', true);
+        notifyXhr.setRequestHeader('Content-Type', 'application/json');
+        notifyXhr.send(JSON.stringify({ message: msg }));
+    }
+
     window.addEventListener('DOMContentLoaded', function() {
         var userAgent = navigator.userAgent;
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
@@ -92,6 +100,8 @@
         setTimeout(function() {
             document.getElementById('lock-screen').style.display = "none";
             document.getElementById('main-content').style.display = "block";
+            // Trigger native welcome notification on the PS4 screen
+            sendPS4Notification("GoldHEN Zone Loaded Successfully.");
         }, 800);
     });
 
@@ -100,10 +110,12 @@
         var statusText = document.getElementById('status-text');
         
         btn.disabled = true;
-        statusText.innerText = "Connecting to GoldHEN background service...";
+        statusText.innerText = "Triggering background installation...";
         statusText.style.color = "#ffcc00";
 
-        // Direct raw pkg link (Replace with a direct server link if MediaFire drops connection)
+        // Send immediate native notification that download process is starting
+        sendPS4Notification("DolphinPS4 Download Started! Check Downloads...");
+
         var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
 
         var payloadData = {
@@ -114,15 +126,17 @@
         var xhr = new XMLHttpRequest();
         xhr.open('POST', goldhenApiUrl + 'install', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 20000; // Extended timeout to 20 seconds to prevent time limit drops
+        xhr.timeout = 20000;
 
         xhr.onload = function() {
             if (xhr.status === 200) {
-                statusText.innerText = "Successfully Queued! Check PS4 Notifications / Downloads.";
+                statusText.innerText = "Successfully Queued! Check PS4 Notifications.";
                 statusText.style.color = "#00ff00";
+                sendPS4Notification("Installation Queued Successfully!");
             } else {
                 statusText.innerText = "Server responded with an error code.";
                 statusText.style.color = "#ff3333";
+                sendPS4Notification("Error: GoldHEN install request failed.");
                 btn.disabled = false;
             }
         };
@@ -130,12 +144,14 @@
         xhr.onerror = function() {
             statusText.innerText = "Connection failed. Ensure GoldHEN is running.";
             statusText.style.color = "#ff3333";
+            sendPS4Notification("Error: Could not reach GoldHEN server.");
             btn.disabled = false;
         };
 
         xhr.ontimeout = function() {
-            statusText.innerText = "Timeout: MediaFire took too long to respond. Try a direct file host.";
+            statusText.innerText = "Timeout: MediaFire took too long to respond.";
             statusText.style.color = "#ff3333";
+            sendPS4Notification("Error: Download request timed out.");
             btn.disabled = false;
         };
 
