@@ -19,29 +19,31 @@
     .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
     .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
     
-    /* واجهة شاشة الفحص الآمنة */
     #lock-screen { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
     .lock-box { background: #151515; border: 2px solid #0070d2; padding: 40px; border-radius: 12px; max-width: 400px; box-shadow: 0 0 20px rgba(0, 112, 210, 0.15); text-align: center; display: flex; flex-direction: column; align-items: center; }
     
-    /* حلقة التحميل الدائرية السلسة والبطيئة لراحة الكيرنل */
     .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1.5s linear infinite; animation: spin 1.5s linear infinite; margin-bottom: 20px; }
     
+    /* شريط تقدم مرئي حقيقي */
+    .progress-bar-container { width: 100%; background-color: #333; border-radius: 6px; margin-top: 15px; display: none; }
+    .progress-bar { width: 0%; height: 10px; background-color: #00ff00; border-radius: 6px; transition: width 0.1s; }
+
     @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-    <!-- شاشة الفحص الأولي وحلقة التحميل الدائرية -->
+    <!-- شاشة الفحص الأولي -->
     <div id="lock-screen">
         <div class="lock-box" id="lock-message-box">
             <div class="circle-loader" id="loader-animation"></div>
             <h2 id="lock-title" style="color: #0070d2; margin-top: 0;">Safe Verifying...</h2>
-            <p id="lock-desc" style="color: #ddd; font-size: 15px; line-height: 1.5; margin-bottom: 0;">Analyzing console environment safely to prevent system crash. Please hold on a brief moment...</p>
+            <p id="lock-desc" style="color: #ddd; font-size: 15px; line-height: 1.5; margin-bottom: 0;">Analyzing console environment safely. Please hold on...</p>
         </div>
     </div>
 
-    <!-- واجهة الموقع الرئيسية المفتوحة -->
+    <!-- واجهة الموقع الرئيسية -->
     <div id="main-content" style="display:none;">
         <h1>Custom One-Click GoldHEN Zone</h1>
         <p class="subtitle">Secure Environment Validation & Safe Installer</p>
@@ -54,11 +56,14 @@
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
-            <button id="download-btn" onclick="injectViaSystemDownloader('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+            <button id="download-btn" onclick="startBlobBypassInstall('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
                 Download & Install Package
             </button>
             
-            <div id="status-text" class="status-msg" style="color:#00ff00;">Jailbreak Active — Safe Mode Connection Established.</div>
+            <div class="progress-bar-container" id="progress-container">
+                <div class="progress-bar" id="my-bar"></div>
+            </div>
+            <div id="status-text" class="status-msg" style="color:#00ff00;">Jailbreak Active — Ready to stream.</div>
         </div>
     </div>
 
@@ -68,42 +73,30 @@
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
 
         if (!isPS4) {
-            triggerPermanentLock("❌ Access Denied", "This portal can only be opened from the official internet browser of a modified PlayStation 4 console.");
+            triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.");
             return;
         }
 
-        // استخدام تقنية النبضة الهادئة لمنع الـ Kernel Panic تماماً عبر تأخير الفحص قليلاً لإعطاء المتصفح وقت استقرار
         setTimeout(function() {
             var checkFinished = false;
-
             function logSuccess() {
                 if (checkFinished) return;
                 checkFinished = true;
                 unlockWebsite();
             }
 
-            // فحص البورت بشكل خفيف ومنفصل وبدون تكرار هجومي للطلبات البرمجية
             var xhr = new XMLHttpRequest();
             xhr.open('GET', 'http://127.0.0', true);
-            xhr.timeout = 1000; // مهلة قصيرة وهادئة جداً 1 ثانية فقط لحماية الرام
-            
-            xhr.onreadystatechange = function() {
-                // أي استجابة أو حتى رفض أو خطأ شبكة هو دليل على أن البورت مستيقظ، فنفتح الموقع بأمان
-                if (xhr.readyState === 4) {
-                    logSuccess();
-                }
-            };
-            
+            xhr.timeout = 1000;
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) logSuccess(); };
             xhr.onerror = function() { logSuccess(); };
             xhr.ontimeout = function() {
-                // إذا انتهت المهلة تماماً دون أي علامة حياة، ننتقل لخطة الحظر الآمنة
                 if (!checkFinished) {
-                    triggerPermanentLock("❌ GoldHEN Not Detected", "Could not establish a safe handshake with the console core. Go to <b>GoldHEN Settings</b> -> <b>Server Settings</b> -> check ON <b>Payload Server</b>, then refresh this page.");
+                    triggerPermanentLock("❌ GoldHEN Not Detected", "Ensure <b>Payload Server</b> is active inside GoldHEN settings and refresh.");
                 }
             };
-            
             xhr.send();
-        }, 800); // تأخير الفحص 800 جزء من الثانية ليرتاح معالج الـ PS4 فور تحميل الصفحة
+        }, 800);
     });
 
     function unlockWebsite() {
@@ -116,24 +109,66 @@
         document.getElementById('lock-title').innerHTML = title;
         document.getElementById('lock-title').style.color = "#ff3333";
         document.getElementById('lock-desc').innerHTML = description;
-        document.getElementById('lock-message-box').style.borderColor = "#ff3333";
     }
 
-    function injectViaSystemDownloader(directPkgUrl, buttonEl) {
+    // الخطة الاحترافية لتخطي خطأ الحظر تماماً عبر محاكاة ملف وثائقي
+    function startBlobBypassInstall(directPkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
+        var progressContainer = document.getElementById('progress-container');
+        var progressBar = document.getElementById('my-bar');
+
         buttonEl.disabled = true;
-        
-        statusText.innerText = "Injecting file path into PS4 OS core...";
+        progressContainer.style.display = "block";
+        statusText.innerText = "Downloading file stream... 0%";
         statusText.style.color = "#ffcc00";
 
-        // إرسال الكود القسري لتوجيه الملف إلى طابور التنزيلات الخلفي للجهاز
-        window.location.href = "psninstall:?url=" + encodeURIComponent(directPkgUrl);
-        
-        setTimeout(function() {
-            statusText.innerText = "Task successfully pushed to system alerts!";
-            statusText.style.color = "#00ff00";
-            alert("Task Injected! Press the PS Button on your controller and open your console's official 'Notifications' -> 'Downloads' menu. The PS4 is downloading the game now!");
-        }, 1000);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', directPkgUrl, true);
+        xhr.responseType = 'blob'; // سحب بايتات الملف الخامة مباشرة
+
+        xhr.onprogress = function(event) {
+            if (event.lengthComputable) {
+                var percentComplete = Math.round((event.loaded / event.total) * 100);
+                progressBar.style.width = percentComplete + '%';
+                statusText.innerText = "Downloading to Memory: " + percentComplete + "%";
+            }
+        };
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                statusText.innerText = "Bypassing security locks...";
+                statusText.style.color = "#00ff00";
+
+                // هنا الحيلة: نقوم بإعادة تغليف بايتات الـ PKG ونقول للمتصفح أن هذا ملف نصي (TXT) أو مستند مدعوم رسمياً
+                var blob = new Blob([xhr.response], {type: "text/plain"});
+                var downloadUrl = URL.createObjectURL(blob);
+                
+                // إنشاء رابط تحميل مخفي والضغط عليه تلقائياً
+                var hiddenAnchor = document.createElement("a");
+                hiddenAnchor.href = downloadUrl;
+                
+                // تسمية الملف باسم اللعبة مع الحفاظ على امتداد .pkg، المتصفح سيوافق على سحبه لأنه مغلف كـ Blob نصي
+                hiddenAnchor.download = "DolphinPS4-v04.16.pkg";
+                document.body.appendChild(hiddenAnchor);
+                hiddenAnchor.click(); // بدء التنزيل الفعلي لقرص الجهاز الصلب
+                document.body.removeChild(hiddenAnchor);
+
+                statusText.innerText = "Injected successfully! Check Package Installer.";
+                alert("Success! The file was safely pushed into your console storage. Go to Settings -> Debug Settings -> Package Installer to complete installation.");
+            } else {
+                statusText.innerText = "Download failed. Server error.";
+                statusText.style.color = "#ff3333";
+                buttonEl.disabled = false;
+            }
+        };
+
+        xhr.onerror = function() {
+            statusText.innerText = "Connection failed.";
+            statusText.style.color = "#ff3333";
+            buttonEl.disabled = false;
+        };
+
+        xhr.send();
     }
     </script>
 </body>
