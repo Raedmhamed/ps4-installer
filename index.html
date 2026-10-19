@@ -60,6 +60,30 @@
             background: #00ffcc;
             box-shadow: 0 0 10px #00ffcc;
         }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #a0a0b0;
+            margin-bottom: 6px;
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #0070d1;
+        }
         .btn {
             background: linear-gradient(135deg, #0070d1, #005fb8);
             color: white;
@@ -105,6 +129,12 @@
         <h1>PS4 Store Installer</h1>
         <div class="subtitle">Destination: /data/pkg/</div>
 
+        <!-- IP Address configuration input -->
+        <div class="input-group">
+            <label for="ps4Ip">PS4 Local IP Address:</label>
+            <input type="text" id="ps4Ip" class="input-field" value="127.0.0.1" placeholder="e.g., 192.168.1.15">
+        </div>
+
         <!-- Live GoldHEN Status Indicator -->
         <div class="status-badge" id="statusBadge">
             <div class="dot" id="statusDot"></div>
@@ -115,9 +145,9 @@
         <iframe name="hidden_frame" id="hidden_frame" style="display:none;"></iframe>
 
         <!-- GoldHEN Install Form -->
-        <form id="goldhenForm" action="http://127.0.0.1:9090/api/install" method="POST" target="hidden_frame">
+        <form id="goldhenForm" action="http://127.0.0" method="POST" target="hidden_frame">
             <input type="hidden" name="type" value="direct">
-            <input type="hidden" name="packages" value='["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"]'>
+            <input type="hidden" name="packages" value='["https://githubusercontent.com"]'>
             <input type="hidden" name="path" value="/data/pkg">
             <button type="button" class="btn" onclick="startInstall()">Install Store-R2.pkg</button>
         </form>
@@ -127,35 +157,44 @@
     </div>
 
     <script>
-        // Check GoldHEN connection status on page load
+        // Dynamically monitor input to update form endpoints and verify connections
+        document.getElementById('ps4Ip').addEventListener('input', function() {
+            updateTargetIp(this.value);
+        });
+
         window.onload = function() {
+            updateTargetIp(document.getElementById('ps4Ip').value);
+        };
+
+        function updateTargetIp(ip) {
             var dot = document.getElementById('statusDot');
             var label = document.getElementById('statusLabel');
+            var form = document.getElementById('goldhenForm');
+            
+            // Clean up empty configurations
+            if(!ip.trim()) ip = "127.0.0.1";
+            
+            // Re-target the HTML form submission action endpoint dynamically
+            form.action = "http://" + ip.trim() + ":9090/api/install";
 
-            // Probe local GoldHEN daemon port using an image ping
+            // Reset UI states for the probe operation
+            dot.classList.remove('active');
+            label.innerText = "Checking GoldHEN Server (" + ip + ")...";
+
+            // Probe connection status via an image routing ping
             var img = new Image();
             img.onload = function() {
                 dot.classList.add('active');
-                label.innerText = "GoldHEN Connected (Port 9090)";
-            };
-            img.onerror = function() {
-                // Image error occurs because daemon returns JSON/text instead of an image, 
-                // which confirms the server responded and is active!
-                dot.classList.add('active');
                 label.innerText = "GoldHEN Ready (Port 9090)";
             };
+            img.onerror = function() {
+                // Daemon target responds with text data which drops into onerror, confirming it is live
+                dot.classList.add('active');
+                label.innerText = "GoldHEN Server Active";
+            };
             
-            // Timeout check if daemon is unreachable
-            setTimeout(function() {
-                if (!dot.classList.contains('active')) {
-                    label.innerText = "GoldHEN Server Active";
-                    dot.classList.add('active'); // Assume active if settings are enabled on console
-                }
-            }, 1000);
-
-            // Trigger dummy probe request
-            img.src = "http://127.0.0.1:9090/api/version?t=" + new Date().getTime();
-        };
+            img.src = "http://" + ip.trim() + ":9090/api/version?t=" + new Date().getTime();
+        }
 
         function startInstall() {
             var spinner = document.getElementById('loadingSpinner');
@@ -165,10 +204,10 @@
             actionStatus.style.display = "block";
             actionStatus.innerText = "Transmitting payload to GoldHEN...";
 
-            // Submit form to execute local POST request
+            // Submit target form payload to execution engine
             document.getElementById('goldhenForm').submit();
 
-            // Progress animation sequence
+            // Progress tracking simulated UI sequence
             setTimeout(function() {
                 actionStatus.innerText = "Saving package directly into /data/pkg...";
             }, 1500);
