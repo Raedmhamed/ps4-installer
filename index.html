@@ -71,7 +71,7 @@
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
             <button id="download-btn" onclick="sendToGoldHENInstaller('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
-                Install Package (Background)
+                Install to data/pkg
             </button>
             
             <div id="status-text" class="status-msg" style="color:#00ff00;">Ready for background installation.</div>
@@ -85,24 +85,21 @@
     </div>
 
 <script>
-    // Automatically route to friend's console IP ending in .12 if accessed externally, 
-    // or use local loopback when loaded directly on the console.
     var userAgent = navigator.userAgent;
     var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
     
-    // Set your friend's exact IP target here if testing or serving externally
+    // Target friend's console IP ending in .12 or local loopback if on console
     var targetIP = "192.168.1.12"; 
     var goldhenHost = isPS4 ? "127.0.0.1" : targetIP;
     var goldhenApiUrl = "http://" + goldhenHost + ":9090/api/";
 
     function sendPS4Notification(messageText) {
-        // Only attempt native notification if we are on the console or have network routing enabled
         var xhr = new XMLHttpRequest();
         xhr.open('POST', goldhenApiUrl + 'notify', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.timeout = 3000;
         
-        xhr.onerror = function() { console.log("Notification sent in external/offline mode."); };
+        xhr.onerror = function() { console.log("Notification offline mode."); };
         xhr.send(JSON.stringify({ message: messageText }));
     }
 
@@ -110,10 +107,8 @@
         var debugBypass = window.location.hash === '#debug';
 
         if (!isPS4 && !debugBypass) {
-            // Safe preview mode for PC testing without locking out entirely
             document.getElementById('lock-screen').style.display = "none";
             document.getElementById('main-content').style.display = "block";
-            document.getElementById('sys-status.innerHTML = "⚠️ PC Preview Mode (GoldHEN API Disabled)";');
             document.getElementById('fallback-container').style.display = "block";
             return;
         }
@@ -129,25 +124,20 @@
         sendPS4Notification("GoldHEN detected! Connection secure.");
     }
 
-    function triggerPermanentLock(title, description) {
-        document.getElementById('loader-animation').style.display = "none"; 
-        document.getElementById('lock-title').innerHTML = title;
-        document.getElementById('lock-title').style.color = "#ff3333";
-        document.getElementById('lock-desc').innerHTML = description;
-    }
-
     function sendToGoldHENInstaller(pkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
         var fallbackBox = document.getElementById('fallback-container');
         buttonEl.disabled = true;
         
-        statusText.innerText = "Sending to GoldHEN background installer...";
+        statusText.innerText = "Queuing download to /data/pkg...";
         statusText.style.color = "#ffcc00";
-        sendPS4Notification("Transmitting package link to system...");
+        sendPS4Notification("Transmitting package path to data/pkg...");
 
+        // Configured payload specifying the custom path parameter supported by GoldHEN background installers
         var payloadData = {
             type: "direct",
-            uri: pkgUrl
+            uri: pkgUrl,
+            path: "/data/pkg"
         };
 
         var xhr = new XMLHttpRequest();
@@ -157,9 +147,9 @@
 
         xhr.onload = function() {
             if (xhr.status === 200) {
-                statusText.innerText = "Installation Queued! Check your PS4 Notifications.";
+                statusText.innerText = "Queued to /data/pkg! Check PS4 Notifications.";
                 statusText.style.color = "#00ff00";
-                sendPS4Notification("Package successfully queued to background installer!");
+                sendPS4Notification("Package successfully queued to /data/pkg!");
                 
                 setTimeout(function() {
                     buttonEl.disabled = false;
