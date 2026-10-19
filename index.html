@@ -1,40 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GoldHEN Native PKG Downloader</title>
+    <title>GoldHEN One-Click Downloader</title>
     <style>
         body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
         .pkg-card { background: #1e1e1e; display: inline-block; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; width: 320px; }
-        a.download-btn { display: block; padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px; }
-        a.download-btn:hover { background: #0056a3; }
+        button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; }
+        button:hover { background: #0056a3; }
         .instructions { color: #aaa; font-size: 14px; max-width: 500px; margin: 0 auto; text-align: left; background: #222; padding: 15px; border-radius: 8px; border-left: 5px solid #0070d2; }
     </style>
 </head>
 <body>
 
-    <h1>One-Click Direct PKG Downloader</h1>
-    <p>This method downloads the PKG file directly onto your PS4 browser storage.</p>
+    <h1>تجربة</h1>
+    <p>Bypassing "Data not supported" error automatically...</p>
     <br>
 
     <div class="instructions">
-        <b>How to Install after download completes:</b><br>
-        1. Open your PS4 <b>Settings</b> -> <b>GoldHEN</b> -> <b>Server Settings</b>.<br>
-        2. Ensure <b>FTP Server</b> is toggled <b>ON</b>.<br>
-        3. Go to <b>Debug Settings</b> -> <b>Package Installer</b>.<br>
-        4. Your downloaded files will show up there automatically to install!
+        <b>What to do on PS4:</b><br>
+        1. Open GoldHEN Settings -> Ensure **Payload Server** or **FTP** is active.<br>
+        2. Click the blue button below.<br>
+        3. Once sent, press the PS Button and check your <b>Notifications -> Downloads</b> tray!
     </div>
 
     <div id="pkg-list">
         <div class="pkg-card">
-            <h3 style="margin-top:0;">DolphinPS4 Emulator</h3>
+            <h3 style="margin-top:0;">📦 DolphinPS4 Emulator</h3>
             <p style="color:#aaa; font-size:14px;">Version: v04.16</p>
             
-            <!-- PASTE YOUR RAW DIRECT LINK INSTEAD OF THE URL BELOW -->
-            <a class="download-btn" href="https://download1532.mediafire.com/gijdtgq4nnqgjA-ByYW50wTZgclEJrS2LB_D_VG_yAk9ZVkhkrPliDyXtXQWrs7jmjC7-6dq1JdM7th_GMYmyuNP8V_ABZX0T29OcE5T2RnfLjxuwbLvBdxehzGkwKkdmNtctQ6ek4uj46XZa-KMGNT7X6E1Rf2IpbipTUWUITUbXns/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg" download>
-                Click to Download
-            </a>
+            <!-- ضَعْ رابط الـ CDN المباشر الطويل الذي استخرجته بدلاً من العبارة أدناه -->
+            <button onclick="forceDownload('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg')">
+                Click to Install
+            </button>
         </div>
     </div>
+
+    <script>
+    function forceDownload(directUrl) {
+        if(directUrl.includes("https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg")) {
+            alert("Error: Update the code with your real CDN download link first!");
+            return;
+        }
+        
+        // كود تخطي الحظر: إجبار نظام الـ PS4 على فتح الرابط كأمر تحميل داخلي عبر الـ Kernel
+        window.location.href = "psninstall:?url=" + encodeURIComponent(directUrl);
+        
+        alert("Download command injected! Please check your PS4 Downloads / Notifications menu.");
+    }
+    </script>
 
 </body>
 </html>
