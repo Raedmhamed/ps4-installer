@@ -3,139 +3,65 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GoldHEN Verified Safe Zone</title>
+<title>GoldHEN Installer Zone</title>
 <style>
-    body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 40px 12px; margin: 0; }
-    h1 { color: #0070d2; margin-bottom: 5px; }
-    .subtitle { color: #aaa; margin-top: 0; font-size: 14px; margin-bottom: 30px; }
-    
-    .pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 340px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-    .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
-    
-    button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.2s; }
-    button:hover { background: #0056a3; }
-    button:disabled { background: #333; color: #666; cursor: not-allowed; border: 1px dashed #555; }
-    
-    .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 13px; text-align: center; font-weight: bold; line-height: 1.4; }
-    .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
-    
-    #lock-screen { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-    .lock-box { background: #151515; border: 2px solid #0070d2; padding: 40px; border-radius: 12px; max-width: 400px; box-shadow: 0 0 20px rgba(0, 112, 210, 0.15); text-align: center; display: flex; flex-direction: column; align-items: center; }
-    
-    .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1.5s linear infinite; animation: spin 1.5s linear infinite; margin-bottom: 20px; }
-    
-    @keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
+    body { background: #121212; color: #fff; font-family: sans-serif; text-align: center; padding: 40px 12px; margin: 0; }
+    h1 { color: #0070d2; }
+    .card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px auto; width: 320px; text-align: left; }
+    button { padding: 12px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; }
+    .status { margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center; color: #ffcc00; }
 </style>
 </head>
 <body>
 
-    <div id="lock-screen">
-        <div class="lock-box" id="lock-message-box">
-            <div class="circle-loader" id="loader-animation"></div>
-            <h2 id="lock-title" style="color: #0070d2; margin-top: 0;">Safe Verifying...</h2>
-            <p id="lock-desc" style="color: #ddd; font-size: 15px; line-height: 1.5; margin-bottom: 0;">Analyzing console environment safely. Please hold on...</p>
-        </div>
-    </div>
+    <h1>GoldHEN Installer Zone</h1>
 
-    <div id="main-content" style="display:none;">
-        <h1>Custom One-Click GoldHEN Zone</h1>
-        <p class="subtitle">Secure Environment Validation & Safe Installer</p>
-
-        <div class="system-check" id="sys-status" style="color: #00ff00;">
-            🟢 GoldHEN Environment Verified Safely!
-        </div>
-
-        <div class="pkg-card">
-            <div class="pkg-title">📦 DolphinPS4 Emulator</div>
-            <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
-            
-            <button id="download-btn" onclick="sendToGoldHENInstaller('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
-                Install to data/pkg
-            </button>
-            
-            <div id="status-text" class="status-msg" style="color:#00ff00;">Ready for background installation.</div>
-        </div>
+    <div class="card">
+        <div style="font-weight: bold; font-size: 18px;">📦 Package Installer</div>
+        <p style="color: #aaa; font-size: 13px;">Target Directory: /data/pkg</p>
+        
+        <button id="install-btn" onclick="triggerInstall(this)">Install Package</button>
+        <div id="status-text" class="status">Idle</div>
     </div>
 
 <script>
-    var userAgent = navigator.userAgent;
-    var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
-    
-    // Web application accesses GoldHEN locally on the console
-    var goldhenApiUrl = "http://127.0.0.1:9090/api/";
-
-    function sendPS4Notification(messageText) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', goldhenApiUrl + 'notify?message=' + encodeURIComponent(messageText), true);
-        xhr.timeout = 3000;
-        xhr.send();
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        var debugBypass = window.location.hash === '#debug';
-
-        if (!isPS4 && !debugBypass) {
-            triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.");
-            return;
-        }
-
-        setTimeout(function() {
-            unlockWebsite();
-        }, 800);
-    });
-
-    function unlockWebsite() {
-        document.getElementById('lock-screen').style.display = "none";
-        document.getElementById('main-content').style.display = "block";
-        sendPS4Notification("GoldHEN detected! Connection secure.");
-    }
-
-    function triggerPermanentLock(title, description) {
-        document.getElementById('loader-animation').style.display = "none"; 
-        document.getElementById('lock-title').innerHTML = title;
-        document.getElementById('lock-title').style.color = "#ff3333";
-        document.getElementById('lock-desc').innerHTML = description;
-    }
-
-    function sendToGoldHENInstaller(pkgUrl, buttonEl) {
+    function triggerInstall(buttonEl) {
         var statusText = document.getElementById('status-text');
         buttonEl.disabled = true;
-        
-        statusText.innerText = "Queuing download to /data/pkg...";
         statusText.style.color = "#ffcc00";
+        statusText.innerText = "Connecting to GoldHEN API...";
 
-        // Query parameters bypass preflight CORS blocks
-        var installUrl = goldhenApiUrl + 'install?url=' + encodeURIComponent(pkgUrl) + '&path=' + encodeURIComponent('/data/pkg');
+        // Target URL for package source
+        var targetPkg = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
+        
+        // Simple GET request format avoids CORS preflight failures
+        var apiUrl = "http://127.0.0.1:9090/api/install?url=" + encodeURIComponent(targetPkg) + "&path=" + encodeURIComponent("/data/pkg");
 
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', installUrl, true);
+        xhr.open('GET', apiUrl, true);
         xhr.timeout = 5000;
 
         xhr.onload = function() {
             if (xhr.status === 200 || xhr.status === 0) {
-                statusText.innerText = "Queued to /data/pkg! Check PS4 Notifications.";
                 statusText.style.color = "#00ff00";
-                sendPS4Notification("Package successfully queued to /data/pkg!");
-                
-                setTimeout(function() {
-                    buttonEl.disabled = false;
-                }, 5000);
+                statusText.innerText = "Task queued! Check PS4 Notifications.";
             } else {
-                statusText.innerText = "GoldHEN Server Error (" + xhr.status + "). Check API settings.";
                 statusText.style.color = "#ff3333";
+                statusText.innerText = "Server Error: Status " + xhr.status;
                 buttonEl.disabled = false;
             }
         };
 
         xhr.onerror = function() {
-            statusText.innerText = "Could not reach GoldHEN server (127.0.0.1:9090). Ensure site uses HTTP, not HTTPS.";
             statusText.style.color = "#ff3333";
+            statusText.innerText = "Connection Failed. Ensure page is loaded via HTTP.";
             buttonEl.disabled = false;
         };
 
         xhr.ontimeout = function() {
-            statusText.innerText = "Connection timed out.";
             statusText.style.color = "#ff3333";
+            statusText.innerText = "Request Timed Out. Check GoldHEN settings.";
             buttonEl.disabled = false;
         };
 
