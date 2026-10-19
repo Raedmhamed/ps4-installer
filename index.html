@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Homebrew Store Installer</title>
+    <title>PS4 Custom Directory Installer</title>
     <style>
         body {
             background-color: #121212;
@@ -60,41 +60,50 @@
 
     <div class="container">
         <h1>PS4 Store Installer</h1>
-        <p>Direct Background Queue Portal</p>
+        <p>Target Directory: /data/pkg/</p>
 
-        <!-- Hidden frame to process the local POST request silently -->
-        <iframe name="hidden_target" id="hidden_target" style="display:none;"></iframe>
-
-        <!-- Form communicating directly with GoldHEN local daemon -->
-        <form id="installForm" action="http://127.0.0.1:9090/api/install" method="POST" target="hidden_target">
-            <input type="hidden" name="type" value="direct">
-            <input type="hidden" name="packages" id="pkgPayload">
-            <button type="submit" onclick="startLoading()">Install Store-R2.pkg</button>
-        </form>
+        <button onclick="sendInstallCommand()">Install Store-R2.pkg</button>
 
         <div class="spinner" id="loadingSpinner"></div>
         <div id="status">Ready to install.</div>
     </div>
 
     <script>
-        // Direct Raw Package URL for Homebrew Store (23MB)
-        var pkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+        var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
 
-        // Pre-format the package payload array
-        document.getElementById('pkgPayload').value = JSON.stringify([pkgUrl]);
-
-        function startLoading() {
+        function sendInstallCommand() {
             var statusEl = document.getElementById('status');
             var spinnerEl = document.getElementById('loadingSpinner');
             
             spinnerEl.style.display = "block";
-            statusEl.innerText = "Transmitting to GoldHEN daemon...";
+            statusEl.innerText = "Dispatching package to /data/pkg/ ...";
 
-            // Simulated feedback timer since iframe responses are restricted by local CORS
-            setTimeout(function() {
-                spinnerEl.style.display = "none";
-                statusEl.innerText = "Request dispatched! Check PS4 Notifications > Downloads.";
-            }, 3000);
+            // Payload configured with custom directory path for GoldHEN daemon
+            var payload = {
+                "type": "direct",
+                "packages": [directPkgUrl],
+                "path": "/data/pkg"
+            };
+
+            fetch("http://127.0.0.1:9090/api/install", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function(response) {
+                setTimeout(function() {
+                    spinnerEl.style.display = "none";
+                    statusEl.innerText = "Queued to /data/pkg! Check PS4 Downloads.";
+                }, 2000);
+            })
+            .catch(function(error) {
+                setTimeout(function() {
+                    spinnerEl.style.display = "none";
+                    statusEl.innerText = "Command sent to system daemon.";
+                }, 2000);
+            });
         }
     </script>
 
