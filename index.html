@@ -58,24 +58,68 @@
 
     <div class="container">
         <h1>PS4 Homebrew Manager</h1>
-        <div class="subtitle">Target: /data/pkg/ Store-R2.pkg</div>
+        <div class="subtitle">Target Destination: /data/pkg/Store-R2.pkg</div>
 
-        <!-- STEP 1: Download file via native browser pipeline -->
-        <a id="dlLink" href="http://githack.com" download="Store-R2.pkg" style="text-decoration:none;">
-            <button class="btn btn-download" type="button" onclick="setDownloadStatus()">1. Download PKG to Console</button>
-        </a>
-
-        <!-- STEP 2: Tell GoldHEN to run installation out of internal storage -->
+        <!-- Fixed Stream Downloader Buttons -->
+        <button class="btn btn-download" id="downloadBtn" onclick="startBlobDownload()">1. Download PKG to Console</button>
         <button class="btn btn-install" id="installBtn" onclick="triggerInternalInstall()">2. Install from Package Installer</button>
 
         <div id="status" class="status-idle">Ready</div>
     </div>
 
     <script>
-        function setDownloadStatus() {
+        var pkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+
+        function startBlobDownload() {
             var statusDiv = document.getElementById('status');
+            var dlBtn = document.getElementById('downloadBtn');
+            
+            dlBtn.disabled = true;
             statusDiv.className = "status-idle";
-            statusDiv.innerText = "Downloading file via WebKit... Please wait until the browser download completion notification clears, then click Step 2.";
+            statusDiv.innerText = "Downloading PKG data directly into browser stream... Please wait.";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", pkgUrl, true);
+            // Forces the PS4 WebKit engine to receive the file data array directly in memory
+            xhr.responseType = "blob"; 
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var blob = xhr.response;
+                        // Creates an isolated background virtualization link
+                        var blobUrl = window.URL.createObjectURL(blob);
+                        
+                        var tempAnchor = document.createElement("a");
+                        tempAnchor.href = blobUrl;
+                        tempAnchor.download = "Store-R2.pkg";
+                        document.body.appendChild(tempAnchor);
+                        
+                        // Fires download hook directly to WebKit file manager
+                        tempAnchor.click();
+                        
+                        // Clean up background memory stack
+                        document.body.removeChild(tempAnchor);
+                        window.URL.revokeObjectURL(blobUrl);
+
+                        statusDiv.className = "status-success";
+                        statusDiv.innerText = "Download triggered successfully! Once the browser pop-up box closes, proceed to Step 2.";
+                        dlBtn.disabled = false;
+                    } else {
+                        statusDiv.className = "status-error";
+                        statusDiv.innerText = "Download failed! GitHub server rejected request (HTTP " + xhr.status + ").";
+                        dlBtn.disabled = false;
+                    }
+                }
+            };
+
+            xhr.onerror = function() {
+                statusDiv.className = "status-error";
+                statusDiv.innerText = "Network connection failed during background stream capture.";
+                dlBtn.disabled = false;
+            };
+
+            xhr.send();
         }
 
         function triggerInternalInstall() {
@@ -86,7 +130,6 @@
             statusDiv.className = "status-idle";
             statusDiv.innerText = "Sending internal file execution request...";
 
-            // CRITICAL CONFIGURATION CHANGE: Forces GoldHEN to look locally inside the internal hard drive storage path rather than using an internet URL framework
             var payload = {
                 type: "direct",
                 packages: ["/data/pkg/Store-R2.pkg"]
@@ -94,15 +137,13 @@
 
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "http://127.0.0", true);
-            
-            // Bypass security restrictions on higher firmware revisions
             xhr.setRequestHeader("Content-Type", "text/plain"); 
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200 || xhr.status === 204 || xhr.status === 0) {
                         statusDiv.className = "status-success";
-                        statusDiv.innerText = "SUCCESS! Local Task Launched. Exit browser and check your Package Installer or Downloads list.";
+                        statusDiv.innerText = "SUCCESS! Local Task Launched. Exit browser and check Package Installer.";
                     } else {
                         statusDiv.className = "status-error";
                         statusDiv.innerText = "ERROR! Local execution rejected by server (HTTP " + xhr.status + ").";
