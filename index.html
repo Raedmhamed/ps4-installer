@@ -77,34 +77,44 @@
             <div id="status-text" class="status-msg" style="color:#00ff00;">Ready for background installation.</div>
 
             <div id="fallback-container" class="fallback-box">
-                <span style="color:#ffcc00; font-weight:bold;">⚠️ GoldHEN API Unreachable</span>
-                <p style="color:#aaa; margin:5px 0 3px 0;">Copy direct link for PS4 Remote Package Installer:</p>
-                <input type="text" id="pkg-link-input" readonly onclick="this.select();" value="https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg">
+                <span style="color:#ffcc00; font-weight:bold;">⚠️ External Preview Mode</span>
+                <p style="color:#aaa; margin:5px 0 3px 0;">Direct MediaFire link for PS4 Remote Package Installer:</p>
+                <input type="text" id="pkg-link-input" readonly onclick="this.select();" value="https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg">
             </div>
         </div>
     </div>
 
 <script>
-    // Automatically uses the current hostname/IP if opened on the console, 
-    // or targets the friend's specific console IP ending in .12
-    var goldhenHost = window.location.hostname && window.location.hostname !== "" ? window.location.hostname : "192.168.1.12";
+    // Automatically route to friend's console IP ending in .12 if accessed externally, 
+    // or use local loopback when loaded directly on the console.
+    var userAgent = navigator.userAgent;
+    var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
+    
+    // Set your friend's exact IP target here if testing or serving externally
+    var targetIP = "192.168.1.12"; 
+    var goldhenHost = isPS4 ? "127.0.0.1" : targetIP;
     var goldhenApiUrl = "http://" + goldhenHost + ":9090/api/";
 
     function sendPS4Notification(messageText) {
+        // Only attempt native notification if we are on the console or have network routing enabled
         var xhr = new XMLHttpRequest();
         xhr.open('POST', goldhenApiUrl + 'notify', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 4000;
+        xhr.timeout = 3000;
+        
+        xhr.onerror = function() { console.log("Notification sent in external/offline mode."); };
         xhr.send(JSON.stringify({ message: messageText }));
     }
 
     window.addEventListener('DOMContentLoaded', function() {
-        var userAgent = navigator.userAgent;
-        var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
         var debugBypass = window.location.hash === '#debug';
 
         if (!isPS4 && !debugBypass) {
-            triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.<br><br><small style='color:#777;'>Add #debug to URL to preview locally.</small>");
+            // Safe preview mode for PC testing without locking out entirely
+            document.getElementById('lock-screen').style.display = "none";
+            document.getElementById('main-content').style.display = "block";
+            document.getElementById('sys-status.innerHTML = "⚠️ PC Preview Mode (GoldHEN API Disabled)";');
+            document.getElementById('fallback-container').style.display = "block";
             return;
         }
 
@@ -176,7 +186,6 @@
         
         statusText.innerText = errorMsg + " Use fallback below.";
         statusText.style.color = "#ff3333";
-        sendPS4Notification("GoldHEN communication failed.");
         
         fallbackBox.style.display = "block";
         buttonEl.disabled = false;
