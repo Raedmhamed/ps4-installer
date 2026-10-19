@@ -9,7 +9,7 @@
     h1 { color: #0070d2; margin-bottom: 5px; }
     .subtitle { color: #aaa; margin-top: 0; font-size: 14px; margin-bottom: 30px; }
     
-    .pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 320px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 340px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
     
     button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.2s; }
@@ -64,6 +64,27 @@
         line-height: 1.3;
     }
     
+    .fallback-box {
+        margin-top: 15px;
+        padding: 10px;
+        background: #151515;
+        border: 1px dashed #444;
+        border-radius: 6px;
+        display: none;
+        font-size: 12px;
+        text-align: left;
+    }
+    .fallback-box input {
+        width: 100%;
+        padding: 6px;
+        background: #222;
+        border: 1px solid #333;
+        color: #ddd;
+        border-radius: 4px;
+        margin-top: 5px;
+        font-size: 11px;
+    }
+
     @keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
 </style>
 </head>
@@ -84,7 +105,7 @@
     </div>
 
     <div id="main-content" style="display:none;">
-        <h1>PKG installer</h1>
+        <h1>Custom One-Click GoldHEN Zone</h1>
         <p class="subtitle">Secure Environment Validation & Safe Installer</p>
 
         <div class="system-check" id="sys-status" style="color: #00ff00;">
@@ -100,110 +121,9 @@
             </button>
             
             <div id="status-text" class="status-msg" style="color:#00ff00;">Ready for background installation.</div>
-        </div>
-    </div>
 
-<script>
-    var toastTimeout;
-
-    function showToast(message) {
-        var toast = document.getElementById('toast-notification');
-        var toastMsg = document.getElementById('toast-message');
-        toastMsg.innerText = message;
-        
-        toast.style.display = 'block';
-        setTimeout(function() {
-            toast.classList.add('show');
-        }, 10);
-
-        if (toastTimeout) clearTimeout(toastTimeout);
-
-        toastTimeout = setTimeout(function() {
-            toast.classList.remove('show');
-            setTimeout(function() {
-                toast.style.display = 'none';
-            }, 300);
-        }, 4500);
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        var userAgent = navigator.userAgent;
-        var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
-        var debugBypass = window.location.hash === '#debug';
-
-        if (!isPS4 && !debugBypass) {
-            triggerPermanentLock("❌ Access Denied", "This portal can only be opened from a modified PS4 console browser.<br><br><small style='color:#777;'>Add #debug to URL to preview locally.</small>");
-            return;
-        }
-
-        setTimeout(function() {
-            unlockWebsite();
-        }, 800);
-    });
-
-    function unlockWebsite() {
-        document.getElementById('lock-screen').style.display = "none";
-        document.getElementById('main-content').style.display = "block";
-        showToast("GoldHEN detected! Connection secure.");
-    }
-
-    function triggerPermanentLock(title, description) {
-        document.getElementById('loader-animation').style.display = "none"; 
-        document.getElementById('lock-title').innerHTML = title;
-        document.getElementById('lock-title').style.color = "#ff3333";
-        document.getElementById('lock-desc').innerHTML = description;
-    }
-
-    function sendToGoldHENInstaller(pkgUrl, buttonEl) {
-        var statusText = document.getElementById('status-text');
-        buttonEl.disabled = true;
-        
-        statusText.innerText = "Sending to GoldHEN background installer...";
-        statusText.style.color = "#ffcc00";
-        showToast("Transmitting package link to system...");
-
-        var payloadData = {
-            type: "direct",
-            uri: pkgUrl
-        };
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://127.0.0.1:9090/api/install', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 8000;
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                statusText.innerText = "Installation Queued! Check your PS4 Notifications.";
-                statusText.style.color = "#00ff00";
-                showToast("Package successfully sent to background installer!");
-                
-                setTimeout(function() {
-                    buttonEl.disabled = false;
-                }, 5000);
-            } else {
-                handleApiError(buttonEl, "GoldHEN API responded with an error.");
-            }
-        };
-
-        xhr.onerror = function() {
-            handleApiError(buttonEl, "Could not reach GoldHEN server. Ensure GoldHEN is running.");
-        };
-
-        xhr.ontimeout = function() {
-            handleApiError(buttonEl, "Connection timed out. Check GoldHEN settings.");
-        };
-
-        xhr.send(JSON.stringify(payloadData));
-    }
-
-    function handleApiError(buttonEl, errorMsg) {
-        var statusText = document.getElementById('status-text');
-        statusText.innerText = errorMsg;
-        statusText.style.color = "#ff3333";
-        showToast("Installation queue failed.");
-        buttonEl.disabled = false;
-    }
-</script>
-</body>
-</html>
+            <!-- Fallback container if GoldHEN local server isn't reachable -->
+            <div id="fallback-container" class="fallback-box">
+                <span style="color:#ffcc00; font-weight:bold;">⚠️ GoldHEN API Unreachable</span>
+                <p style="color:#aaa; margin:5px 0 3px 0;">Copy direct link for PS4 Remote Package Installer:</p>
+                <input type="text" id="pkg-link-input" readonly onclick="this
