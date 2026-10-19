@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Direct Installer</title>
+    <title>PS4 GoldHEN Package Installer</title>
     <style>
         body {
             background-color: #1a1a1a;
             color: #ffffff;
             font-family: sans-serif;
             text-align: center;
-            padding-top: 40px;
+            padding-top: 50px;
         }
         .container {
             background-color: #2a2a2a;
             border: 1px solid #444;
             display: inline-block;
-            padding: 25px;
+            padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             max-width: 90%;
@@ -43,42 +43,23 @@
 <body>
 
     <div class="container">
-        <h1>PS4 GoldHEN Installer</h1>
-        <p>Direct Clean JSON Mode</p>
+        <h1>PS4 Homebrew Installer</h1>
+        <p>Firmware Compatibility Mode</p>
 
-        <button class="btn-install" onclick="installPackage()">Install Store-R2.pkg</button>
+        <!-- Form submitting directly to local GoldHEN daemon -->
+        <form action="http://127.0.0.1:9090/api/install" method="POST">
+            <input type="hidden" name="type" value="direct">
+            <input type="hidden" name="url" value="https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg">
+            <input type="hidden" name="packages" value="[&quot;https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg&quot;]">
+            <button class="btn-install" type="submit" onclick="setStatus('Dispatching package installer...')">Install Store-R2.pkg</button>
+        </form>
 
         <div id="status"></div>
     </div>
 
     <script>
-        var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
-
-        function installPackage() {
-            var statusEl = document.getElementById('status');
-            statusEl.innerText = "Sending install command...";
-
-            // Formulate standard GoldHEN API payload
-            var payload = {
-                "type": "direct",
-                "packages": [directPkgUrl]
-            };
-
-            // Send raw clean JSON payload
-            fetch("http://127.0.0.1:9090/api/install", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                mode: "no-cors",
-                body: JSON.stringify(payload)
-            })
-            .then(function() {
-                statusEl.innerText = "Command sent! Check Notifications > Downloads on PS4.";
-            })
-            .catch(function(err) {
-                statusEl.innerText = "Sent command to GoldHEN daemon.";
-            });
+        function setStatus(msg) {
+            document.getElementById('status').innerText = msg;
         }
     </script>
 
