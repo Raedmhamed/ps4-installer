@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Portal</title>
+    <title>PS4 GoldHEN Control</title>
     <style>
         body {
             background-color: #1a1a1a;
             color: #ffffff;
             font-family: sans-serif;
             text-align: center;
-            padding-top: 50px;
+            padding-top: 40px;
         }
         .container {
             background-color: #2a2a2a;
             border: 1px solid #444;
             display: inline-block;
-            padding: 30px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            max-width: 90%;
         }
         button {
             color: white;
@@ -30,10 +31,10 @@
             cursor: pointer;
             margin: 10px;
         }
-        .btn-install { background-color: #0070d1; }
-        .btn-install:hover { background-color: #005fb8; }
         .btn-notify { background-color: #28a745; }
         .btn-notify:hover { background-color: #218838; }
+        .btn-install { background-color: #0070d1; }
+        .btn-install:hover { background-color: #005fb8; }
         #status {
             margin-top: 20px;
             font-weight: bold;
@@ -45,15 +46,25 @@
 
     <div class="container">
         <h1>PS4 GoldHEN Portal</h1>
-        <p>Direct API Test & Control Panel</p>
+        <p>Bypassing HTTPS/CORS Restrictions</p>
 
-        <!-- Notification Trigger -->
-        <button class="btn-notify" onclick="sendNotification('Hello from PS4 Web Portal!')">Test PS4 Notification</button>
+        <!-- Hidden Target Frame -->
+        <iframe name="api_frame" id="api_frame" style="display:none;"></iframe>
 
-        <br><br>
+        <!-- Notification Form -->
+        <form id="notifyForm" action="http://127.0.0.1:9090/api/notify" method="POST" target="api_frame">
+            <input type="hidden" name="message" value="Hello from PS4 Portal!">
+            <button class="btn-notify" type="submit" onclick="updateStatus('Sending Notification...')">Test PS4 Notification</button>
+        </form>
 
-        <!-- Install Trigger -->
-        <button class="btn-install" onclick="triggerInstall()">Install Store-R2.pkg</button>
+        <br>
+
+        <!-- Install Form -->
+        <form id="installForm" action="http://127.0.0.1:9090/api/install" method="POST" target="api_frame">
+            <input type="hidden" name="type" value="direct">
+            <input type="hidden" name="packages" id="packagesInput">
+            <button class="btn-install" type="submit" onclick="updateStatus('Sending Install Request...')">Install Store-R2.pkg</button>
+        </form>
 
         <div id="status"></div>
     </div>
@@ -61,57 +72,11 @@
     <script>
         var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
 
-        // Function to trigger a PS4 System Notification Popup
-        function sendNotification(messageText) {
-            var statusEl = document.getElementById('status');
-            statusEl.innerText = "Sending notification command...";
+        // Format payload for GoldHEN API
+        document.getElementById('packagesInput').value = JSON.stringify([directPkgUrl]);
 
-            var payload = {
-                "message": messageText
-            };
-
-            fetch("http://127.0.0.1:9090/api/notify", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(function(response) {
-                statusEl.innerText = "Notification request sent! Check top-left of PS4 screen.";
-            })
-            .catch(function(error) {
-                // Fallback for no-cors/browser origin blocks
-                statusEl.innerText = "Notification request sent to daemon.";
-            });
-        }
-
-        // Function to send Package Install Command
-        function triggerInstall() {
-            var statusEl = document.getElementById('status');
-            statusEl.innerText = "Sending install payload to GoldHEN...";
-
-            var payload = {
-                "type": "direct",
-                "packages": [directPkgUrl]
-            };
-
-            fetch("http://127.0.0.1:9090/api/install", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(function(response) {
-                statusEl.innerText = "Install command processed.";
-            })
-            .catch(function(error) {
-                statusEl.innerText = "Install command dispatched to daemon.";
-            });
-
-            // Send notification confirming the attempt
-            sendNotification("Package sent to System Installer!");
+        function updateStatus(msg) {
+            document.getElementById('status').innerText = msg;
         }
     </script>
 
