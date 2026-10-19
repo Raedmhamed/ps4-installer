@@ -3,88 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GoldHEN Verified Injector Zone</title>
+<title>GoldHEN Enforcement Zone</title>
 <style>
-body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 40px 12px; margin: 0; }
-h1 { color: #0070d2; margin-bottom: 5px; }
-.subtitle { color: #aaa; margin-top: 0; font-size: 14px; margin-bottom: 30px; }
-.pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 300px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-.pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
-button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.2s; }
-button:hover { background: #0056a3; }
-button:disabled { background: #333; color: #666; cursor: not-allowed; border: 1px dashed #555; }
-.status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
-.system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
-.info-box { max-width: 280px; font-size: 12px; color: #aaa; margin-top: 10px; background: #121212; padding: 10px; border-radius: 6px; border-left: 3px solid #0070d2; }
+    body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 40px 12px; margin: 0; }
+    h1 { color: #0070d2; margin-bottom: 5px; }
+    .subtitle { color: #aaa; margin-top: 0; font-size: 14px; margin-bottom: 30px; }
+    
+    /* كارت اللعبة المجهز للتحميل */
+    .pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 300px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
+    
+    button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.2s; }
+    button:hover { background: #0056a3; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; border: 1px dashed #555; }
+    
+    .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
+    .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
+    
+    /* شاشة القفل الشاملة في حال عدم وجود جيلبريك */
+    #lock-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+    .lock-box { background: #1a1111; border: 2px solid #ff3333; padding: 40px; border-radius: 12px; max-width: 400px; box-shadow: 0 0 20px rgba(255,0,0,0.2); }
 </style>
 </head>
-<body onload="runSystemDiagnostics()">
+<body onload="enforceGoldHENCheck()">
 
-    <h1>Custom One-Click GoldHEN Zone</h1>
-    <p class="subtitle">Secure Environment Validation & Background Injector</p>
-
-    <!-- صندوق فحص نظام الـ PS4 وتأكيد الـ GoldHEN -->
-    <div class="system-check" id="sys-status" style="color: #ffcc00;">
-        🔍 Checking PS4 Environment & Firmware...
+    <!-- شاشة الحظر والقفل التام -->
+    <div id="lock-screen">
+        <div class="lock-box">
+            <h2 style="color: #ff3333; margin-top: 0;">❌ Jailbreak Required</h2>
+            <p style="color: #ddd; font-size: 15px; line-height: 1.5;">This website is locked. We could not detect an active <b>GoldHEN Payload Server</b> on your console.</p>
+            <p style="color: #888; font-size: 13px;">Please enable Payload Server inside your GoldHEN settings on PS4 and refresh this page.</p>
+        </div>
     </div>
 
-    <div class="pkg-card">
-        <div class="pkg-title">📦 DolphinPS4 Emulator</div>
-        <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
-        
-        <!-- الزر يبدأ مغلقاً حتى ينجح فحص الـ PS4 و الـ GoldHEN -->
-        <button id="download-btn" onclick="injectViaSystemDownloader('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)" disabled>
-            Lock: PS4 Not Verified
-        </button>
-        
-        <div id="status-text" class="status-msg">Awaiting System Verification...</div>
-        
-        <div class="info-box">
-            💡 <b>How it works:</b> Once verified and clicked, the task triggers the native PS4 download architecture. The file installs in the background securely.
+    <!-- المحتوى الرئيسي للموقع (يظهر فقط إذا كان الجهاز معدلاً) -->
+    <div id="main-content">
+        <h1>Custom One-Click GoldHEN Zone</h1>
+        <p class="subtitle">Secure Environment Validation & Background Injector</p>
+
+        <div class="system-check" id="sys-status" style="color: #ffcc00;">
+            🔍 Checking PS4 Environment & Firmware...
+        </div>
+
+        <div class="pkg-card">
+            <div class="pkg-title">📦 DolphinPS4 Emulator</div>
+            <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: Unknown</p>
+            
+            <button id="download-btn" onclick="injectViaSystemDownloader('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)" disabled>
+                Lock: Awaiting Verification
+            </button>
+            
+            <div id="status-text" class="status-msg">Verifying console...</div>
         </div>
     </div>
 
     <script>
-    // 1. دالة فحص المتصفح والتأكد من جيلبريك GoldHEN لتفعيل الزر
-    function runSystemDiagnostics() {
+    function enforceGoldHENCheck() {
         var sysStatus = document.getElementById('sys-status');
         var downloadBtn = document.getElementById('download-btn');
         var statusText = document.getElementById('status-text');
+        var lockScreen = document.getElementById('lock-screen');
         var userAgent = navigator.userAgent;
 
-        // التحقق من أن الزائر يفتح الموقع من كونسول PS4 فعلي
+        // الخطوة 1: فحص بصمة المتصفح (هل هو جهاز PS4 فعلاً؟)
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
 
         if (!isPS4) {
-            sysStatus.innerText = "❌ Access Denied: Not a PS4 Console Browser.";
-            sysStatus.style.color = "#ff3333";
-            statusText.innerText = "Please open this website using your jailbroken PS4 Internet Browser.";
+            triggerStrictLock("❌ Access Denied: Not a PS4 Console Browser.");
             return;
         }
 
-        sysStatus.innerText = "⏳ PS4 Browser Confirmed. Authenticating GoldHEN status...";
-        
-        // إرسال نبضة صامتة للتحقق من أن الـ Payload Server يعمل في الخلفية على بورت 9090
-        var testPayload = { "title_id": "FLTZ00003" };
-        
-        fetch("http://127.0.0", { method: 'POST', body: JSON.stringify(testPayload), mode: 'no-cors' })
-        .then(() => { unlockButton(); })
+        // الخطوة 2: اختبار منفذ الكيرنل الصارم (منفذ 9090 الخاص بـ GoldHEN) باستخدام مؤقت تنازلي (Timeout)
+        var controller = new AbortController();
+        var timeoutId = setTimeout(() => controller.abort(), 1500); // حظر الطلب إذا لم يستجب الكونسول خلال 1.5 ثانية
+
+        fetch("http://127.0.0", {
+            method: 'POST',
+            body: JSON.stringify({ "title_id": "FLTZ00003" }),
+            mode: 'no-cors',
+            signal: controller.signal
+        })
+        .then(() => {
+            clearTimeout(timeoutId);
+            unlockWebsite();
+        })
         .catch(() => {
-            // فحص منفذ RPI الاحتياطي 12800
-            fetch("http://127.0.0", { method: 'POST', body: JSON.stringify(testPayload), mode: 'no-cors' })
-            .then(() => { unlockButton(); })
+            // محاولة أخيرة لفحص منفذ المطورين البديل (12800) قبل الحظر الشامل
+            var altController = new AbortController();
+            var altTimeoutId = setTimeout(() => altController.abort(), 1500);
+
+            fetch("http://127.0.0", {
+                method: 'POST',
+                body: JSON.stringify({ "title_id": "FLTZ00003" }),
+                mode: 'no-cors',
+                signal: altController.signal
+            })
+            .then(() => {
+                clearTimeout(altTimeoutId);
+                unlockWebsite();
+            })
             .catch(() => {
-                // تفعيل التخطي الإيجابي للتحديثات الحديثة 12.02 / 13.52 طالما أن المتصفح هو PS4
-                sysStatus.innerText = "🟢 PS4 Live Firmware Verified & Handshake Ready!";
-                sysStatus.style.color = "#00ff00";
-                downloadBtn.disabled = false;
-                downloadBtn.innerText = "Click to Install App";
-                statusText.innerText = "System Ready for injection.";
-                statusText.style.color = "#888";
+                // الكونسول صامت تماماً، هذا يعني أن الجهاز لا يمتلك جيلبريك أو الـ Payload Server مطفأ
+                triggerStrictLock("We could not detect an active GoldHEN environment.");
             });
         });
 
-        function unlockButton() {
+        function unlockWebsite() {
             sysStatus.innerText = "🟢 GoldHEN Environment Verified Successfully!";
             sysStatus.style.color = "#00ff00";
             downloadBtn.disabled = false;
@@ -92,9 +116,15 @@ button:disabled { background: #333; color: #666; cursor: not-allowed; border: 1p
             statusText.innerText = "Jailbreak Active — Connection Established.";
             statusText.style.color = "#00ff00";
         }
+
+        function triggerStrictLock(logReason) {
+            console.log(logReason);
+            lockScreen.style.display = "flex"; // إظهار شاشة القفل الحمراء وحجب الموقع بالكامل
+            document.getElementById('main-content').style.display = "none";
+        }
     }
 
-    // 2. دالة الحقن الرسمية في الـ Download Queue لتجنب اختفاء الملف
+    // دالة حقن التنزيل المباشر في طابور النظام بعد فتح القفل وتأكيد الجيلبريك
     function injectViaSystemDownloader(directPkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
         buttonEl.disabled = true;
@@ -102,47 +132,37 @@ button:disabled { background: #333; color: #666; cursor: not-allowed; border: 1p
         statusText.innerText = "Injecting task into system download queue...";
         statusText.style.color = "#ffcc00";
 
-        // إرسال أمر المجلد الداخلي مباشرة لـ GoldHEN API لضمان بقائه
-        var payload = {
-            "type": "direct",
-            "packages": [directPkgUrl]
-        };
+        var payload = { "type": "direct", "packages": [directPkgUrl] };
 
-        // إرسال كود النقل المباشر لنواة الـ PS4 لتقوم بالتحميل الرسمي في قائمة التنزيلات
         fetch("http://127.0.0", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
             mode: 'no-cors'
         })
-        .then(() => {
-            showSuccessNotification(statusText);
-        })
+        .then(() => { showSuccess(); })
         .catch(() => {
-            // تجربة المنفذ البديل تلقائياً في الخلفية
             fetch("http://127.0.0", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
                 mode: 'no-cors'
             })
-            .then(() => {
-                showSuccessNotification(statusText);
-            })
+            .then(() => { showSuccess(); })
             .catch(() => {
-                // إذا رفض الكيرنل الـ API بسبب تحديثات الحماية لـ 13.52، يتم استخدام منشط الأوامر لنظام التشغيل
+                // التوجيه الإجباري عبر النظام للتحديثات الأمنية الجديدة لـ 13.52
                 window.location.href = "psninstall:?url=" + encodeURIComponent(directPkgUrl);
                 statusText.innerText = "Task pushed to system alerts!";
                 statusText.style.color = "#00ff00";
-                alert("Task Sent! Press the PS Button on your controller and check your official 'Notifications' -> 'Downloads' menu. The PS4 system is downloading it now!");
+                alert("Task Sent! Press the PS Button and check your official 'Notifications' -> 'Downloads' menu.");
             });
         });
-    }
 
-    function showSuccessNotification(statusText) {
-        statusText.innerText = "Success! Task captured by GoldHEN.";
-        statusText.style.color = "#00ff00";
-        alert("Success! The download has been successfully added to your console queue. Go check your PS4 Notifications / Downloads menu.");
+        function showSuccess() {
+            statusText.innerText = "Success! Task captured by GoldHEN.";
+            statusText.style.color = "#00ff00";
+            alert("Success! Go check your PS4 Notifications / Downloads menu.");
+        }
     }
     </script>
 </body>
