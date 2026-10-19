@@ -25,9 +25,9 @@ button:disabled { background: #444; cursor: not-allowed; }
 
     <div class="pkg-card">
         <div class="pkg-title">📦 DolphinPS4 Emulator</div>
-        <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware: 12.02 / 13.52</p>
+        <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware: Supported Environment</p>
         
-        <button id="download-btn" onclick="startGoldHENBackgroundInstall('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+        <button id="download-btn" onclick="startGoldHENBackgroundInstall(this)">
             Click to Install
         </button>
         
@@ -38,6 +38,9 @@ button:disabled { background: #444; cursor: not-allowed; }
     </div>
 
     <script>
+    // Your verified direct GitHub Release URL
+    var directPkgUrl = "https://github.com/Raedmhamed/ps4-games-raed/releases/download/Testing/DolphinPS4-v04.16.pkg";
+
     // Sends official system notification popups directly to the PS4 UI
     function sendPS4Notification(msg) {
         try {
@@ -48,12 +51,12 @@ button:disabled { background: #444; cursor: not-allowed; }
         } catch(e) {}
     }
 
-    // Trigger welcome notification when page successfully finishes loading on the PS4 browser
+    // Trigger welcome notification when page loads successfully on the PS4 browser
     window.addEventListener('DOMContentLoaded', function() {
         sendPS4Notification("GoldHEN Zone Loaded Successfully.");
     });
 
-    function startGoldHENBackgroundInstall(directPkgUrl, buttonEl) {
+    function startGoldHENBackgroundInstall(buttonEl) {
         var statusText = document.getElementById('status-text');
         var progressContainer = document.getElementById('progress-container');
         var progressBar = document.getElementById('my-bar');
@@ -64,9 +67,8 @@ button:disabled { background: #444; cursor: not-allowed; }
         statusText.style.color = "#ffcc00";
 
         // Trigger native notification that the download process is starting
-        sendPS4Notification("DolphinPS4 Download Started! Please wait...");
+        sendPS4Notification("Download Started! Please wait...");
 
-        // Simulated visual progress bar while system handles background queue
         var progress = 0;
         var progressInterval = setInterval(function() {
             if (progress < 90) {
@@ -84,7 +86,7 @@ button:disabled { background: #444; cursor: not-allowed; }
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'http://127.0.0.1:9090/api/install', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 10000;
+        xhr.timeout = 15000;
 
         xhr.onload = function() {
             clearInterval(progressInterval);
