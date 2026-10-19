@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Store Installer</title>
+    <title>PS4 Homebrew Store Installer</title>
     <style>
         body { 
             background: #121212; 
             color: #fff; 
             font-family: sans-serif; 
             text-align: center; 
-            padding-top: 40px; 
+            padding-top: 50px; 
+        }
+        .container {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            display: inline-block;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.7);
+            max-width: 90%;
         }
         button { 
             background: #0070d1; 
@@ -18,8 +27,10 @@
             border: 0; 
             padding: 16px 32px; 
             font-size: 18px; 
+            font-weight: bold;
             border-radius: 6px; 
             cursor: pointer;
+            margin-top: 15px;
         }
         button:hover {
             background: #005fb8;
@@ -33,34 +44,37 @@
 </head>
 <body>
 
-    <h1>PS4 Store Installer</h1>
-    
-    <!-- Hidden iframe captures the local daemon response without navigating away -->
-    <iframe name="target_frame" id="target_frame" style="display:none;"></iframe>
+    <div class="container">
+        <h1>PS4 Store Installer</h1>
+        <p>Target Port: 9090 (GoldHEN)</p>
 
-    <!-- Form posting directly to GoldHEN Port 9090 -->
-    <form action="http://127.0.0.1:9090/api/install" method="POST" target="target_frame">
-        <input type="hidden" name="type" value="direct">
-        <input type="hidden" name="packages" id="pkgPayload">
-        <button type="submit" onclick="updateStatus()">Install Store-R2.pkg</button>
-    </form>
+        <!-- Hidden frame captures local daemon response to bypass CORS -->
+        <iframe name="target_frame" id="target_frame" style="display:none;"></iframe>
 
-    <div id="status">Page loaded. Ready.</div>
+        <!-- Form posting directly to local GoldHEN daemon -->
+        <form action="http://127.0.0.1:9090/api/install" method="POST" target="target_frame">
+            <input type="hidden" name="type" value="direct">
+            <input type="hidden" name="packages" id="pkgPayload">
+            <button type="submit" onclick="updateStatus()">Install Store-R2.pkg</button>
+        </form>
+
+        <div id="status">Page loaded. Ready to install.</div>
+    </div>
 
     <script>
-        // Direct raw GitHub host link (under 25MB limit)
+        // Direct raw GitHub package URL (23MB)
         var pkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
 
-        // Pre-populate the form payload array expected by GoldHEN
+        // Pre-populate JSON array required by GoldHEN
         document.getElementById('pkgPayload').value = JSON.stringify([pkgUrl]);
 
         function updateStatus() {
             var statusEl = document.getElementById('status');
-            statusEl.innerText = "Transmitting to GoldHEN (Port 9090)...";
+            statusEl.innerText = "Transmitting payload to GoldHEN (Port 9090)...";
             
             setTimeout(function() {
                 statusEl.innerText = "Command sent! Check PS4 Notifications > Downloads.";
-            }, 2500);
+            }, 3000);
         }
     </script>
 
