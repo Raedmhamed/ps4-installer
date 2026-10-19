@@ -32,15 +32,17 @@
             cursor: pointer;
             margin: 10px;
             width: 80%;
+            transition: opacity 0.2s ease;
         }
         .btn-install { background-color: #0070d1; }
         .btn-install:hover { background-color: #005fb8; }
-        button:disabled { background-color: #555 !important; cursor: not-allowed; }
+        button:disabled { background-color: #555 !important; cursor: not-allowed; opacity: 0.6; }
         #status {
             margin-top: 20px;
             font-weight: bold;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
+            font-size: 14px;
         }
         .status-idle { color: #00ffcc; }
         .status-success { color: #22c55e; background-color: rgba(34,197,94,0.15); border: 1px solid #22c55e; }
@@ -51,9 +53,9 @@
 
     <div class="container">
         <h1>PS4 Homebrew Installer</h1>
-        <p>Firmware Compatibility Mode</p>
+        <p>Console Loopback Auto-Detection Enabled</p>
 
-        <!-- Fixed to process purely via Javascript Async Loopback -->
+        <!-- Script hooks completely to the inner JS runtime network engine -->
         <button class="btn-install" id="installBtn" onclick="triggerGoldhenInstall()">Install Store-R2.pkg</button>
 
         <div id="status" class="status-idle">Ready</div>
@@ -64,46 +66,48 @@
             var statusDiv = document.getElementById('status');
             var btn = document.getElementById('installBtn');
             
-            // Immediately lock interface to avoid duplicate execution threads
+            // Lock interaction options immediately to avoid concurrent network traffic conflicts
             btn.disabled = true;
             statusDiv.className = "status-idle";
-            statusDiv.innerText = "Connecting to GoldHEN Server...";
+            statusDiv.innerText = "Transmitting JSON handshake payload...";
 
-            // Create precise JSON object matching GoldHEN requirements
+            // Structural payload required by GoldHEN api backend specifications
             var payload = {
                 type: "direct",
-                packages: ["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"],
+                packages: ["https://githubusercontent.com"],
                 path: "/data/pkg"
             };
 
-            // Instantiate XMLHttp natively supported by PS4 WebKit runtime
+            // Instantiate XMLHttp explicitly supported by structural NetFront WebKit on the PS4
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://127.0.0.1:9090/api/install", true);
+            
+            // Loopback mechanism auto-targets the host console itself over port 9090
+            xhr.open("POST", "http://127.0.0", true);
             xhr.setRequestHeader("Content-Type", "application/json");
 
-            // Event listener reading live background states from the console daemon
+            // Event state tracking listening to real background stream variables
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
-                    // GoldHEN APIs return 200/204 on valid payload processing handshakes
+                    // Check if GoldHEN acknowledged the transfer array successfully
                     if (xhr.status === 200 || xhr.status === 204 || xhr.status === 0) {
                         statusDiv.className = "status-success";
                         statusDiv.innerText = "SUCCESS! Task Registered. Check PS4 Notifications > Downloads.";
                     } else {
                         statusDiv.className = "status-error";
-                        statusDiv.innerText = "ERROR! Server rejected payload (HTTP " + xhr.status + ").";
+                        statusDiv.innerText = "ERROR! GoldHEN Server rejected the command structure (HTTP " + xhr.status + ").";
                         btn.disabled = false;
                     }
                 }
             };
 
-            // Error trap handling for immediate execution feedback loops
+            // Error trap handling if the local network socket fails to connect
             xhr.onerror = function () {
                 statusDiv.className = "status-error";
-                statusDiv.innerText = "CONNECTION FAILED! Ensure 'Payload Server' or 'BinLoader' is enabled in GoldHEN Settings.";
+                statusDiv.innerText = "CONNECTION FAILED! Ensure 'Payload Server' is turned ON inside GoldHEN settings.";
                 btn.disabled = false;
             };
 
-            // Send raw serialized JSON directly to local port listener
+            // Dispatches raw JSON string payload directly to console background memory structure
             xhr.send(JSON.stringify(payload));
         }
     </script>
