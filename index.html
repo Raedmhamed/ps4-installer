@@ -1,48 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>PS4 Installer</title>
-<style>
-body { background:#121212; color:#fff; font-family:sans-serif; text-align:center; padding-top:40px; }
-button { background:#0070d1; color:#fff; border:0; padding:16px 32px; font-size:18px; border-radius:6px; }
-#status { margin-top:20px; color:#00ffcc; font-weight:bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS4 Store Installer</title>
+    <style>
+        body { 
+            background: #121212; 
+            color: #fff; 
+            font-family: sans-serif; 
+            text-align: center; 
+            padding-top: 40px; 
+        }
+        button { 
+            background: #0070d1; 
+            color: #fff; 
+            border: 0; 
+            padding: 16px 32px; 
+            font-size: 18px; 
+            border-radius: 6px; 
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005fb8;
+        }
+        #status { 
+            margin-top: 20px; 
+            color: #00ffcc; 
+            font-weight: bold; 
+        }
+    </style>
 </head>
 <body>
-<h1>PS4 Store Installer</h1>
-<div id="status">Page loaded. Ready.</div>
-<button onclick="go()">Install Store-R2.pkg</button>
 
-<script>
-window.onerror = function (msg, url, line) {
-    document.getElementById('status').innerHTML = "JS error: " + msg + " (line " + line + ")";
-};
+    <h1>PS4 Store Installer</h1>
+    
+    <!-- Hidden iframe captures the local daemon response without navigating away -->
+    <iframe name="target_frame" id="target_frame" style="display:none;"></iframe>
 
-// CHANGE THESE
-var pkgUrl = "http://YOUR_PC_IP:8000/Store-R2.pkg";
-var host = "127.0.0.1";   // use the PS4's own IP if this page is NOT opened on the PS4
-var port = 12800;         // confirm the port for your payload
+    <!-- Form posting directly to GoldHEN Port 9090 -->
+    <form action="http://127.0.0.1:9090/api/install" method="POST" target="target_frame">
+        <input type="hidden" name="type" value="direct">
+        <input type="hidden" name="packages" id="pkgPayload">
+        <button type="submit" onclick="updateStatus()">Install Store-R2.pkg</button>
+    </form>
 
-function go() {
-    var s = document.getElementById('status');
-    s.innerHTML = "Sending to " + host + ":" + port + " ...";
-    try {
-        var x = new XMLHttpRequest();
-        x.open("POST", "http://" + host + ":" + port + "/api/install", true);
-        x.timeout = 8000;
-        x.onreadystatechange = function () {
-            if (x.readyState === 4) {
-                s.innerHTML = "Done. HTTP status: " + x.status + " " + x.responseText;
-            }
-        };
-        x.ontimeout = function () { s.innerHTML = "Timed out."; };
-        x.onerror = function () { s.innerHTML = "Request error (daemon not reachable, or reply blocked)."; };
-        x.send(JSON.stringify({ "type": "direct", "packages": [pkgUrl] }));
-    } catch (e) {
-        s.innerHTML = "Exception: " + e;
-    }
-}
-</script>
+    <div id="status">Page loaded. Ready.</div>
+
+    <script>
+        // Direct raw GitHub host link (under 25MB limit)
+        var pkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+
+        // Pre-populate the form payload array expected by GoldHEN
+        document.getElementById('pkgPayload').value = JSON.stringify([pkgUrl]);
+
+        function updateStatus() {
+            var statusEl = document.getElementById('status');
+            statusEl.innerText = "Transmitting to GoldHEN (Port 9090)...";
+            
+            setTimeout(function() {
+                statusEl.innerText = "Command sent! Check PS4 Notifications > Downloads.";
+            }, 2500);
+        }
+    </script>
+
 </body>
 </html>
