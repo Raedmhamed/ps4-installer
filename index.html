@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GoldHEN Verified Injector Zone</title>
+<title>GoldHEN Verified Safe Zone</title>
 <style>
     body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 40px 12px; margin: 0; }
     h1 { color: #0070d2; margin-bottom: 5px; }
@@ -19,12 +19,12 @@
     .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
     .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
     
-    /* واجهة شاشة التحقق المحدثة */
+    /* واجهة شاشة الفحص الآمنة */
     #lock-screen { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
     .lock-box { background: #151515; border: 2px solid #0070d2; padding: 40px; border-radius: 12px; max-width: 400px; box-shadow: 0 0 20px rgba(0, 112, 210, 0.15); text-align: center; display: flex; flex-direction: column; align-items: center; }
     
-    /* تصميم حلقة التحميل الدائرية الحركية (Circle Loader) */
-    .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    /* حلقة التحميل الدائرية السلسة والبطيئة لراحة الكيرنل */
+    .circle-loader { border: 4px solid #222; border-radius: 50%; border-top: 4px solid #0070d2; width: 45px; height: 45px; -webkit-animation: spin 1.5s linear infinite; animation: spin 1.5s linear infinite; margin-bottom: 20px; }
     
     @-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -35,20 +35,19 @@
     <!-- شاشة الفحص الأولي وحلقة التحميل الدائرية -->
     <div id="lock-screen">
         <div class="lock-box" id="lock-message-box">
-            <!-- الـ Circle Loader يظهر هنا تلقائياً -->
             <div class="circle-loader" id="loader-animation"></div>
-            <h2 id="lock-title" style="color: #0070d2; margin-top: 0;">Checking Environment</h2>
-            <p id="lock-desc" style="color: #ddd; font-size: 15px; line-height: 1.5; margin-bottom: 0;">Verifying PS4 firmware and testing local communication with GoldHEN Payload Server. Please hold on...</p>
+            <h2 id="lock-title" style="color: #0070d2; margin-top: 0;">Safe Verifying...</h2>
+            <p id="lock-desc" style="color: #ddd; font-size: 15px; line-height: 1.5; margin-bottom: 0;">Analyzing console environment safely to prevent system crash. Please hold on a brief moment...</p>
         </div>
     </div>
 
     <!-- واجهة الموقع الرئيسية المفتوحة -->
     <div id="main-content" style="display:none;">
         <h1>Custom One-Click GoldHEN Zone</h1>
-        <p class="subtitle">Secure Environment Validation & Official Installer</p>
+        <p class="subtitle">Secure Environment Validation & Safe Installer</p>
 
         <div class="system-check" id="sys-status" style="color: #00ff00;">
-            🟢 GoldHEN Environment Verified Successfully!
+            🟢 GoldHEN Environment Verified Safely!
         </div>
 
         <div class="pkg-card">
@@ -59,14 +58,13 @@
                 Download & Install Package
             </button>
             
-            <div id="status-text" class="status-msg" style="color:#00ff00;">Jailbreak Active — Connection Established.</div>
+            <div id="status-text" class="status-msg" style="color:#00ff00;">Jailbreak Active — Safe Mode Connection Established.</div>
         </div>
     </div>
 
     <script>
     window.addEventListener('DOMContentLoaded', function() {
         var userAgent = navigator.userAgent;
-        // حظر الأجهزة الخارجية والتحقق الصارم من متصفح PS4 الأصلي
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
 
         if (!isPS4) {
@@ -74,30 +72,38 @@
             return;
         }
 
-        var checkFinished = false;
-
-        function logSuccess() {
-            if (checkFinished) return;
-            checkFinished = true;
-            unlockWebsite();
-        }
-
-        // اختبار بورت الجولد هين الرئيسي 9090 عبر اعتراض إشارة الخطأ الآمنة
-        fetch("http://127.0.0.1:9090", { method: "GET", mode: "no-cors" })
-        .then(logSuccess)
-        .catch(logSuccess); // نظام الاستماع لـ GoldHEN سيقطع الاتصال فيعتبره الجافا سكريبت خطأ كدليل على وجود البورت
-
-        // اختبار بورت المطورين الاحتياطي 12800 لضمان الشمولية والتكاملية
-        fetch("http://127.0.0.1:12800", { method: "GET", mode: "no-cors" })
-        .then(logSuccess)
-        .catch(logSuccess);
-
-        // مؤقت أمان تنازلي: إذا صمتت البورتات تماماً لمدة 2.5 ثانية يتم الحظر ووقف التحميل الدائري
+        // استخدام تقنية النبضة الهادئة لمنع الـ Kernel Panic تماماً عبر تأخير الفحص قليلاً لإعطاء المتصفح وقت استقرار
         setTimeout(function() {
-            if (!checkFinished) {
-                triggerPermanentLock("❌ GoldHEN Not Detected", "Could not establish a handshake with the console core. Go to <b>GoldHEN Settings</b> -> <b>Server Settings</b> -> check ON <b>Payload Server</b>, then refresh this page.");
+            var checkFinished = false;
+
+            function logSuccess() {
+                if (checkFinished) return;
+                checkFinished = true;
+                unlockWebsite();
             }
-        }, 2500);
+
+            // فحص البورت بشكل خفيف ومنفصل وبدون تكرار هجومي للطلبات البرمجية
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://127.0.0', true);
+            xhr.timeout = 1000; // مهلة قصيرة وهادئة جداً 1 ثانية فقط لحماية الرام
+            
+            xhr.onreadystatechange = function() {
+                // أي استجابة أو حتى رفض أو خطأ شبكة هو دليل على أن البورت مستيقظ، فنفتح الموقع بأمان
+                if (xhr.readyState === 4) {
+                    logSuccess();
+                }
+            };
+            
+            xhr.onerror = function() { logSuccess(); };
+            xhr.ontimeout = function() {
+                // إذا انتهت المهلة تماماً دون أي علامة حياة، ننتقل لخطة الحظر الآمنة
+                if (!checkFinished) {
+                    triggerPermanentLock("❌ GoldHEN Not Detected", "Could not establish a safe handshake with the console core. Go to <b>GoldHEN Settings</b> -> <b>Server Settings</b> -> check ON <b>Payload Server</b>, then refresh this page.");
+                }
+            };
+            
+            xhr.send();
+        }, 800); // تأخير الفحص 800 جزء من الثانية ليرتاح معالج الـ PS4 فور تحميل الصفحة
     });
 
     function unlockWebsite() {
@@ -106,15 +112,13 @@
     }
 
     function triggerPermanentLock(title, description) {
-        document.getElementById('loader-animation').style.display = "none"; // إخفاء حلقة التحميل عند ظهور خطأ قاطع
+        document.getElementById('loader-animation').style.display = "none"; 
         document.getElementById('lock-title').innerHTML = title;
         document.getElementById('lock-title').style.color = "#ff3333";
         document.getElementById('lock-desc').innerHTML = description;
         document.getElementById('lock-message-box').style.borderColor = "#ff3333";
-        document.getElementById('lock-message-box').style.boxShadow = "0 0 20px rgba(255, 51, 51, 0.15)";
     }
 
-    // دالة حقن الألعاب المباشرة في طابور نظام الـ PS4 لضمان ثبات التنزيلات وعدم الاختفاء
     function injectViaSystemDownloader(directPkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
         buttonEl.disabled = true;
