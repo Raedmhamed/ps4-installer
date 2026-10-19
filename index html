@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Personal PKG Installer Zone</title>
+    <style>
+        body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        input { padding: 10px; font-size: 16px; margin: 10px; width: 250px; }
+        button { padding: 10px 20px; font-size: 16px; background: #0070d2; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056a3; }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to the Custom PKG Zone</h1>
+    <p>Enter your PS4 Local IP Address below:</p>
+    <!-- Your friend types their PS4 IP here, e.g., 192.168.1.15 -->
+    <input type="text" id="ps4_ip" placeholder="e.g. 192.168.1.15"><br><br>
+
+    <h3>Available Downloads</h3>
+    <p>DolphinPS4 Emulator (v04.16)</p>
+    <button onclick="installPKG('https://qiwi.gg')">Click to Install on PS4</button>
+
+    <script>
+    function installPKG(pkgUrl) {
+        var ps4IP = document.getElementById('ps4_ip').value;
+        if (!ps4IP) {
+            alert('Please enter your PS4 IP address first!');
+            return;
+        }
+
+        // GoldHEN / Remote Package Installer default port is usually 12800 or 9090
+        var targetUrl = "http://" + ps4IP + ":12800/api/install"; 
+        
+        // This payload tells the PS4 kernel to download the file directly from your link
+        var payload = {
+            "type": "direct",
+            "url": pkgUrl
+        };
+
+        fetch(targetUrl, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => alert('Installation command sent successfully! Check your PS4 notifications.'))
+        .catch(error => alert('Error: Could not connect to PS4. Check if GoldHEN BinLoader/RPI port is active.'));
+    }
+    </script>
+
+</body>
+</html>
