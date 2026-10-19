@@ -1,74 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Custom Directory Installer</title>
-    <style>
-        body { background-color:#121212; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px; }
-        .container { background-color:#1e1e1e; border:1px solid #333; display:inline-block; padding:30px; border-radius:12px; box-shadow:0 6px 15px rgba(0,0,0,0.7); max-width:90%; }
-        button { background-color:#0070d1; color:#fff; border:none; padding:16px 32px; font-size:18px; font-weight:bold; border-radius:6px; cursor:pointer; margin-top:15px; }
-        button:hover { background-color:#005fb8; }
-        button:disabled { background-color:#555; cursor:default; }
-        #status { margin-top:20px; font-weight:bold; color:#00ffcc; font-size:15px; }
-        #status.error { color:#ff6b6b; }
-        .spinner { display:none; width:30px; height:30px; border:4px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#00ffcc; animation:spin 1s linear infinite; margin:15px auto 0; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>PS4 Store Installer</h1>
-        <p>Package: Store-R2.pkg</p>
-        <button id="installBtn" onclick="sendInstallCommand()">Install Store-R2.pkg</button>
-        <div class="spinner" id="loadingSpinner"></div>
-        <div id="status">Ready to install.</div>
-    </div>
+<script>
+    var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
 
-    <script>
-        var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
-        var daemonUrl = "http://127.0.0.1:9090/api/install";
+    // Change host if the page is NOT opened on the PS4 itself
+    var host = "127.0.0.1";
+    var ports = [12800, 9090];   // tried in order
 
-        function setState(busy, msg, isError) {
-            document.getElementById('loadingSpinner').style.display = busy ? "block" : "none";
-            document.getElementById('installBtn').disabled = busy;
-            var s = document.getElementById('status');
-            s.innerText = msg;
-            s.className = isError ? "error" : "";
+    function setState(busy, msg, isError) {
+        document.getElementById('loadingSpinner').style.display = busy ? "block" : "none";
+        document.getElementById('installBtn').disabled = busy;
+        var s = document.getElementById('status');
+        s.innerText = msg;
+        s.className = isError ? "error" : "";
+    }
+
+    function trySend(i) {
+        if (i >= ports.length) {
+            setState(false, "Could not reach any port (" + ports.join(", ") + "). Check host/IP, payload, and that the page is not on https.", true);
+            return;
         }
+        var url = "http://" + host + ":" + ports[i] + "/api/install";
+        setState(true, "Trying " + url + " ...", false);
 
-        function sendInstallCommand() {
-            setState(true, "Contacting installer daemon...", false);
+        var body = JSON.stringify({ "type": "direct", "packages": [directPkgUrl] });
 
-            var payload = {
-                "type": "direct",
-                "packages": [directPkgUrl]
-                // , "path": "/data/pkg"   // only add if your daemon build supports it
-            };
+        // no-cors: request is sent, reply is hidden, but we learn if the port is reachable
+        fetch(url, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: body })
+            .then(function () {
+                setState(false, "Sent to port " + ports[i] + ". Check Notifications/Downloads on the PS4.", false);
+            })
+            .catch(function () {
+                trySend(i + 1);
+            });
+    }
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", daemonUrl, true);
-            // text/plain avoids a CORS preflight, which the daemon likely doesn't answer
-            xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
-            xhr.timeout = 10000;
-
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    setState(false, "Queued! Check Notifications / Downloads on your PS4.", false);
-                } else {
-                    setState(false, "Daemon replied with HTTP " + xhr.status + ": " + xhr.responseText, true);
-                }
-            };
-            xhr.onerror = function () {
-                // Can mean the daemon is down, OR the request went through but CORS hid the reply
-                setState(false, "No readable response. Make sure the installer is running on port 9090, then check Downloads in case it queued anyway.", true);
-            };
-            xhr.ontimeout = function () {
-                setState(false, "Timed out. Is the installer daemon running?", true);
-            };
-
-            xhr.send(JSON.stringify(payload));
-        }
-    </script>
-</body>
-</html>
+    function sendInstallCommand() { trySend(0); }
+</script>
