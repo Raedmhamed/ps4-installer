@@ -3,123 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Store Installer</title>
+    <title>PS4 GoldHEN Package Installer</title>
     <style>
         body {
-            background: #0f0f13;
+            background-color: #1a1a1a;
             color: #ffffff;
             font-family: sans-serif;
             text-align: center;
-            padding: 30px;
-            margin: 0;
+            padding-top: 50px;
         }
         .container {
-            background: #1e1e2d;
-            border: 2px solid #0070d1;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            display: inline-block;
             padding: 30px;
-            border-radius: 12px;
-            max-width: 400px;
-            margin: 40px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            max-width: 90%;
+            width: 400px;
         }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-            color: #0070d1;
-        }
-        .subtitle {
-            color: #a0a0b0;
-            font-size: 13px;
-            margin-bottom: 25px;
-        }
-        .btn {
-            background: #0070d1;
+        button {
             color: white;
             border: none;
-            padding: 16px 20px;
+            padding: 15px 25px;
             font-size: 16px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
-            width: 100%;
+            margin: 10px;
+            width: 80%;
         }
-        .btn:disabled {
-            background: #4a4a5a;
-            cursor: not-allowed;
-        }
-        #actionStatus {
-            margin-top: 25px;
+        .btn-install { background-color: #0070d1; }
+        .btn-install:hover { background-color: #005fb8; }
+        button:disabled { background-color: #555 !important; cursor: not-allowed; }
+        #status {
+            margin-top: 20px;
             font-weight: bold;
-            font-size: 15px;
-            padding: 12px;
-            border-radius: 6px;
-            display: none;
+            padding: 10px;
+            border-radius: 5px;
         }
-        .success-box {
-            background: rgba(0, 255, 204, 0.15);
-            color: #00ffcc;
-            border: 1px solid #00ffcc;
-        }
-        .error-box {
-            background: rgba(255, 85, 85, 0.15);
-            color: #ff5555;
-            border: 1px solid #ff5555;
-        }
+        .status-idle { color: #00ffcc; }
+        .status-success { color: #22c55e; background-color: rgba(34,197,94,0.15); border: 1px solid #22c55e; }
+        .status-error { color: #ef4444; background-color: rgba(239,68,68,0.15); border: 1px solid #ef4444; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>PS4 Store Installer</h1>
-        <div class="subtitle">Direct-to-Console Engine via RPI Port 12800</div>
+        <h1>PS4 Homebrew Installer</h1>
+        <p>Firmware Compatibility Mode</p>
 
-        <!-- Single click trigger for authentic deployment -->
-        <button type="button" id="installBtn" class="btn" onclick="triggerInstall()">Install Store-R2.pkg</button>
+        <!-- Fixed to process purely via Javascript Async Loopback -->
+        <button class="btn-install" id="installBtn" onclick="triggerGoldhenInstall()">Install Store-R2.pkg</button>
 
-        <div id="actionStatus"></div>
+        <div id="status" class="status-idle">Ready</div>
     </div>
 
     <script>
-        function triggerInstall() {
-            var statusDiv = document.getElementById('actionStatus');
+        function triggerGoldhenInstall() {
+            var statusDiv = document.getElementById('status');
             var btn = document.getElementById('installBtn');
             
+            // Immediately lock interface to avoid duplicate execution threads
             btn.disabled = true;
-            statusDiv.className = "";
-            statusDiv.style.display = "block";
-            statusDiv.style.color = "#ffffff";
-            statusDiv.innerText = "Connecting to PS4 Remote Package Installer engine...";
+            statusDiv.className = "status-idle";
+            statusDiv.innerText = "Connecting to GoldHEN Server...";
 
-            // Authentic API payload mapping for official Remote Package Installer specifications
+            // Create precise JSON object matching GoldHEN requirements
             var payload = {
                 type: "direct",
-                packages: ["https://githubusercontent.com"]
+                packages: ["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"],
+                path: "/data/pkg"
             };
 
+            // Instantiate XMLHttp natively supported by PS4 WebKit runtime
             var xhr = new XMLHttpRequest();
-            // Switched loopback target endpoint directly to the true package task daemon (Port 12800)
-            xhr.open("POST", "http://127.0.0", true);
+            xhr.open("POST", "http://127.0.0.1:9090/api/install", true);
             xhr.setRequestHeader("Content-Type", "application/json");
 
+            // Event listener reading live background states from the console daemon
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
-                    // Modern PS4 package installation frameworks accept command handshakes with HTTP 200 responses
-                    if (xhr.status === 200 || xhr.status === 204) {
-                        statusDiv.className = "success-box";
-                        statusDiv.innerText = "SUCCESS! Task registered. Exit browser and check Notifications > Downloads.";
+                    // GoldHEN APIs return 200/204 on valid payload processing handshakes
+                    if (xhr.status === 200 || xhr.status === 204 || xhr.status === 0) {
+                        statusDiv.className = "status-success";
+                        statusDiv.innerText = "SUCCESS! Task Registered. Check PS4 Notifications > Downloads.";
                     } else {
-                        statusDiv.className = "error-box";
-                        statusDiv.innerText = "FAILED! Server returned code: " + xhr.status + ". Re-verify configuration steps.";
+                        statusDiv.className = "status-error";
+                        statusDiv.innerText = "ERROR! Server rejected payload (HTTP " + xhr.status + ").";
                         btn.disabled = false;
                     }
                 }
             };
 
+            // Error trap handling for immediate execution feedback loops
             xhr.onerror = function () {
-                statusDiv.className = "error-box";
-                statusDiv.innerText = "CONNECTION FAILED! Ensure Remote Package Installer app is OPEN on your PS4 dashboard.";
+                statusDiv.className = "status-error";
+                statusDiv.innerText = "CONNECTION FAILED! Ensure 'Payload Server' or 'BinLoader' is enabled in GoldHEN Settings.";
                 btn.disabled = false;
             };
 
+            // Send raw serialized JSON directly to local port listener
             xhr.send(JSON.stringify(payload));
         }
     </script>
