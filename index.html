@@ -12,7 +12,6 @@
     .pkg-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; display: inline-block; width: 340px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
     
-    /* Styled link acting as a bulletproof native installer button */
     .install-btn { 
         display: block;
         padding: 12px; 
@@ -27,10 +26,13 @@
         box-sizing: border-box;
         margin-top: 15px; 
         transition: 0.2s; 
+        cursor: pointer;
+        border: none;
     }
     .install-btn:hover { background: #0056a3; }
+    .install-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
     
-    .status-msg { margin-top: 15px; font-style: italic; color: #00ff00; font-size: 13px; text-align: center; font-weight: bold; line-height: 1.4; }
+    .status-msg { margin-top: 15px; font-style: italic; color: #ffcc00; font-size: 13px; text-align: center; font-weight: bold; line-height: 1.4; }
     .system-check { max-width: 350px; margin: 0 auto 20px auto; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 14px; background: #222; border: 1px solid #444; }
     
     #lock-screen { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
@@ -63,17 +65,17 @@
             <div class="pkg-title">📦 DolphinPS4 Emulator</div>
             <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware Target: 12.02 / 13.52</p>
             
-            <!-- Native GoldHEN background installer URI Scheme format used by homebrew stores -->
-            <a id="install-link" class="install-btn" href="#" onclick="triggerInstall()">
+            <button id="install-btn" class="install-btn" onclick="sendToInstaller()">
                 Install Package (Background)
-            </a>
+            </button>
             
-            <div id="status-text" class="status-msg">Ready for background installation.</div>
+            <div id="status-text" class="status-msg" style="color:#ffcc00;">Ready for background installation.</div>
         </div>
     </div>
 
 <script>
-    // Dynamically builds the GoldHEN background installer link using the console's local server IP
+    var goldhenApiUrl = "http://127.0.0.1:9090/api/";
+
     window.addEventListener('DOMContentLoaded', function() {
         var userAgent = navigator.userAgent;
         var isPS4 = userAgent.indexOf("PlayStation 4") !== -1;
@@ -83,19 +85,9 @@
             document.getElementById('lock-animation').style.display = "none";
             document.getElementById('lock-title').innerHTML = "❌ Access Denied";
             document.getElementById('lock-title').style.color = "#ff3333";
-            document.getElementById('lock-desc').innerHTML = "This portal can only be opened from a modified PS4 console browser.<br><br><small style='color:#777;'>Add #debug to URL to preview locally.</small>";
+            document.getElementById('lock-desc').innerHTML = "This portal can only be opened from a modified PS4 console browser.";
             return;
         }
-
-        // Set up the dynamic GoldHEN background install link
-        var currentHost = window.location.hostname;
-        var goldhenHost = (currentHost && currentHost !== "" && currentHost !== "localhost") ? currentHost : "192.168.1.12";
-        var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
-        
-        // GoldHEN native background package installer API redirection URL
-        var goldhenInstallUrl = "http://" + goldhenHost + ":9090/api/install?uri=" + encodeURIComponent(pkgUrl);
-        
-        document.getElementById('install-link').href = goldhenInstallUrl;
 
         setTimeout(function() {
             document.getElementById('lock-screen').style.display = "none";
@@ -103,8 +95,51 @@
         }, 800);
     });
 
-    function triggerInstall() {
-        document.getElementById('status-text').innerText = "Command sent! Check your PS4 Notifications / Downloads.";
+    function sendToInstaller() {
+        var btn = document.getElementById('install-btn');
+        var statusText = document.getElementById('status-text');
+        
+        btn.disabled = true;
+        statusText.innerText = "Connecting to GoldHEN background service...";
+        statusText.style.color = "#ffcc00";
+
+        // Direct raw pkg link (Replace with a direct server link if MediaFire drops connection)
+        var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
+
+        var payloadData = {
+            type: "direct",
+            uri: pkgUrl
+        };
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', goldhenApiUrl + 'install', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.timeout = 20000; // Extended timeout to 20 seconds to prevent time limit drops
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                statusText.innerText = "Successfully Queued! Check PS4 Notifications / Downloads.";
+                statusText.style.color = "#00ff00";
+            } else {
+                statusText.innerText = "Server responded with an error code.";
+                statusText.style.color = "#ff3333";
+                btn.disabled = false;
+            }
+        };
+
+        xhr.onerror = function() {
+            statusText.innerText = "Connection failed. Ensure GoldHEN is running.";
+            statusText.style.color = "#ff3333";
+            btn.disabled = false;
+        };
+
+        xhr.ontimeout = function() {
+            statusText.innerText = "Timeout: MediaFire took too long to respond. Try a direct file host.";
+            statusText.style.color = "#ff3333";
+            btn.disabled = false;
+        };
+
+        xhr.send(JSON.stringify(payloadData));
     }
 </script>
 </body>
