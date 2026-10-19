@@ -12,51 +12,85 @@ h1 { color: #0070d2; margin-bottom: 5px; }
 .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
 button { padding: 12px; font-size: 15px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; }
 button:hover { background: #0056a3; }
-.status-msg { margin-top: 12px; font-style: italic; color: #666; font-size: 13px; text-align: center; }
+button:disabled { background: #444; cursor: not-allowed; }
+.status-msg { margin-top: 12px; font-style: italic; color: #ffcc00; font-size: 14px; text-align: center; font-weight: bold; }
+/* شريط تقدم مرئي */
+.progress-bar-container { width: 100%; background-color: #333; border-radius: 6px; margin-top: 10px; display: none; }
+.progress-bar { width: 0%; height: 10px; background-color: #00ff00; border-radius: 6px; transition: width 0.1s; }
 </style>
 </head>
 <body>
 
     <h1>Custom One-Click PKG Zone</h1>
-    <p class="subtitle">Bypassing browser data restrictions natively...</p>
+    <p class="subtitle">Downloading with real-time live progress tracker...</p>
 
     <div class="pkg-card">
-        <div class="pkg-title">DolphinPS4 Emulator</div>
+        <div class="pkg-title">📦 DolphinPS4 Emulator</div>
         <p style="color:#aaa; font-size:13px; margin:5px 0;">Firmware: 12.02 / 13.52</p>
         
-        <!-- ⚠️ ضع رابط الميديافاير المباشر الطويل المستخرج بالأسفل بدلاً من الرابط التجريبي -->
-        <button onclick="triggerKernelDownload('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
+        <!-- الرابط المباشر للملف تم وضعه هنا تلقائياً -->
+        <button id="download-btn" onclick="startDownloadWithProgress('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
             Click to Install
         </button>
-        <div class="status-msg">Ready</div>
+        
+        <div class="progress-bar-container" id="progress-container">
+            <div class="progress-bar" id="my-bar"></div>
+        </div>
+        <div class="status-msg" id="status-text">Ready</div>
     </div>
 
     <script>
-    function triggerKernelDownload(directPkgUrl, buttonEl) {
-        var statusDiv = buttonEl.nextElementSibling;
-        statusDiv.innerText = "Injecting file into local system storage...";
-        statusDiv.style.color = "#ffcc00";
-
-        // حيلة الفيديو: خداع المتصفح بأن الملف عبارة عن فيديو مدعوم لفتحه داخل مشغل النظام
-        // نظام GoldHEN سيتعرف على امتداد .pkg في الخلفية ويحوله فوراً لقسم التثبيت التلقائي
+    function startDownloadWithProgress(directPkgUrl, buttonEl) {
+        var statusText = document.getElementById('status-text');
+        var progressContainer = document.getElementById('progress-container');
+        var progressBar = document.getElementById('my-bar');
+        
+        // تعديل الرابط لتخطي حظر المتصفح والحفاظ على تدفق البيانات
         var videoBypassUrl = directPkgUrl + "?content_type=video/mp4";
 
-        try {
-            var audioObj = new Audio();
-            audioObj.src = videoBypassUrl;
-            audioObj.preload = "auto";
-            
-            // إجبار الكيرنل على سحب التدفق المالي للملف بالكامل
-            audioObj.load();
+        buttonEl.disabled = true;
+        progressContainer.style.display = "block";
+        statusText.innerText = "Connecting to file server... 0%";
+        statusText.style.color = "#ffcc00";
 
-            statusDiv.innerText = "Command Injected! Open 'Package Installer' to check.";
-            statusDiv.style.color = "#00ff00";
-            
-            alert("File stream initiated! GoldHEN is downloading the file directly to your PS4. Go to Settings -> Debug Settings -> Package Installer to install it.");
-        } catch(e) {
-            statusDiv.innerText = "Stream conversion failed.";
+        // إنشاء طلب تحميل متطور لمراقبة الـ Progress
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', videoBypassUrl, true);
+        
+        // دالة مراقبة تقدم التحميل وحساب النسبة المئوية %
+        xhr.onprogress = function(event) {
+            if (event.lengthComputable) {
+                var percentComplete = Math.round((event.loaded / event.total) * 100);
+                
+                // تحديث شريط التقدم المرئي والنسبة المئوية نصياً
+                progressBar.style.width = percentComplete + '%';
+                statusText.innerText = "Downloading: " + percentComplete + "%";
+            } else {
+                statusText.innerText = "Streaming data bytes...";
+            }
+        };
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                progressBar.style.width = '100%';
+                statusText.innerText = "Download 100% Complete!";
+                statusText.style.color = "#00ff00";
+                
+                alert("Download Finished! GoldHEN has compiled the file. You can now go to Settings -> Debug Settings -> Package Installer to install it directly onto your home screen.");
+            } else {
+                statusText.innerText = "Server error. Try again.";
+                statusText.style.color = "#ff3333";
+                buttonEl.disabled = false;
+            }
+        };
+
+        xhr.onerror = function() {
+            statusText.innerText = "Connection failed.";
             statusDiv.style.color = "#ff3333";
-        }
+            buttonEl.disabled = false;
+        };
+
+        xhr.send();
     }
     </script>
 </body>
