@@ -13,17 +13,16 @@
 <body>
 
     <h1>Welcome to the One-Click PKG Zone</h1>
-    <p>Make sure GoldHEN's BinLoader or Remote Package Installer is open before clicking!</p>
+    <p>Make sure GoldHEN BinLoader is turned ON before clicking!</p>
     <br>
 
     <div id="pkg-list">
-        <!-- ITEM 1 -->
         <div class="pkg-card">
-            <h3 style="margin-top:0;">📦 Test</h3>
+            <h3 style="margin-top:0;">📦 Test.</h3>
             <p style="color:#aaa; font-size:14px;">Version: v04.16</p>
             
-            <!-- PASTE YOUR STANDARD MEDIAFIRE LINK INSIDE THE SINGLE QUOTES BELOW -->
-            <button onclick="autoInstall('https://www.mediafire.com/file/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg/file', this)">
+            <!-- PASTE YOUR CONVERTED DIRECT LINK INSTEAD OF THE URL BELOW -->
+            <button onclick="sendToConsole('https://download1532.mediafire.com/pp1gecczl0fg3qKXnY2sEledPziQACloL1B0p4rUmM5H7hMMOQ3jlu-1Uv7JoJFOmMDdi08WRL6x7TCViJBeKw0mh7ZJcYU7iB_gWg78slMtp_YGmDzfakvfFOdhnBO2kilWkwEPDKsUHZB8iZ3O5wuhS5BXe_MzarqPuaNmYuCM6HE/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg', this)">
                 Click to Download
             </button>
             <div class="status-msg">Ready</div>
@@ -31,45 +30,18 @@
     </div>
 
     <script>
-    function autoInstall(mediafireUrl, buttonEl) {
+    function sendToConsole(pkgUrl, buttonEl) {
         var statusDiv = buttonEl.nextElementSibling;
         
-        statusDiv.innerText = "Extracting link... please wait.";
+        if(pkgUrl === "PASTE_YOUR_DIRECT_PKG_LINK_HERE") {
+            alert("Error: You haven't added your direct download link inside the code yet!");
+            return;
+        }
+
+        statusDiv.innerText = "Sending file path directly to your PS4 queue...";
         statusDiv.style.color = "#ffcc00";
 
-        // Step 1: Bypasses the MediaFire webpage layout using a proxy
-        var proxyUrl = "https://allorigins.win" + encodeURIComponent(mediafireUrl);
-
-        fetch(proxyUrl)
-            .then(response => {
-                if (response.ok) return response.json();
-                throw new Error('Proxy connection failure.');
-            })
-            .then(data => {
-                var htmlContent = data.contents;
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(htmlContent, 'text/html');
-                var downloadButton = doc.getElementById('downloadButton');
-
-                if (downloadButton && downloadButton.getAttribute('href')) {
-                    var directPkgUrl = downloadButton.getAttribute('href');
-                    statusDiv.innerText = "Sending target directly to PS4 system queue...";
-                    statusDiv.style.color = "#00ff00";
-                    
-                    // Step 2: Handoff to console kernel
-                    sendToConsoleLoopback(directPkgUrl, statusDiv);
-                } else {
-                    throw new Error('Could not parse download URL.');
-                }
-            })
-            .catch(error => {
-                statusDiv.innerText = "Error: Failed to process MediaFire link.";
-                statusDiv.style.color = "#ff3333";
-            });
-    }
-
-    function sendToConsoleLoopback(pkgUrl, statusDiv) {
-        // "127.0.0.1" is the loopback IP. It forces the PS4 browser to send the download file command to itself.
+        // Uses the official GoldHEN port 9090 on the local device 
         var targetUrl = "http://127.0.0"; 
         
         var payload = {
@@ -87,9 +59,9 @@
             statusDiv.style.color = "#00ff00";
         })
         .catch(error => {
-            statusDiv.innerText = "Error: Couldn't wake up background installer.";
+            statusDiv.innerText = "Connection Failed.";
             statusDiv.style.color = "#ff3333";
-            alert("Make sure GoldHEN Package Installer / Port 12800 is active on your console!");
+            alert("Could not talk to the console. Check if GoldHEN BinLoader is listening on Port 9090!");
         });
     }
     </script>
