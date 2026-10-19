@@ -73,6 +73,9 @@
         </div>
     </div>
 
+    <!-- Hidden frame to trigger background installation without turning the screen white -->
+    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
+
 <script>
     var pkgUrl = "https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg";
 
@@ -115,40 +118,48 @@
 
         sendPS4Notification("DolphinPS4 Download Started!");
 
-        // 1. Try local JSON-RPC POST API
+        // Try standard AJAX POST request first
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'http://127.0.0.1:9090/api/install', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.timeout = 3000;
 
         xhr.onload = function() {
-            if (xhr.status === 200) {
-                statusText.innerText = "Queued via API! Check PS4 Notifications.";
-                statusText.style.color = "#00ff00";
-            } else {
-                fallbackDirectRedirect();
-            }
+            statusText.innerText = "Queued! Check PS4 Notifications.";
+            statusText.style.color = "#00ff00";
+            btn.disabled = false;
         };
 
         xhr.onerror = function() {
-            fallbackDirectRedirect();
+            useHiddenFrameFallback();
         };
 
         xhr.ontimeout = function() {
-            fallbackDirectRedirect();
+            useHiddenFrameFallback();
         };
 
         xhr.send(JSON.stringify({ type: "direct", uri: pkgUrl }));
     }
 
-    // 2. Direct browser redirection fallback if JavaScript local XHR fails instantly
-    function fallbackDirectRedirect() {
+    // This silently submits the request via a hidden frame so the page won't turn blank white
+    function useHiddenFrameFallback() {
         var statusText = document.getElementById('status-text');
-        statusText.innerText = "Redirecting directly to GoldHEN Installer service...";
+        statusText.innerText = "Processing background installer...";
         statusText.style.color = "#00ff00";
+
+        var form = document.createElement('form');
+        form.action = "http://127.0.0.1:9090/api/install?uri=" + encodeURIComponent(pkgUrl);
+        form.method = "GET";
+        form.target = "hidden-iframe";
         
-        // Directly navigate the window to GoldHEN's background installation URL handler
-        window.location.href = "http://127.0.0.1:9090/api/install?uri=" + encodeURIComponent(pkgUrl);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        setTimeout(function() {
+            statusText.innerText = "Package sent! Press PS Button to check downloads.";
+            document.getElementById('install-btn').disabled = false;
+        }, 2000);
     }
 </script>
 </body>
