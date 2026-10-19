@@ -1,51 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GoldHEN One-Click Downloader</title>
+    <title>Automated One-Click PKG Zone</title>
     <style>
         body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        .pkg-card { background: #1e1e1e; display: inline-block; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; width: 320px; }
+        .pkg-card { background: #1e1e1e; display: inline-block; padding: 25px; border-radius: 12px; border: 1px solid #333; margin: 15px; width: 320px; text-align: left; }
+        .pkg-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .pkg-info { color: #888; font-size: 13px; margin: 5px 0; }
         button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 15px; }
         button:hover { background: #0056a3; }
-        .instructions { color: #aaa; font-size: 14px; max-width: 500px; margin: 0 auto; text-align: left; background: #222; padding: 15px; border-radius: 8px; border-left: 5px solid #0070d2; }
+        .status-msg { margin-top: 15px; font-style: italic; color: #666; font-size: 13px; text-align: center; min-height: 18px; }
     </style>
 </head>
 <body>
 
-    <h1>تجربة</h1>
-    <p>Bypassing "Data not supported" error automatically...</p>
+    <h1 style="color: #0070d2; text-align:center;">Custom One-Click PKG Zone</h1>
+    <p style="text-align:center; color:#aaa;">Bypassing file limitations automatically using client-side decoding...</p>
     <br>
 
-    <div class="instructions">
-        <b>What to do on PS4:</b><br>
-        1. Open GoldHEN Settings -> Ensure **Payload Server** or **FTP** is active.<br>
-        2. Click the blue button below.<br>
-        3. Once sent, press the PS Button and check your <b>Notifications -> Downloads</b> tray!
-    </div>
-
-    <div id="pkg-list">
+    <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+        <!-- ITEM 1 -->
         <div class="pkg-card">
-            <h3 style="margin-top:0;">📦 DolphinPS4 Emulator</h3>
-            <p style="color:#aaa; font-size:14px;">Version: v04.16</p>
+            <div class="pkg-title">📦 DolphinPS4 Emulator</div>
+            <div class="pkg-info"><b>Version:</b> v04.16</div>
+            <div class="pkg-info"><b>Firmware:</b> 12.02 / 13.52 / GoldHEN</div>
             
-            <!-- ضَعْ رابط الـ CDN المباشر الطويل الذي استخرجته بدلاً من العبارة أدناه -->
-            <button onclick="forceDownload('https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg')">
+            <!-- PASTE THE STANDARD, NORMAL SHARING MEDIAFIRE LINK BELOW -->
+            <button onclick="autoDecodeAndInstall('https://www.mediafire.com/file/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg/file', this)">
                 Click to Install
             </button>
+            <div class="status-msg">Ready</div>
         </div>
     </div>
 
     <script>
-    function forceDownload(directUrl) {
-        if(directUrl.includes("https://download1532.mediafire.com/gijdtgq4nnqgWgk1VjlV22LABhZ2KQ3hrZ6tSUCUoJ7JD_MdBNtI_s8LlzOK5WMrpb73O0muYFTJVDUUg7Wz24S2ZjVemUh7n5CUAhMtyKhwWU6McvV1B7ljMmYOWJaJEt0cbnDfyzMo8HaEJV108knVDTGNnw_rwNbZicCK5iilEOY/u40y5ij5wg8y1qk/DolphinPS4-v04.16.pkg")) {
-            alert("Error: Update the code with your real CDN download link first!");
-            return;
-        }
-        
-        // كود تخطي الحظر: إجبار نظام الـ PS4 على فتح الرابط كأمر تحميل داخلي عبر الـ Kernel
+    function autoDecodeAndInstall(mediafireUrl, buttonEl) {
+        var statusDiv = buttonEl.nextElementSibling;
+        statusDiv.innerText = "Contacting link decoder network...";
+        statusDiv.style.color = "#ffcc00";
+
+        // Automated fallback scraper using a multi-origin content delivery fetch
+        var decodeServer = "https://allorigins.win" + encodeURIComponent(mediafireUrl);
+
+        fetch(decodeServer)
+            .then(res => {
+                if (res.ok) return res.json();
+                throw new Error("Decoder server rejected connectivity.");
+            })
+            .then(data => {
+                var htmlRaw = data.contents;
+                
+                // Scan the raw HTML stream to look for the high-speed download anchor string
+                var urlMatch = htmlRaw.match(/href="([^"]*mediafire\.com\/[a-zA-Z0-9_\-\.\/]*\.pkg)"/i);
+                
+                if (urlMatch && urlMatch[1]) {
+                    var absoluteCdnUrl = urlMatch[1];
+                    statusDiv.innerText = "CDN Link Grabbed! Redirecting to internal PS4 system...";
+                    statusDiv.style.color = "#00ff00";
+                    
+                    // Fire the hidden structural exploit link payload trigger
+                    triggerPs4Download(absoluteCdnUrl, statusDiv);
+                } else {
+                    throw new Error("Could not parse the hidden CDN link asset string.");
+                }
+            })
+            .catch(error => {
+                statusDiv.innerText = "Decoding failed. Make sure the link is correct.";
+                statusDiv.style.color = "#ff3333";
+            });
+    }
+
+    function triggerPs4Download(directUrl, statusDiv) {
+        // Enforces the custom platform URI parameter protocol to step past the browser "data not supported" message
         window.location.href = "psninstall:?url=" + encodeURIComponent(directUrl);
         
-        alert("Download command injected! Please check your PS4 Downloads / Notifications menu.");
+        setTimeout(function() {
+            statusDiv.innerText = "Task sent to background queue. Check your PS4 downloads!";
+            statusDiv.style.color = "#00ff00";
+        }, 1500);
     }
     </script>
 
