@@ -3,89 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Installer</title>
+    <title>PS4 GoldHEN Direct Installer</title>
     <style>
         body {
             background-color: #1a1a1a;
             color: #ffffff;
             font-family: sans-serif;
             text-align: center;
-            padding-top: 50px;
+            padding-top: 40px;
         }
         .container {
             background-color: #2a2a2a;
             border: 1px solid #444;
             display: inline-block;
-            padding: 30px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             max-width: 90%;
         }
         button {
-            background-color: #0070d1;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 15px 25px;
+            font-size: 16px;
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
+            margin: 10px;
         }
-        button:hover {
-            background-color: #005fb8;
-        }
-        #status {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #00ffcc;
-        }
+        .btn-notify { background-color: #28a745; }
+        .btn-install { background-color: #0070d1; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>PS4 GoldHEN Installer</h1>
-        <p>JSON Payload Protocol</p>
+        <h1>PS4 GoldHEN Control</h1>
+        <p>Direct Browser Navigation Mode</p>
 
-        <button onclick="sendInstallCommand()">Install Store-R2.pkg</button>
+        <!-- Test Notification Form -->
+        <form action="http://127.0.0.1:9090/api/notify" method="POST" target="_self">
+            <input type="hidden" name="message" value="Portal connected successfully!">
+            <button class="btn-notify" type="submit">1. Test Notification</button>
+        </form>
 
-        <div id="status"></div>
+        <br>
+
+        <!-- Package Install Form -->
+        <form action="http://127.0.0.1:9090/api/install" method="POST" target="_self">
+            <input type="hidden" name="type" value="direct">
+            <input type="hidden" name="packages" value='["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"]'>
+            <button class="btn-install" type="submit">2. Install Store-R2.pkg</button>
+        </form>
     </div>
-
-    <script>
-        var directPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
-
-        function sendInstallCommand() {
-            var statusEl = document.getElementById('status');
-            statusEl.innerText = "Transmitting JSON payload...";
-
-            // Strict GoldHEN JSON Payload Structure
-            var payload = {
-                "type": "direct",
-                "packages": [directPkgUrl]
-            };
-
-            fetch("http://127.0.0.1:9090/api/install", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(function(response) {
-                if (response.ok || response.status === 200) {
-                    statusEl.innerText = "Payload accepted! Check PS4 Notifications > Downloads.";
-                } else {
-                    statusEl.innerText = "Daemon returned status code: " + response.status;
-                }
-            })
-            .catch(function(error) {
-                // Catches browser opaque/CORS blocks while successfully queueing the task
-                statusEl.innerText = "Command dispatched to background daemon.";
-            });
-        }
-    </script>
 
 </body>
 </html>
