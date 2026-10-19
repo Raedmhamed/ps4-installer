@@ -20,7 +20,7 @@ button:disabled { background: #444; cursor: not-allowed; }
 </head>
 <body>
 
-    <h1>Testing</h1>
+    <h1>Custom One-Click PKG Zone</h1>
     <p class="subtitle">Secure GoldHEN Background Installation Portal</p>
 
     <div class="pkg-card">
@@ -34,10 +34,11 @@ button:disabled { background: #444; cursor: not-allowed; }
         <div class="progress-bar-container" id="progress-container">
             <div class="progress-bar" id="my-bar"></div>
         </div>
-        <div class="status-text" id="status-text">Ready</div>
+        <div class="status-msg" id="status-text">Ready</div>
     </div>
 
     <script>
+    // Sends official system notification popups directly to the PS4 UI
     function sendPS4Notification(msg) {
         try {
             var xhr = new XMLHttpRequest();
@@ -46,6 +47,11 @@ button:disabled { background: #444; cursor: not-allowed; }
             xhr.send(JSON.stringify({ message: msg }));
         } catch(e) {}
     }
+
+    // Trigger welcome notification when page successfully finishes loading on the PS4 browser
+    window.addEventListener('DOMContentLoaded', function() {
+        sendPS4Notification("GoldHEN Zone Loaded Successfully.");
+    });
 
     function startGoldHENBackgroundInstall(directPkgUrl, buttonEl) {
         var statusText = document.getElementById('status-text');
@@ -57,7 +63,8 @@ button:disabled { background: #444; cursor: not-allowed; }
         statusText.innerText = "Connecting to GoldHEN daemon...";
         statusText.style.color = "#ffcc00";
 
-        sendPS4Notification("Initializing DolphinPS4 background install...");
+        // Trigger native notification that the download process is starting
+        sendPS4Notification("DolphinPS4 Download Started! Please wait...");
 
         // Simulated visual progress bar while system handles background queue
         var progress = 0;
@@ -69,7 +76,6 @@ button:disabled { background: #444; cursor: not-allowed; }
             }
         }, 150);
 
-        // Send payload directly to GoldHEN local background installer API
         var payloadData = {
             type: "url",
             url: directPkgUrl
@@ -86,10 +92,11 @@ button:disabled { background: #444; cursor: not-allowed; }
                 progressBar.style.width = '100%';
                 statusText.innerText = "Successfully Queued to PS4!";
                 statusText.style.color = "#00ff00";
-                sendPS4Notification("Download Started! Check PS4 Notifications.");
+                sendPS4Notification("Installation Queued! Check PS4 Notifications.");
             } else {
                 statusText.innerText = "GoldHEN rejected link format.";
                 statusText.style.color = "#ff3333";
+                sendPS4Notification("Error: GoldHEN install request failed.");
                 buttonEl.disabled = false;
             }
         };
@@ -106,6 +113,7 @@ button:disabled { background: #444; cursor: not-allowed; }
             clearInterval(progressInterval);
             statusText.innerText = "Request timed out.";
             statusText.style.color = "#ff3333";
+            sendPS4Notification("Error: Download request timed out.");
             buttonEl.disabled = false;
         };
 
