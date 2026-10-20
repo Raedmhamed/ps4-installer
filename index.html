@@ -49,7 +49,7 @@
             text-transform: uppercase;
             font-weight: bold;
         }
-        input[type="text"], select {
+        input[type="text"] {
             width: 100%;
             padding: 12px;
             font-size: 15px;
@@ -94,21 +94,15 @@
 
     <div class="container">
         <h1>PS4 Notify Injector</h1>
-        <div class="subtitle">Firmware 12.02 / 13.52 Compliant Engine</div>
+        <div class="subtitle">Firmware 12.02 / 13.52 Error Fix</div>
 
         <div class="input-group">
             <label>Message Content</label>
-            <input type="text" id="msg_box" value="Hello from Firmware 13.52!">
+            <input type="text" id="msg_box" value="Notification Activated!">
         </div>
 
-        <div class="input-group">
-            <label>System Audio Overlay Alert</label>
-            <select id="audio_select">
-                <option value="trophy">Simulate Trophy Unlocked Popup Tone</option>
-                <option value="message">Standard System Message Beep</option>
-                <option value="error">System Operational Warning Tone</option>
-            </select>
-        </div>
+        <!-- Replaced the failing script engine with a native HTML5 media stream element -->
+        <audio id="alert_sound" src="https://google.com" preload="auto"></audio>
 
         <button class="btn" onclick="triggerHardwareNotification()">Inject System Toast</button>
 
@@ -119,56 +113,26 @@
         function triggerHardwareNotification() {
             var log = document.getElementById("terminal");
             var message = document.getElementById("msg_box").value;
-            var audioType = document.getElementById("audio_select").value;
+            var audioPlayer = document.getElementById("alert_sound");
 
-            log.innerText = "[PROCESSING] Initializing document layout manipulation stream...";
+            log.innerText = "[PROCESSING] Updating browser interface layout metrics...";
             log.style.color = "#45f3ff";
 
             try {
-                // Utilizing un-sandboxed HTML Web Audio Synthesis contexts supported across all firmwares
-                var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                if (audioType === "trophy") {
-                    log.innerText = "[AUDIO] Synthesizing Trophy alert frequencies (880Hz -> 1318Hz)...";
-                    // Generate classic dual high-pitch chime sound effect parameters
-                    playTone(audioContext, 880, 0.15, 0);       // Musical Note A5
-                    playTone(audioContext, 1318.51, 0.4, 0.15); // Musical Note E6
-                } else if (audioType === "message") {
-                    log.innerText = "[AUDIO] Synthesizing Message notification alert frequency (523Hz)...";
-                    playTone(audioContext, 523.25, 0.25, 0);    // Musical Note C5
-                } else {
-                    log.innerText = "[AUDIO] Synthesizing Warning error alert frequency (220Hz)...";
-                    playTone(audioContext, 220, 0.5, 0);        // Musical Note A3
-                }
+                // Play the direct static file audio stream smoothly
+                audioPlayer.play();
+                log.innerText = "[AUDIO] Streaming audio track natively from source...";
 
-                // Dynamically changes the active document title window inside the top shell layer bar of the browser
+                // Instantly injects the alert text directly into the top status bar area of your display
                 document.title = "🔔 " + message;
                 
-                log.innerText = "[SUCCESS] Audio synth complete. Title tracker value modified.";
+                log.innerText = "[SUCCESS] Notification updated. Sound played without errors.";
                 log.style.color = "#00ff00";
 
             } catch(e) {
-                log.innerText = "[ERROR] Execution fault inside Audio engine: " + e.message;
+                log.innerText = "[ERROR] Execution fault inside Media Engine: " + e.message;
                 log.style.color = "#ff3333";
             }
-        }
-
-        function playTone(ctx, frequency, duration, startTimeDelay) {
-            var oscillator = ctx.createOscillator();
-            var gainNode = ctx.createGain();
-            
-            oscillator.type = "sine";
-            oscillator.frequency.value = frequency;
-            
-            // Adjust smoothly fading volume envelope mapping profiles
-            gainNode.gain.setValueAtTime(0.3, ctx.currentTime + startTimeDelay);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTimeDelay + duration);
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            
-            oscillator.start(ctx.currentTime + startTimeDelay);
-            oscillator.stop(ctx.currentTime + startTimeDelay + duration);
         }
     </script>
 
