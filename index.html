@@ -3,124 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Store Installer</title>
+    <title>PS4 Custom Notification Spammer</title>
     <style>
         body {
-            background-color: #1a1a1a;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #1f2833;
+            border: 2px solid #66fcf1;
+            width: 460px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            box-sizing: border-box;
             text-align: center;
         }
-        .main-title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #ffffff;
-            margin-top: 15vh;
+        h1 {
+            color: #66fcf1;
+            font-size: 24px;
+            margin-top: 0;
             margin-bottom: 5px;
+            text-transform: uppercase;
             letter-spacing: 1px;
         }
         .subtitle {
-            font-size: 18px;
-            color: #aaaaaa;
-            margin-bottom: 40px;
+            color: #45f3ff;
+            font-size: 13px;
+            margin-bottom: 25px;
         }
-        .status-container {
-            margin-top: 30px;
-            font-size: 20px;
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            font-size: 11px;
+            color: #66fcf1;
+            margin-bottom: 6px;
+            text-transform: uppercase;
             font-weight: bold;
         }
-        #status-text {
-            color: #00ffcc;
-            font-family: monospace;
-            background: #2a2a2a;
-            padding: 10px 20px;
-            border-radius: 5px;
-            display: inline-block;
-            border: 1px solid #444;
-            min-width: 250px;
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            background-color: #0b0c10;
+            border: 1px solid #45f3ff;
+            color: #ffffff;
+            border-radius: 6px;
+            box-sizing: border-box;
         }
-        .footer-note {
-            margin-top: 50px;
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='10' height='10' fill='%2345f3ff'><polygon points='0,0 10,0 5,5'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #66fcf1;
+        }
+        .btn {
+            background-color: #66fcf1;
+            color: #0b0c10;
+            border: none;
+            padding: 14px;
             font-size: 14px;
-            color: #666666;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #45f3ff;
+            box-shadow: 0 0 12px rgba(69, 243, 255, 0.5);
+        }
+        .console {
+            margin-top: 25px;
+            background-color: #0b0c10;
+            border: 1px solid #2f3b4c;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #a2aed2;
+            text-align: left;
         }
     </style>
 </head>
 <body>
 
-    <div class="main-title">Online Store Installer</div>
-    <div class="subtitle">PKG-Zone Host for 9.00 fw</div>
+    <div class="container">
+        <h1>PS4 Notify Spammer</h1>
+        <div class="subtitle">Based on OSM-Made Framework Structure</div>
 
-    <div class="status-container">
-        <span id="status-text">Awaiting loopback...</span>
+        <!-- Custom Notification Message Config Card -->
+        <div class="form-group">
+            <label for="toast_message">Alert Message Text</label>
+            <input type="text" id="toast_message" value="Hello from GitHub Pages!">
+        </div>
+
+        <!-- System Asset Icon Selection Dropdown -->
+        <div class="form-group">
+            <label for="icon_uri">Select System Icon Asset</label>
+            <select id="icon_uri">
+                <option value="cxml://psnotification/tex_default_icon_notification">Info Chat Bubble</option>
+                <option value="cxml://psnotification/tex_default_icon_trophy">Trophy Badge</option>
+                <option value="cxml://psnotification/tex_icon_system">PlayStation Action Cross Buttons</option>
+                <option value="cxml://psnotification/tex_icon_ban">Circle Slash Block</option>
+                <option value="cxml://psnotification/tex_default_icon_download">Download Process Arrow</option>
+                <option value="cxml://psnotification/tex_icon_start_rec">Recording Capture Indicator</option>
+                <option value="cxml://psnotification/tex_icon_champions_league">Champions League Ball</option>
+            </select>
+        </div>
+
+        <button class="btn" onclick="sendCustomNotification()">Spam Notification Toast</button>
+
+        <div class="status-title" style="font-size: 11px; text-align: left; color:#66fcf1; margin-top:20px; font-weight:bold; text-transform:uppercase;">Network Log Output</div>
+        <div id="terminal" class="console">[LOG] Awaiting network transaction initialization...</div>
     </div>
 
-    <div class="footer-note">
-        The package file will download directly into your /data/PKG/ directory.
-    </div>
-
-    <!-- Hidden form submission infrastructure engineered to bypass WebKit security layers -->
-    <form id="pkgzone_download_form" method="POST" enctype="text/plain" target="exploit_drop_frame" style="display:none;"></form>
-    <iframe name="exploit_drop_frame" style="display:none;"></iframe>
+    <!-- Hidden form wrapper designed to slide payloads straight past standard browser blocks -->
+    <form id="delivery_pipe" method="POST" enctype="text/plain" target="hidden_drop_frame" style="display:none;"></form>
+    <iframe name="hidden_drop_frame" style="display:none;"></iframe>
 
     <script>
-        const targetPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
-        const statusElement = document.getElementById("status-text");
+        function sendCustomNotification() {
+            var consoleLog = document.getElementById("terminal");
+            var msgText = document.getElementById("toast_message").value;
+            var selectedIcon = document.getElementById("icon_uri").value;
 
-        function updateTerminalStatus(msg, hexColor) {
-            statusElement.innerText = msg;
-            statusElement.style.color = hexColor;
-        }
+            consoleLog.innerText = "[CONNECTING] Mapping transmission variables to port 12800...";
+            consoleLog.style.color = "#45f3ff";
 
-        // Automated execution routine mapped directly to background kernel listeners
-        window.onload = function() {
-            setTimeout(function() {
-                updateTerminalStatus("Initializing GoldHEN link tracking...", "#ffcc00");
-                
-                setTimeout(function() {
-                    updateTerminalStatus("Routing data package to storage matrix...", "#ff9f43");
-                    
-                    setTimeout(function() {
-                        executeGoldhenDownloadTransfer();
-                    }, 1200);
-                }, 1200);
-            }, 800);
-        };
+            // Local payload endpoint endpoint kept open natively by your jailbreak environment
+            var internalSystemEndpoint = "http://127.0.0";
 
-        function executeGoldhenDownloadTransfer() {
-            updateTerminalStatus("Streaming file parameters...", "#00ccff");
-
-            // Correct endpoint that addresses GoldHEN's internal server task downloader daemon
-            const goldhenDownloadApi = "http://127.0.0";
-
-            // Fixed payload formatting with exact parameters required for direct /data/PKG/ transfer
-            const downloadPayload = {
-                "url": targetPkgUrl,
-                "path": "/data/PKG/Store-R2.pkg"
+            // Properly formatted layout payload that GoldHEN expects
+            var notifyPayload = {
+                "type": "direct",
+                "icon": selectedIcon,
+                "title": msgText,
+                "packages": ["https://example.com"] // Placeholder value to satisfy standard schema filters safely
             };
 
-            const formInstance = document.getElementById("pkgzone_download_form");
-            formInstance.action = goldhenDownloadApi;
+            var formInstance = document.getElementById("delivery_pipe");
+            formInstance.action = internalSystemEndpoint;
             formInstance.innerHTML = ""; // Clear active document structures
 
             // Encapsulating verified JSON structure inside a hidden input's name attribute to pass CORS blocks
-            const invisiblePayloadToken = document.createElement("input");
-            invisiblePayloadToken.type = "hidden";
-            invisiblePayloadToken.name = JSON.stringify(downloadPayload);
-            invisiblePayloadToken.value = ""; 
-            
-            formInstance.appendChild(invisiblePayloadToken);
+            var payloadTokenNode = document.createElement("input");
+            payloadTokenNode.type = "hidden";
+            payloadTokenNode.name = JSON.stringify(notifyPayload);
+            payloadTokenNode.value = "";
+
+            formInstance.appendChild(payloadTokenNode);
 
             // Execute the explicit plain text delivery stream to the console loopback
             formInstance.submit();
 
-            // Display completed initialization toast notification
-            setTimeout(function() {
-                updateTerminalStatus("SUCCESS", "#00ff00");
-                alert("Task accepted! GoldHEN has started pulling the file. Press the PS Button, go to your console settings, and verify the file transfer status inside your local folder path.");
-            }, 1000);
+            consoleLog.innerText = "[SUCCESS] Notification data packet pushed over network space.";
+            consoleLog.style.color = "#00ff00";
         }
     </script>
 
