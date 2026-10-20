@@ -113,20 +113,20 @@
         <!-- Custom Notification Message Config Card -->
         <div class="form-group">
             <label for="toast_message">Alert Message Text</label>
-            <input type="text" id="toast_message" value="Hello from GitHub Pages!">
+            <input type="text" id="toast_message" value="Hello World">
         </div>
 
         <!-- System Asset Icon Selection Dropdown -->
         <div class="form-group">
             <label for="icon_uri">Select System Icon Asset</label>
             <select id="icon_uri">
-                <option value="cxml://psnotification/tex_default_icon_notification">Info Chat Bubble</option>
-                <option value="cxml://psnotification/tex_default_icon_trophy">Trophy Badge</option>
-                <option value="cxml://psnotification/tex_icon_system">PlayStation Action Cross Buttons</option>
-                <option value="cxml://psnotification/tex_icon_ban">Circle Slash Block</option>
-                <option value="cxml://psnotification/tex_default_icon_download">Download Process Arrow</option>
-                <option value="cxml://psnotification/tex_icon_start_rec">Recording Capture Indicator</option>
-                <option value="cxml://psnotification/tex_icon_champions_league">Champions League Ball</option>
+                <option value="tex_default_icon_notification">Info Chat Bubble</option>
+                <option value="tex_default_icon_trophy">Trophy Badge</option>
+                <option value="tex_icon_system">PlayStation Action Cross Buttons</option>
+                <option value="tex_icon_ban">Circle Slash Block</option>
+                <option value="tex_default_icon_download">Download Process Arrow</option>
+                <option value="tex_icon_start_rec">Recording Capture Indicator</option>
+                <option value="tex_icon_champions_league">Champions League Ball</option>
             </select>
         </div>
 
@@ -146,22 +146,20 @@
             var msgText = document.getElementById("toast_message").value;
             var selectedIcon = document.getElementById("icon_uri").value;
 
-            consoleLog.innerText = "[CONNECTING] Mapping transmission variables to port 12800...";
+            consoleLog.innerText = "[CONNECTING] Dispatching payload transaction to loopback standard port...";
             consoleLog.style.color = "#45f3ff";
 
-            // Local payload endpoint endpoint kept open natively by your jailbreak environment
-            var internalSystemEndpoint = "http://127.0.0";
+            // Correct target routing map to hit GoldHEN's internal server notify API natively
+            var goldhenNotifyApi = "http://127.0.0";
 
-            // Properly formatted layout payload that GoldHEN expects
+            // Properly formatted layout structure matching the custom system notification requirements
             var notifyPayload = {
-                "type": "direct",
                 "icon": selectedIcon,
-                "title": msgText,
-                "packages": ["https://example.com"] // Placeholder value to satisfy standard schema filters safely
+                "message": msgText
             };
 
             var formInstance = document.getElementById("delivery_pipe");
-            formInstance.action = internalSystemEndpoint;
+            formInstance.action = goldhenNotifyApi;
             formInstance.innerHTML = ""; // Clear active document structures
 
             // Encapsulating verified JSON structure inside a hidden input's name attribute to pass CORS blocks
@@ -175,7 +173,7 @@
             // Execute the explicit plain text delivery stream to the console loopback
             formInstance.submit();
 
-            consoleLog.innerText = "[SUCCESS] Notification data packet pushed over network space.";
+            consoleLog.innerText = "[SUCCESS] Custom system notification request broadcasted.";
             consoleLog.style.color = "#00ff00";
         }
     </script>
