@@ -1,140 +1,337 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Universal Notification Host</title>
-    <style>
-        body {
-            background-color: #0b0c10;
-            color: #c5c6c7;
-            font-family: -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background-color: #1f2833;
-            border: 2px solid #66fcf1;
-            width: 450px;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-            box-sizing: border-box;
-            text-align: center;
-        }
-        h1 {
-            color: #66fcf1;
-            font-size: 24px;
-            margin: 0 0 5px 0;
-            text-transform: uppercase;
-        }
-        .subtitle {
-            color: #45f3ff;
-            font-size: 13px;
-            margin-bottom: 25px;
-        }
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        label {
-            display: block;
-            font-size: 11px;
-            color: #66fcf1;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            font-size: 15px;
-            background-color: #0b0c10;
-            border: 1px solid #45f3ff;
-            color: #ffffff;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        .btn {
-            background-color: #66fcf1;
-            color: #0b0c10;
-            border: none;
-            padding: 15px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            box-sizing: border-box;
-            text-transform: uppercase;
-            margin-top: 10px;
-        }
-        .btn:hover {
-            background-color: #45f3ff;
-            box-shadow: 0 0 12px rgba(69, 243, 255, 0.5);
-        }
-        .console {
-            margin-top: 25px;
-            background-color: #0b0c10;
-            border: 1px solid #2f3b4c;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #a2aed2;
-            text-align: left;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1">
+<title>PS4 Notification Sender</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0b0c10;
+    color: #c5c6c7;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 100%;
+    max-width: 460px;
+    padding: 25px;
+    background: #1f2833;
+    border: 2px solid #66fcf1;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px #0008;
+}
+
+h1 {
+    color: #66fcf1;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #45f3ff;
+    font-size: 13px;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin: 15px 0 7px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #66fcf1;
+    text-transform: uppercase;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 13px;
+    background: #0b0c10;
+    color: white;
+    border: 1px solid #45f3ff;
+    border-radius: 7px;
+    font-size: 15px;
+    font-family: inherit;
+}
+
+textarea {
+    min-height: 95px;
+    resize: vertical;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.primary {
+    background: #66fcf1;
+    color: #0b0c10;
+}
+
+.secondary {
+    background: #34495e;
+    color: white;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: wait;
+}
+
+.console {
+    margin-top: 20px;
+    padding: 14px;
+    background: #0b0c10;
+    border: 1px solid #2f3b4c;
+    border-radius: 7px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #a2aed2;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.status {
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: #ffcc66;
+}
+
+.note {
+    margin-top: 15px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #a2aed2;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <h1>PS4 Notify Injector</h1>
-        <div class="subtitle">Firmware 12.02 / 13.52 Error Fix</div>
+<div class="container">
 
-        <div class="input-group">
-            <label>Message Content</label>
-            <input type="text" id="msg_box" value="Notification Activated!">
-        </div>
+<h1>PS4 Notify Injector</h1>
 
-        <!-- Replaced the failing script engine with a native HTML5 media stream element -->
-        <audio id="alert_sound" src="https://google.com" preload="auto"></audio>
+<div class="subtitle">
+    GoldHEN 12.02 | PC & Mobile
+</div>
 
-        <button class="btn" onclick="triggerHardwareNotification()">Inject System Toast</button>
+<div class="status" id="status">
+    Not connected
+</div>
 
-        <div id="terminal" class="console">[LOG] Awaiting notification interface trigger...</div>
-    </div>
+<label for="ip">PS4 IP Address</label>
+<input
+    id="ip"
+    type="text"
+    inputmode="decimal"
+    placeholder="192.168.1.100"
+    autocomplete="off"
+>
 
-    <script>
-        function triggerHardwareNotification() {
-            var log = document.getElementById("terminal");
-            var message = document.getElementById("msg_box").value;
-            var audioPlayer = document.getElementById("alert_sound");
+<label for="port">Notification Receiver Port</label>
+<input
+    id="port"
+    type="number"
+    value="9028"
+    min="1"
+    max="65535"
+>
 
-            log.innerText = "[PROCESSING] Updating browser interface layout metrics...";
-            log.style.color = "#45f3ff";
+<label for="message">Notification Message</label>
+<textarea
+    id="message"
+    maxlength="500"
+>Notification Activated!</textarea>
 
-            try {
-                // Play the direct static file audio stream smoothly
-                audioPlayer.play();
-                log.innerText = "[AUDIO] Streaming audio track natively from source...";
+<button class="secondary"
+        onclick="testConnection()">
+    Test Connection
+</button>
 
-                // Instantly injects the alert text directly into the top status bar area of your display
-                document.title = "🔔 " + message;
-                
-                log.innerText = "[SUCCESS] Notification updated. Sound played without errors.";
-                log.style.color = "#00ff00";
+<button class="primary"
+        onclick="sendNotification()">
+    Send PS4 Notification
+</button>
 
-            } catch(e) {
-                log.innerText = "[ERROR] Execution fault inside Media Engine: " + e.message;
-                log.style.color = "#ff3333";
-            }
+<div class="console" id="terminal">
+[READY] Enter PS4 IP and connect.
+</div>
+
+<div class="note">
+    Requires a compatible native HTTP
+    notification receiver on your PS4.
+    Both devices must be on the same network.
+</div>
+
+</div>
+
+<script>
+"use strict";
+
+var ipInput = document.getElementById("ip");
+var portInput = document.getElementById("port");
+var msgInput = document.getElementById("message");
+var terminal = document.getElementById("terminal");
+var statusBox = document.getElementById("status");
+var buttons = document.querySelectorAll("button");
+
+try {
+    ipInput.value = localStorage.getItem("ps4_ip") || "";
+    portInput.value = localStorage.getItem("ps4_port") || "9028";
+} catch (e) {}
+
+function log(text, color) {
+    terminal.textContent = text;
+    terminal.style.color = color || "#a2aed2";
+}
+
+function setStatus(text, color) {
+    statusBox.textContent = text;
+    statusBox.style.color = color;
+}
+
+function setBusy(busy) {
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = busy;
+    }
+}
+
+function getAddress() {
+    var ip = ipInput.value.trim();
+    var port = Number(portInput.value);
+
+    if (!/^[a-zA-Z0-9.-]+$/.test(ip)) {
+        throw new Error("Invalid PS4 IP or hostname.");
+    }
+
+    if (!Number.isInteger(port) ||
+        port < 1 || port > 65535) {
+        throw new Error("Invalid port number.");
+    }
+
+    try {
+        localStorage.setItem("ps4_ip", ip);
+        localStorage.setItem("ps4_port", String(port));
+    } catch (e) {}
+
+    return "http://" + ip + ":" + port;
+}
+
+async function request(path, options) {
+    var controller = new AbortController();
+    var timer = setTimeout(function() {
+        controller.abort();
+    }, 8000);
+
+    try {
+        var response = await fetch(
+            getAddress() + path,
+            Object.assign({}, options || {}, {
+                signal: controller.signal,
+                cache: "no-store"
+            })
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "HTTP " + response.status
+            );
         }
-    </script>
+
+        return response;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function testConnection() {
+    setBusy(true);
+    setStatus("Connecting...", "#ffcc66");
+    log("[CONNECTING] Checking PS4 receiver...");
+
+    try {
+        await request("/health");
+
+        setStatus("Receiver online", "#00ff88");
+        log(
+            "[SUCCESS] PS4 notification receiver is responding.",
+            "#00ff88"
+        );
+    } catch (error) {
+        setStatus("Disconnected", "#ff5555");
+        log(
+            "[ERROR] " + error.message +
+            "\nCheck the IP, port, receiver, and browser network permissions.",
+            "#ff5555"
+        );
+    } finally {
+        setBusy(false);
+    }
+}
+
+async function sendNotification() {
+    var message = msgInput.value.trim();
+
+    if (!message) {
+        log("[ERROR] Enter a message.", "#ff5555");
+        return;
+    }
+
+    setBusy(true);
+    log("[SENDING] Requesting PS4 system notification...");
+
+    try {
+        var response = await request("/notify", {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            body: message
+        });
+
+        var result = await response.text();
+
+        setStatus("Receiver online", "#00ff88");
+        log(
+            "[SUCCESS] Receiver accepted notification." +
+            (result ? "\n" + result : ""),
+            "#00ff88"
+        );
+    } catch (error) {
+        setStatus("Send failed", "#ff5555");
+        log(
+            "[ERROR] " + error.message +
+            "\nMake sure the notification receiver is running.",
+            "#ff5555"
+        );
+    } finally {
+        setBusy(false);
+    }
+}
+</script>
 
 </body>
 </html>
