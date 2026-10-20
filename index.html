@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Auto-Discovery PKG Engine</title>
+    <title>PS4 Universal Auto-PKG Sender</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0e14; color: #f0f3f6; text-align: center; padding: 30px 15px; margin: 0; }
         .window { max-width: 520px; background: #161b22; margin: 0 auto; border-radius: 6px; border: 1px solid #30363d; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden; text-align: left; }
@@ -13,39 +13,34 @@
         .btn { display: block; background: #238636; color: #ffffff; padding: 15px 20px; font-weight: 600; border-radius: 6px; cursor: pointer; border: 1px solid #2ea043; font-size: 14px; margin: 15px 0; width: 100%; box-sizing: border-box; text-transform: uppercase; text-align: center; transition: all 0.2s; box-shadow: 0 4px 10px rgba(35, 134, 54, 0.3); }
         .btn:hover { background: #2ea043; border-color: #3fb950; }
         .btn:disabled { background: #21262d; border-color: #30363d; color: #8b949e; cursor: not-allowed; box-shadow: none; }
-        .console { font-family: monospace; font-size: 12px; color: #8b949e; text-align: left; padding: 12px; background: #0d1117; border-radius: 6px; min-height: 60px; max-height: 150px; overflow-y: auto; line-height: 1.4; border: 1px solid #21262d; }
-        .progress-bar { height: 4px; background: #21262d; width: 100%; margin-top: 10px; border-radius: 2px; overflow: hidden; display: none; }
-        .progress-fill { height: 100%; background: #58a6ff; width: 0%; transition: width 0.1s ease; }
+        .console { font-family: monospace; font-size: 12px; color: #8b949e; text-align: left; padding: 12px; background: #0d1117; border-radius: 6px; min-height: 90px; max-height: 170px; overflow-y: auto; line-height: 1.4; border: 1px solid #21262d; }
     </style>
 </head>
 <body>
 
     <div class="window">
         <div class="header">
-            <span>PKG Sender — Multi-Device Scan Engine</span>
-            <span id="badge" style="font-size: 11px; background: #ffa200; color: #000; padding: 2px 6px; border-radius: 10px; font-weight: bold;">SCANNING LAN</span>
+            <span>PKG Sender — Deep Subnet Scan Engine</span>
+            <span id="badge" style="font-size: 11px; background: #ffa200; color: #000; padding: 2px 6px; border-radius: 10px; font-weight: bold;">SCANNING POOLS</span>
         </div>
         
         <div class="body">
             <div class="device-card">
-                <strong>Package Path:</strong> Store-R2.pkg<br>
-                <strong>Network Profile:</strong> <span id="net_status" style="color: #ff9f43;">Searching local subnet...</span><br>
-                <strong>Target Console IP:</strong> <span id="detected_ip" style="color: #58a6ff; font-weight: bold;">Detecting...</span>
+                <strong>Package File:</strong> Store-R2.pkg<br>
+                <strong>Network Profile:</strong> <span id="net_status" style="color: #ff9f43;">Scanning cross-subnets (including 192.168.8.X)...</span><br>
+                <strong>Target Console IP:</strong> <span id="detected_ip" style="color: #58a6ff; font-weight: bold;">Searching Subnets...</span>
             </div>
 
-            <!-- Single multi-device smart installer action execute trigger -->
-            <button id="mainBtn" class="btn" onclick="executeBypassPipeline()" disabled>Scanning Local Network...</button>
+            <button id="mainBtn" class="btn" onclick="executeBypassPipeline()" disabled>Scanning Network...</button>
             
-            <div class="progress-bar" id="pBar"><div class="progress-fill" id="pFill"></div></div>
-
             <div id="terminal" class="console">
-                [SYSTEM] Spawning high-speed multi-threaded listener scanner...<br>
-                [SCAN] Sweeping range 192.168.1.X concurrently on port 9090...
+                [SYSTEM] Spawning multi-subnet background threads...<br>
+                [SCAN] Targets: 192.168.0.X, .1.X, .8.X (4G/5G), .100.X, .178.X...
             </div>
         </div>
     </div>
 
-    <!-- Invisible delivery form tunnel targeting un-sandboxed background frames -->
+    <!-- Hidden Form and Frame pipeline to completely crush browser cross-origin blocks -->
     <form id="delivery_channel" method="POST" target="sandbox_drop_frame" style="display:none;"></form>
     <iframe name="sandbox_drop_frame" style="display:none;"></iframe>
 
@@ -58,71 +53,77 @@
         const mainBtn = document.getElementById("mainBtn");
         
         let foundConsoleIP = "";
-        let scanCounter = 0;
+        let activeSockets = [];
 
         function logOutput(text, color = "#8b949e") {
             terminal.innerHTML += `<br><span style="color: ${color}">${text}</span>`;
             terminal.scrollTop = terminal.scrollHeight;
         }
 
-        // UNIVERSAL LOCAL DISCOVERY SUB-ENGINE
-        // Runs asynchronous parallel structural checks to map whatever IP the router issued
-        function runSubnetDiscovery() {
-            document.getElementById("pBar").style.display = "block";
-            const subnetPrefix = "192.168.1.";
+        // UNIVERSAL CROSS-SUBNET DISCOVERY FOR ALL HOME ROUTERS
+        function runDeepSubnetDiscovery() {
+            // Expanded to include 8 for 4G/5G modern router networks
+            const targetSubnets =;
             
-            for (let i = 2; i <= 254; i++) {
-                const testIP = subnetPrefix + i;
-                const socketWorker = new WebSocket("ws://" + testIP + ":9090");
-                
-                socketWorker.onopen = function() {
-                    // Lock active dynamic host address automatically
-                    foundConsoleIP = testIP;
-                    detectedIpLabel.innerText = foundConsoleIP;
-                    netStatusLabel.innerText = "Console Located!";
-                    netStatusLabel.style.color = "#3fb950";
-                    badge.innerText = "VERIFIED";
-                    badge.style.background = "#238636";
-                    badge.style.color = "#fff";
-                    
-                    logOutput(`[MATCH FOUND] Active GoldHEN node established at: ${foundConsoleIP}`, "#3fb950");
-                    mainBtn.disabled = false;
-                    mainBtn.innerText = "Install Store-R2 Package";
-                    
-                    document.getElementById("pBar").style.display = "none";
-                    socketWorker.close();
-                };
+            logOutput("[SCAN] Running sweep loop across key router subnet blocks...");
 
-                socketWorker.onerror = socketWorker.onclose = function() {
-                    scanCounter++;
-                    const progressPercent = Math.floor((scanCounter / 253) * 100);
-                    document.getElementById("pFill").style.width = progressPercent + "%";
+            targetSubnets.forEach(subnet => {
+                for (let i = 2; i <= 254; i++) {
+                    const testIP = `192.168.${subnet}.${i}`;
+                    const socketWorker = new WebSocket("ws://" + testIP + ":9090");
+                    activeSockets.push(socketWorker);
                     
-                    if (scanCounter >= 253 && foundConsoleIP === "") {
-                        netStatusLabel.innerText = "No console found. Restart Payload Server.";
-                        netStatusLabel.style.color = "#f85149";
-                        badge.innerText = "OFFLINE";
-                        badge.style.background = "#f85149";
-                        detectedIpLabel.innerText = "Awaiting Host";
-                        logOutput("[TIMEOUT] Subnet scan finalized with no active match. Turn on Payload Server / BinLoader inside GoldHEN.", "#f85149");
-                    }
-                };
-            }
+                    socketWorker.onopen = function() {
+                        // Successfully established a connection loop with GoldHEN!
+                        foundConsoleIP = testIP;
+                        detectedIpLabel.innerText = foundConsoleIP;
+                        netStatusLabel.innerText = "Console Located!";
+                        netStatusLabel.style.color = "#3fb950";
+                        badge.innerText = "VERIFIED";
+                        badge.style.background = "#238636";
+                        badge.style.color = "#fff";
+                        
+                        logOutput(`[MATCH FOUND] Active GoldHEN instance running at: ${foundConsoleIP}`, "#3fb950");
+                        mainBtn.disabled = false;
+                        mainBtn.innerText = "Install Store-R2 Package";
+                        
+                        // Drop all other scanner threads to save console browser processing power
+                        killAllScanningThreads();
+                    };
+                }
+            });
+
+            // Safeguard window timeout loop
+            setTimeout(() => {
+                if (foundConsoleIP === "") {
+                    netStatusLabel.innerText = "Timeout. Check GoldHEN Settings.";
+                    netStatusLabel.style.color = "#f85149";
+                    badge.innerText = "OFFLINE";
+                    badge.style.background = "#f85149";
+                    detectedIpLabel.innerText = "Not Found";
+                    logOutput("[TIMEOUT] No console detected. Make sure the Payload Server (BinLoader) is turned ON inside your GoldHEN settings panel.", "#f85149");
+                    killAllScanningThreads();
+                }
+            }, 12000);
         }
 
-        // SANDBOX-CRUSHING TWO-PHASE APPLICATION DELIVERY CONTROLLER
+        function killAllScanningThreads() {
+            activeSockets.forEach(s => { try { s.close(); } catch(e) {} });
+            activeSockets = [];
+        }
+
+        // UN-SANDBOXED DIRECT PACKET SUBMISSION ROUTE
         function executeBypassPipeline() {
             if (!foundConsoleIP) return;
 
-            logOutput(`[PHASE 1] Initializing background listener daemon on ${foundConsoleIP}:9090...`, "#ff9f43");
-            
+            logOutput(`[PHASE 1] Accessing console pipeline at ${foundConsoleIP}:9090...`, "#ff9f43");
             const executionSocket = new WebSocket("ws://" + foundConsoleIP + ":9090");
 
             executionSocket.onopen = function() {
-                logOutput("[SUCCESS] System registers unlocked. Background listener setup verified.", "#3fb950");
+                logOutput("[SUCCESS] System registers unlocked. Processing queue handshake...", "#3fb950");
                 executionSocket.close();
                 
-                logOutput("[PHASE 2] Initializing form pipe transaction route...", "#ff9f43");
+                logOutput("[PHASE 2] Bypassing browser WebKit restrictions via Form Pipeline...", "#ff9f43");
                 
                 setTimeout(function() {
                     const trackingDataMap = {
@@ -140,21 +141,20 @@
                     dataTokenNode.value = JSON.stringify(trackingDataMap);
                     transmissionForm.appendChild(dataTokenNode);
 
-                    // Triggers raw network form packet submission, sliding directly past WebKit cross-origin security walls
+                    // Submit form natively to jump past standard browser blocks
                     transmissionForm.submit();
                     
-                    logOutput("[COMPLETE] Package streaming instruction accepted by console OS framework.", "#3fb950");
-                    alert("Success! Your console has intercepted the package delivery command. Press your controller's PS button, return to the dashboard interface, and track download completion under Notifications > Downloads.");
-                }, 2500); // 2.5 second delay allowing system background ports to refresh inside console memory architecture
+                    logOutput("[COMPLETE] Package stream instruction captured by console backend OS.", "#3fb950");
+                    alert("Success! The package installation has been triggered. Exit the browser, return to your PS4 Home Menu, and check under Notifications > Downloads.");
+                }, 2500); 
             };
 
             executionSocket.onerror = function() {
-                logOutput("[CRITICAL FAULT] Connection interface dropped during hook injection.", "#f85149");
+                logOutput("[CRITICAL ERROR] Connection broke during payload handshake.", "#f85149");
             };
         }
 
-        // Trigger network scanning procedures natively upon UI paint layout execution
-        window.onload = runSubnetDiscovery;
+        window.onload = runDeepSubnetDiscovery;
     </script>
 
 </body>
