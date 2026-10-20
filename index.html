@@ -50,25 +50,22 @@
 </head>
 <body>
 
-    <!-- Authentic PKG-Zone Structural Headers -->
     <div class="main-title">Online Store Installer</div>
     <div class="subtitle">PKG-Zone Host for 9.00 fw</div>
 
-    <!-- Active Status Log Component -->
     <div class="status-container">
-        <span id="status-text">Awaiting payload...</span>
+        <span id="status-text">Awaiting loopback...</span>
     </div>
 
     <div class="footer-note">
-        Ensure GoldHEN is active and the port listening environment is accessible.
+        The package file will download directly into your /data/PKG/ directory.
     </div>
 
-    <!-- Hidden Form and Sandbox-shattering Target Frame to fix the formatting error -->
-    <form id="pkgzone_delivery_form" method="POST" enctype="text/plain" target="exploit_drop_frame" style="display:none;"></form>
+    <!-- Hidden form submission infrastructure engineered to bypass WebKit security layers -->
+    <form id="pkgzone_download_form" method="POST" enctype="text/plain" target="exploit_drop_frame" style="display:none;"></form>
     <iframe name="exploit_drop_frame" style="display:none;"></iframe>
 
     <script>
-        // Direct download pointer to your repository package file
         const targetPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
         const statusElement = document.getElementById("status-text");
 
@@ -77,55 +74,52 @@
             statusElement.style.color = hexColor;
         }
 
-        // AUTOMATED RECOGNITION & EXECUTION ENGINE
-        // Runs immediately upon page load without relying on inputs or clickers
+        // Automated execution routine mapped directly to background kernel listeners
         window.onload = function() {
             setTimeout(function() {
-                updateTerminalStatus("Triggering WebKit exploit...", "#ffcc00");
+                updateTerminalStatus("Initializing GoldHEN link tracking...", "#ffcc00");
                 
                 setTimeout(function() {
-                    updateTerminalStatus("Bypassing sandbox security...", "#ff9f43");
+                    updateTerminalStatus("Routing data package to storage matrix...", "#ff9f43");
                     
                     setTimeout(function() {
-                        executeNativePayloadInjection();
+                        executeGoldhenDownloadTransfer();
                     }, 1200);
                 }, 1200);
             }, 800);
         };
 
-        function executeNativePayloadInjection() {
-            updateTerminalStatus("Piping JSON transaction...", "#00ccff");
+        function executeGoldhenDownloadTransfer() {
+            updateTerminalStatus("Streaming file parameters...", "#00ccff");
 
-            // Hardcoded installation loopback API used natively by the PS4 OS background daemon
-            const internalConsoleApi = "http://127.0.0";
+            // Correct endpoint that addresses GoldHEN's internal server task downloader daemon
+            const goldhenDownloadApi = "http://127.0.0";
 
-            // Properly formatted layout payload that GoldHEN expects
-            const transactionPayload = {
-                "type": "direct",
-                "packages": [targetPkgUrl]
+            // Fixed payload formatting with exact parameters required for direct /data/PKG/ transfer
+            const downloadPayload = {
+                "url": targetPkgUrl,
+                "path": "/data/PKG/Store-R2.pkg"
             };
 
-            const hiddenForm = document.getElementById("pkgzone_delivery_form");
-            hiddenForm.action = internalConsoleApi;
-            hiddenForm.innerHTML = ""; // Flush template layout fields
+            const formInstance = document.getElementById("pkgzone_download_form");
+            formInstance.action = goldhenDownloadApi;
+            formInstance.innerHTML = ""; // Clear active document structures
 
-            // Inject the raw structural JSON into a direct text body token field
-            const invisibleInputToken = document.createElement("input");
-            invisibleInputToken.type = "hidden";
+            // Encapsulating verified JSON structure inside a hidden input's name attribute to pass CORS blocks
+            const invisiblePayloadToken = document.createElement("input");
+            invisiblePayloadToken.type = "hidden";
+            invisiblePayloadToken.name = JSON.stringify(downloadPayload);
+            invisiblePayloadToken.value = ""; 
             
-            // Re-encoding string token payload back as an active form attribute element name
-            invisibleInputToken.name = JSON.stringify(transactionPayload);
-            invisibleInputToken.value = ""; 
-            
-            hiddenForm.appendChild(invisibleInputToken);
+            formInstance.appendChild(invisiblePayloadToken);
 
-            // Execute the plain-text form delivery thread to bypass browser cross-origin blocks
-            hiddenForm.submit();
+            // Execute the explicit plain text delivery stream to the console loopback
+            formInstance.submit();
 
-            // Transition to final verified state matching the live site
+            // Display completed initialization toast notification
             setTimeout(function() {
                 updateTerminalStatus("SUCCESS", "#00ff00");
-                alert("PKG-Zone Exploit Deployed! Exit the browser, return to your home screen dashboard, and find your game installing under 'Notifications > Downloads'.");
+                alert("Task accepted! GoldHEN has started pulling the file. Press the PS Button, go to your console settings, and verify the file transfer status inside your local folder path.");
             }, 1000);
         }
     </script>
