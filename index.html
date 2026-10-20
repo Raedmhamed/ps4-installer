@@ -3,42 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Direct Local Downloader</title>
+    <title>Raed Web PS4 PKG Installer</title>
     <style>
-        body { font-family: sans-serif; background: #0f111a; color: #ffffff; text-align: center; padding: 30px 15px; }
-        h1 { color: #0072ce; font-size: 22px; margin-bottom: 5px; }
-        p { color: #888899; font-size: 14px; margin-bottom: 25px; }
-        .card { background: #1a1d29; border: 1px solid #2d3142; padding: 25px; margin: 15px auto; border-radius: 8px; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .app-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
-        .path-info { font-size: 12px; color: #00ccff; font-family: monospace; margin-bottom: 20px; }
-        .btn { display: inline-block; background: #003791; color: white; padding: 14px 28px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; width: 100%; box-sizing: border-box; font-size: 15px; text-decoration: none; transition: background 0.2s; }
-        .btn:hover { background: #0056e0; }
-        .status-box { margin-top: 15px; font-size: 13px; color: #aaabbb; }
+        body { font-family: sans-serif; background: #0b0c10; color: #ffffff; text-align: center; padding: 25px; }
+        h1 { color: #45f3ff; font-size: 24px; }
+        .box { background: #1f2833; border: 2px solid #45f3ff; padding: 20px; border-radius: 10px; max-width: 450px; margin: 20px auto; }
+        input[type="text"] { width: 80%; padding: 10px; font-size: 16px; margin: 10px 0; background: #0b0c10; border: 1px solid #66fcf1; color: #fff; text-align: center; border-radius: 5px; }
+        .btn { display: inline-block; background: #66fcf1; color: #0b0c10; padding: 12px 30px; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; font-size: 16px; margin-top: 15px; }
+        .btn:hover { background: #45f3ff; }
+        .instructions { font-size: 13px; color: #c5c6c7; text-align: left; max-width: 450px; margin: 20px auto; line-height: 1.5; }
     </style>
 </head>
 <body>
 
-    <h1>PS4 Web-Only File Downloader</h1>
-    <p>Downloads directly via browser framework</p>
+    <h1>Raed PS4 Web-Only Installer</h1>
+    
+    <div class="box">
+        <h3>Enter Your PS4 IP Address</h3>
+        <p style="font-size:12px; color:#aaa; margin:0;">Go to PS4 Settings > Network > View Connection Status to find it</p>
         
-    <!-- File Download Card -->
-    <div class="card">
-        <div class="app-title">Store-R2.pkg</div>
-        <div class="path-info">Source: GitHub Pages Stream</div>
+        <!-- Input for the target IP -->
+        <input type="text" id="ps4_ip" value="192.168.1.X" placeholder="e.g. 192.168.1.50">
         
-        <!-- Standard HTML5 Download Attribute bypassing the broken loopback API -->
-        <a id="downloadBtn" class="btn" href="https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg" download="Store-R2.pkg" onclick="updateStatus()">
-            Download PKG File
-        </a>
-        
-        <div id="status" class="status-box">Status: Ready</div>
+        <br>
+        <button class="btn" onclick="sendPkgToConsole()">Send to PS4 Downloads</button>
     </div>
 
+    <div class="instructions">
+        <strong>How to use:</strong><br>
+        1. Make sure <strong>GoldHEN</strong> is running on your PS4.<br>
+        2. Ensure the <strong>Remote Package Installer</strong> feature is enabled in your GoldHEN settings.<br>
+        3. Enter your console's network IP address above and click the button.<br>
+        4. Exit the browser and check <strong>Notifications > Downloads</strong> on the PS4 menu.
+    </div>
+
+    <!-- Hidden form wrapper to bypass strict WebKit CORS sandbox blocks -->
+    <form id="bypassForm" method="POST" target="hidden_iframe" style="display:none;"></form>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
     <script>
-        function updateStatus() {
-            var statusDiv = document.getElementById("status");
-            statusDiv.innerText = "Downloading file via browser cache...";
-            statusDiv.style.color = "#00ff00";
+        function sendPkgToConsole() {
+            var ip = document.getElementById("ps4_ip").value.trim();
+            if (ip === "" || ip.includes("X")) {
+                alert("Please type your actual PS4 IP address first!");
+                return;
+            }
+
+            var targetUrl = "http://" + ip + ":12800/api/install";
+            var pkgLink = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+
+            // Crafting the layout payload GoldHEN background server expects
+            var payload = {
+                "type": "direct",
+                "packages": [pkgLink]
+            };
+
+            // Injecting payload into a raw form submit to hop the sandbox barrier
+            var form = document.getElementById("bypassForm");
+            form.action = targetUrl;
+            
+            // Clear prior form components if any
+            form.innerHTML = ""; 
+
+            var hiddenField = document.createElement("input");
+            hiddenField.type = "hidden";
+            hiddenField.name = "data";
+            hiddenField.value = JSON.stringify(payload);
+            form.appendChild(hiddenField);
+
+            // Execute submission
+            form.submit();
+            
+            alert("Command broadcasted to PS4 background downloader! Press the PS button and check your home menu notifications queue.");
         }
     </script>
 
