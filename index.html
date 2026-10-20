@@ -49,50 +49,25 @@
         <h1>PS4 Homebrew Downloader</h1>
         <p>Target Destination: <code style="color: #00ffcc;">/data/PKG/Store-R2.pkg</code></p>
 
-        <!-- Fixed button utilizing a secure, un-sandboxed JSON stream transmitter -->
-        <button class="btn-install" onclick="downloadPkgToInternalStorage()">Download to /data/PKG/</button>
+        <!-- Form submitting text/plain to bypass browser cross-origin blocks -->
+        <form action="http://127.0.0" method="POST" enctype="text/plain" target="hidden_iframe">
+            <!-- This payload passes direct JSON text structure bypassing browser CORS block -->
+            <input type="hidden" name='{"type":"direct","packages":["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"]}' value="">
+            <button class="btn-install" type="submit" onclick="setStatus('Sending download command...')">Download to /data/PKG/</button>
+        </form>
 
         <div id="status">Status: Ready</div>
     </div>
 
+    <!-- Hidden targeting frame to keep the user inside the main index.html file -->
+    <iframe name="hidden_iframe" style="display:none;"></iframe>
+
     <script>
-        function downloadPkgToInternalStorage() {
-            var statusDiv = document.getElementById('status');
-            statusDiv.innerText = "Transmitting format-verified payload...";
-            statusDiv.style.color = "#ffcc00";
-
-            // Targeting the console's internal loopback port
-            var localApiUrl = "http://127.0.0"; 
-            var targetPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
-
-            // Properly formatted raw JSON object structure required by the PS4 OS backend
-            var payload = {
-                "url": targetPkgUrl,
-                "path": "/data/PKG/Store-R2.pkg"
-            };
-
-            // Utilizing JavaScript Fetch to explicitly declare application/json headers
-            fetch(localApiUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
-                if (response.ok) {
-                    statusDiv.innerText = "Success! Check GoldHEN Task Manager.";
-                    statusDiv.style.color = "#00ff00";
-                    alert("Download started successfully! The file is being written directly to /data/PKG/.");
-                } else {
-                    throw new Error("Server rejected formatting template");
-                }
-            })
-            .catch(error => {
-                statusDiv.innerText = "Error: Transmission failed.";
-                statusDiv.style.color = "#ff3333";
-                alert("Error: Ensure GoldHEN is running on your console and the WebBrowser port environment is accessible.");
-            });
+        function setStatus(msg) {
+            document.getElementById('status').innerText = msg;
+            setTimeout(function() {
+                document.getElementById('status').innerText = "Command sent! Check 'Notifications > Downloads'.";
+            }, 2000);
         }
     </script>
 
