@@ -3,84 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raed PS4 9090 BinLoader Exploit</title>
+    <title>PS4 Remote PKG Sender Web UI</title>
     <style>
-        body { font-family: sans-serif; background: #0f1016; color: #ffffff; text-align: center; padding: 25px; }
-        h1 { color: #ff9f43; font-size: 22px; }
-        .box { background: #1e272e; border: 2px solid #ff9f43; padding: 20px; border-radius: 10px; max-width: 450px; margin: 20px auto; }
-        input[type="text"] { width: 80%; padding: 10px; font-size: 16px; margin: 10px 0; background: #0f1016; border: 1px solid #ff9f43; color: #fff; text-align: center; border-radius: 5px; }
-        .btn { display: inline-block; background: #ff9f43; color: #1e272e; padding: 12px 30px; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; font-size: 15px; margin: 5px; width: 85%; }
-        .btn:hover { background: #ffb7b2; }
-        .status { margin-top: 15px; font-size: 13px; color: #a4b0be; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f111a; color: #eceff1; margin: 0; padding: 20px; text-align: center; }
+        .app-window { max-width: 650px; background: #1a1d2a; margin: 0 auto; border-radius: 8px; border: 1px solid #2d3142; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; text-align: left; }
+        .app-header { background: #111420; padding: 15px 20px; border-bottom: 1px solid #2d3142; display: flex; justify-content: space-between; align-items: center; }
+        .app-title { font-size: 18px; font-weight: bold; color: #45f3ff; }
+        .app-body { padding: 20px; }
+        .config-section { background: #111420; padding: 15px; border-radius: 6px; border: 1px solid #25293a; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
+        .input-group { flex: 1; min-width: 140px; }
+        .input-group label { display: block; font-size: 11px; color: #888ea8; text-transform: uppercase; margin-bottom: 5px; font-weight: 600; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; background: #0f111a; border: 1px solid #2d3142; color: #fff; border-radius: 4px; box-sizing: border-box; font-family: monospace; font-size: 14px; }
+        input:focus { border-color: #45f3ff; outline: none; }
+        .pkg-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #111420; border-radius: 6px; overflow: hidden; border: 1px solid #25293a; }
+        .pkg-table th { background: #171b2c; color: #888ea8; font-size: 12px; padding: 12px; text-transform: uppercase; font-weight: 600; text-align: left; }
+        .pkg-table td { padding: 12px; border-top: 1px solid #25293a; font-size: 14px; }
+        .btn { background: #0072ce; color: #fff; border: none; padding: 10px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: background 0.2s; }
+        .btn:hover { background: #0056a3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .console-log { background: #090a0f; border: 1px solid #25293a; border-radius: 6px; padding: 15px; font-family: monospace; font-size: 13px; color: #a2aed2; margin-top: 20px; max-height: 120px; overflow-y: auto; }
+        .log-entry { margin: 4px 0; border-left: 3px solid #45f3ff; padding-left: 8px; }
     </style>
 </head>
 <body>
 
-    <h1>Raed PS4 9090 Patcher</h1>
-    
-    <div class="box">
-        <h3>Enter Your PS4 IP Address</h3>
-        <input type="text" id="ps4_ip" value="192.168.1.X">
-        <br><br>
+    <div class="app-window">
+        <!-- Application Title Bar Layout -->
+        <div class="app-header">
+            <div class="app-title">PS4 Package Sender v2 (Web Edition)</div>
+            <div style="font-size: 12px; color: #888ea8;">Server Status: <span style="color: #28a745; font-weight: bold;">ONLINE</span></div>
+        </div>
         
-        <!-- Step 1: Open Port 12800 by sending standard payload via 9090 -->
-        <button class="btn" onclick="activateInstallerServer()">Step 1: Open Package Server (Port 9090)</button>
-        
-        <!-- Step 2: Push the link -->
-        <button class="btn" onclick="sendPkgLink()">Step 2: Send PKG to Downloads</button>
-        
-        <div id="status" class="status">Status: Awaiting Step 1</div>
+        <div class="app-body">
+            <!-- Server Configuration Dashboard Segment -->
+            <div class="config-section">
+                <div class="input-group">
+                    <label>PS4 IP Address</label>
+                    <input type="text" id="ps4_ip" value="192.168.1." placeholder="e.g. 192.168.1.50">
+                </div>
+                <div class="input-group" style="flex: 0 0 100px;">
+                    <label>RPI API Port</label>
+                    <input type="number" id="ps4_port" value="12800">
+                </div>
+            </div>
+
+            <!-- Server Queue Processing Area -->
+            <h3 style="font-size: 15px; color: #45f3ff; margin: 0 0 10px 0; text-transform: uppercase;">Processing Center / Server Files</h3>
+            <table class="pkg-table">
+                <thead>
+                    <tr>
+                        <th>Package Title ID & File Name</th>
+                        <th style="width: 120px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong style="color: #fff; display: block;">Store-R2.pkg</strong>
+                            <span style="font-size: 11px; color: #666; font-family: monospace;">https://githubusercontent.com</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn btn-success" onclick="sendPkgToQueue('https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg', 'Store-R2.pkg')">Send</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Real-Time Logging System Window Console Output -->
+            <h3 style="font-size: 15px; color: #45f3ff; margin: 25px 0 10px 0; text-transform: uppercase;">PS4 API Connection Logs</h3>
+            <div class="console-log" id="log_output">
+                <div class="log-entry" style="border-left-color: #888ea8;">[SYSTEM] Initialized Client Browser Hook. Waiting for User Input...</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        function activateInstallerServer() {
-            var ip = document.getElementById("ps4_ip").value.trim();
-            var statusDiv = document.getElementById("status");
-            
-            statusDiv.innerText = "Connecting to BinLoader on port 9090...";
-            statusDiv.style.color = "#ff9f43";
-
-            // Connecting to your active GoldHEN BinLoader port 9090
-            var socket = new WebSocket("ws://" + ip + ":9090");
-
-            socket.onopen = function() {
-                statusDiv.innerText = "Connected! Sending installer activation script...";
-                // Pushes base application listener instructions to system RAM
-                statusDiv.style.color = "#2ed573";
-                alert("Exploit server triggered on 9090. Please wait 5 seconds, then press Step 2.");
-            };
-
-            socket.onerror = function() {
-                statusDiv.innerText = "Error connecting to 9090. Check GoldHEN Settings.";
-                statusDiv.style.color = "#ff4757";
-            };
+        function printLog(text, color = "#a2aed2") {
+            const consoleLog = document.getElementById("log_output");
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement("div");
+            entry.className = "log-entry";
+            entry.style.borderLeftColor = color;
+            entry.innerHTML = `<span style="color: #555;">[${time}]</span> <span style="color: ${color}">${text}</span>`;
+            consoleLog.appendChild(entry);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
         }
 
-        function sendPkgLink() {
-            var ip = document.getElementById("ps4_ip").value.trim();
-            var statusDiv = document.getElementById("status");
-            
-            // Post payload redirecting package data to system background task installer
-            var targetUrl = "http://" + ip + ":12800/api/install";
-            var pkgLink = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+        function sendPkgToQueue(pkgUrl, filename) {
+            const ip = document.getElementById("ps4_ip").value.trim();
+            const port = document.getElementById("ps4_port").value.trim();
 
-            var payload = {
+            if (!ip || ip === "192.168.1.") {
+                alert("Please enter a valid PS4 IP address!");
+                printLog("[ERROR] Operation canceled. Missing Target Host IP Profile.", "#ff4757");
+                return;
+            }
+
+            printLog(`[INFO] Compiling transaction structure for: ${filename}`, "#45f3ff");
+            printLog(`[CONNECTING] Broadcasting to target instance http://${ip}:${port}/api/install...`, "#ff9f43");
+
+            const endpoint = `http://${ip}:${port}/api/install`;
+            const payload = {
                 "type": "direct",
-                "packages": [pkgLink]
+                "packages": [pkgUrl]
             };
 
-            fetch(targetUrl, {
+            fetch(endpoint, {
                 method: "POST",
-                body: JSON.stringify(payload),
-                headers: { "Content-Type": "application/json" }
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
             })
             .then(res => {
-                statusDiv.innerText = "Success! Checking Notifications > Downloads.";
-                alert("Sent! Exit to the home screen and view your downloads section.");
+                if(res.ok || res.status === 200) {
+                    printLog(`[SUCCESS] Server responded with code 200. ${filename} pushed to download manager.`, "#28a745");
+                    alert(`Success! ${filename} has been sent directly to your PS4 Downloads queue.`);
+                } else {
+                    throw new Error(`API returned execution fault error code: ${res.status}`);
+                }
             })
             .catch(err => {
-                statusDiv.innerText = "Error: Ensure Step 1 was executed first.";
-                statusDiv.style.color = "#ff4757";
+                printLog(`[CONNECTION EXCEPTION] Handshake rejected. Ensure port ${port} is reachable.`, "#ff4757");
+                alert(`Network Connection Timeout. Ensure your PS4 has GoldHEN active and that port ${port} is opened.`);
             });
         }
     </script>
