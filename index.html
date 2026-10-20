@@ -3,45 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raed PS4 PKG Installer</title>
+    <title>PS4 Direct Local Downloader</title>
     <style>
-        body { font-family: sans-serif; background: #111116; color: #ffffff; text-align: center; padding: 30px 15px; }
-        h1 { color: #0072ce; font-size: 24px; margin-bottom: 5px; }
-        p { color: #aaaaaa; font-size: 14px; margin-bottom: 25px; }
-        .card { background: #1c1c24; border: 1px solid #2d2d3d; padding: 25px; margin: 15px auto; border-radius: 8px; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .app-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-        .btn { display: inline-block; background: #003791; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; width: 100%; box-sizing: border-box; font-size: 15px; transition: background 0.2s; }
+        body { font-family: sans-serif; background: #0f111a; color: #ffffff; text-align: center; padding: 30px 15px; }
+        h1 { color: #0072ce; font-size: 22px; margin-bottom: 5px; }
+        p { color: #888899; font-size: 14px; margin-bottom: 25px; }
+        .card { background: #1a1d29; border: 1px solid #2d3142; padding: 25px; margin: 15px auto; border-radius: 8px; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .app-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .path-info { font-size: 12px; color: #00ccff; font-family: monospace; margin-bottom: 20px; }
+        .btn { display: inline-block; background: #003791; color: white; padding: 14px 28px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; width: 100%; box-sizing: border-box; font-size: 15px; transition: background 0.2s; }
         .btn:hover { background: #0056e0; }
-        .status-box { margin-top: 15px; font-size: 13px; color: #888; }
+        .status-box { margin-top: 15px; font-size: 13px; color: #aaabbb; }
     </style>
 </head>
 <body>
 
-    <h1>Raed PS4 Web Installer</h1>
-    <p>Launch GoldHEN on your PS4 before clicking install</p>
+    <h1>PS4 Web-Only File Downloader</h1>
+    <p>Downloads directly to console storage without external apps</p>
         
-    <!-- Store-R2 App Card -->
+    <!-- File Download Card -->
     <div class="card">
-        <div class="app-title">Store-R2 PKG</div>
-        <p style="margin: 5px 0 20px 0; color: #888;">Source: GitHub Repository</p>
-        <button class="btn" onclick="installPKG('https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg')">Direct Install to PS4</button>
-        <div id="status" class="status-box">Status: Ready</div>
+        <div class="app-title">Store-R2.pkg</div>
+        <div class="path-info">Target: /data/PKG/Store-R2.pkg</div>
+        <button class="btn" onclick="downloadToDataPKG('https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg', 'Store-R2.pkg')">Download to /data/PKG/</button>
+        <div id="status" class="status-box">Status: Waiting for click</div>
     </div>
 
     <script>
-        function installPKG(pkgUrl) {
-            var localInstallerUrl = "http://127.0.0"; 
+        function downloadToDataPKG(fileUrl, fileName) {
+            // Using GoldHEN internal storage task API on local loopback interface
+            var localApiUrl = "http://127.0.0"; 
             var statusDiv = document.getElementById("status");
             
-            statusDiv.innerText = "Sending command to PS4...";
+            statusDiv.innerText = "Requesting system loopback transfer...";
             statusDiv.style.color = "#ffcc00";
 
+            // Instructs the native browser backend to pipe the stream to /data/PKG/
             var payload = {
-                "type": "direct",
-                "url": pkgUrl
+                "url": fileUrl,
+                "path": "/data/PKG/" + fileName
             };
 
-            fetch(localInstallerUrl, {
+            fetch(localApiUrl, {
                 method: "POST",
                 body: JSON.stringify(payload),
                 headers: {
@@ -49,14 +52,18 @@
                 }
             })
             .then(response => {
-                statusDiv.innerText = "Success! Check 'Notifications > Downloads'.";
-                statusDiv.style.color = "#00ff00";
-                alert("Success! Check your PS4 'Notifications > Downloads'.");
+                if(response.ok) {
+                    statusDiv.innerText = "Transfer started! Check GoldHEN file task manager.";
+                    statusDiv.style.color = "#00ff00";
+                    alert("Download started successfully inside /data/PKG/ folder.");
+                } else {
+                    throw new Error("API rejection");
+                }
             })
             .catch(error => {
-                statusDiv.innerText = "Error: Connection failed.";
+                statusDiv.innerText = "Failed. Confirm GoldHEN is enabled.";
                 statusDiv.style.color = "#ff3333";
-                alert("Error: Ensure GoldHEN is active on your PS4 and Remote Package Installer features are enabled.");
+                alert("Error: Transfer could not mount over local loopback. Please ensure GoldHEN is running.");
             });
         }
     </script>
