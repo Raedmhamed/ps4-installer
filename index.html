@@ -3,71 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 GoldHEN Package Installer</title>
+    <title>PKG-Zone — Online Store Installer</title>
     <style>
         body {
-            background-color: #1a1a1a;
-            color: #ffffff;
-            font-family: sans-serif;
-            text-align: center;
-            padding-top: 50px;
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
         .container {
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            display: inline-block;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            max-width: 90%;
-            width: 400px;
+            background-color: #1f2833;
+            border: 2px solid #45f3ff;
+            width: 480px;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+            box-sizing: border-box;
         }
-        button {
-            color: white;
-            border: none;
-            padding: 15px 25px;
+        h1 {
+            color: #66fcf1;
+            font-size: 26px;
+            margin-top: 0;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            color: #45f3ff;
+            font-size: 13px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #66fcf1;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
             font-size: 16px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-            width: 85%;
+            background-color: #0b0c10;
+            border: 1px solid #45f3ff;
+            color: #ffffff;
+            text-align: center;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
         }
-        .btn-install { background-color: #0070d1; }
-        .btn-install:hover { background-color: #005fb8; }
-        #status {
-            margin-top: 20px;
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #66fcf1;
+            box-shadow: 0 0 8px rgba(102, 252, 241, 0.5);
+        }
+        .btn {
+            background-color: #66fcf1;
+            color: #0b0c10;
+            border: none;
+            padding: 15px;
+            font-size: 15px;
             font-weight: bold;
-            color: #00ffcc;
-            font-family: monospace;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease-in-out;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #45f3ff;
+            box-shadow: 0 0 15px rgba(69, 243, 255, 0.6);
+        }
+        .status-header {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #66fcf1;
+            text-transform: uppercase;
+            text-align: left;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        #status-box {
+            margin-top: 8px;
+            background-color: #0b0c10;
+            border: 1px solid #1f2833;
+            padding: 15px;
+            border-radius: 6px;
+            min-height: 40px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            color: #c5c6c7;
+            text-align: left;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>PS4 Homebrew Downloader</h1>
-        <p>Target Destination: <code style="color: #00ffcc;">/data/PKG/Store-R2.pkg</code></p>
+        <h1>PKG-Zone</h1>
+        <div class="subtitle">Online Store Installer Framework</div>
 
-        <!-- Form submitting text/plain to bypass browser cross-origin blocks -->
-        <form action="http://127.0.0" method="POST" enctype="text/plain" target="hidden_iframe">
-            <!-- This payload passes direct JSON text structure bypassing browser CORS block -->
-            <input type="hidden" name='{"type":"direct","packages":["https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg"]}' value="">
-            <button class="btn-install" type="submit" onclick="setStatus('Sending download command...')">Download to /data/PKG/</button>
-        </form>
+        <!-- Network Suffix Input Mapping Setup Area -->
+        <div class="input-group">
+            <label for="ps4_ip">Console LAN IP Address</label>
+            <input type="text" id="ps4_ip" value="192.168.1." placeholder="e.g. 192.168.1.50">
+        </div>
 
-        <div id="status">Status: Ready</div>
+        <!-- Execution Trigger Button Component -->
+        <button class="btn" onclick="injectPkgZonePayload()">Trigger Injection</button>
+
+        <div class="status-header">Terminal Log Output</div>
+        <div id="status-box">Status: Awaiting execution initiation...</div>
     </div>
 
-    <!-- Hidden targeting frame to keep the user inside the main index.html file -->
-    <iframe name="hidden_iframe" style="display:none;"></iframe>
+    <!-- Hidden Form and Sandbox-shattering Target Frame to fix the formatting error -->
+    <form id="bypassForm" method="POST" enctype="text/plain" target="hidden_iframe" style="display:none;"></form>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
     <script>
-        function setStatus(msg) {
-            document.getElementById('status').innerText = msg;
-            setTimeout(function() {
-                document.getElementById('status').innerText = "Command sent! Check 'Notifications > Downloads'.";
-            }, 2000);
+        function logMessage(text, color = "#c5c6c7") {
+            var statusBox = document.getElementById('status-box');
+            statusBox.innerHTML = "[SYSTEM] " + text;
+            statusBox.style.color = color;
+        }
+
+        function injectPkgZonePayload() {
+            var ip = document.getElementById('ps4_ip').value.trim();
+            
+            if (ip === "" || ip === "192.168.1.") {
+                alert("Please enter a valid PS4 IP address configuration!");
+                logMessage("Aborted. Target Host IP is invalid or empty.", "#ff3333");
+                return;
+            }
+
+            logMessage("Packaging JSON payload sequence metadata...", "#45f3ff");
+
+            // Destination direct package properties mapping rules
+            var targetPkgUrl = "https://raw.githubusercontent.com/Raedmhamed/ps4-games-raed/main/Store-R2.pkg";
+            var targetRoute = "http://" + ip + ":12800/api/install";
+
+            // Properly formatted raw JSON object structure required by GoldHEN RPI
+            var payloadStructure = {
+                "type": "direct",
+                "packages": [targetPkgUrl]
+            };
+
+            var formInstance = document.getElementById('bypassForm');
+            formInstance.action = targetRoute;
+            formInstance.innerHTML = ""; // Flush previous DOM nodes
+
+            // Inject the raw structural JSON into a direct text body token field
+            var payloadInputToken = document.createElement('input');
+            payloadInputToken.type = 'hidden';
+            
+            // Re-encoding string token payload back as an active form attribute element name
+            payloadInputToken.name = JSON.stringify(payloadStructure);
+            payloadInputToken.value = ""; 
+            
+            formInstance.appendChild(payloadInputToken);
+
+            // Execute the system-level plain-text form delivery thread
+            formInstance.submit();
+
+            logMessage("Payload sent successfully! Check 'Notifications > Downloads'.", "#66fcf1");
+            alert("Bypass signal transmitted to " + ip + "! Exit the browser and verify tracking under Notifications > Downloads.");
         }
     </script>
 
