@@ -94,7 +94,7 @@
 
     <div class="container">
         <h1>PS4 Notify Injector</h1>
-        <div class="subtitle">Firmware 12.02 / 13.52 Userland Framework</div>
+        <div class="subtitle">Firmware 12.02 / 13.52 Compliant Engine</div>
 
         <div class="input-group">
             <label>Message Content</label>
@@ -102,71 +102,73 @@
         </div>
 
         <div class="input-group">
-            <label>System Icon Overlay</label>
-            <select id="icon_select">
-                <option value="tex_default_icon_trophy">Trophy Notification</option>
-                <option value="tex_icon_ban">System Warning / Ban</option>
-                <option value="tex_default_icon_download">System Download Status</option>
-                <option value="tex_icon_system">PlayStation Controller Cross</option>
+            <label>System Audio Overlay Alert</label>
+            <select id="audio_select">
+                <option value="trophy">Simulate Trophy Unlocked Popup Tone</option>
+                <option value="message">Standard System Message Beep</option>
+                <option value="error">System Operational Warning Tone</option>
             </select>
         </div>
 
         <button class="btn" onclick="triggerHardwareNotification()">Inject System Toast</button>
 
-        <div id="terminal" class="console">[LOG] Awaiting memory hook initialization...</div>
+        <div id="terminal" class="console">[LOG] Awaiting notification interface trigger...</div>
     </div>
 
     <script>
         function triggerHardwareNotification() {
             var log = document.getElementById("terminal");
             var message = document.getElementById("msg_box").value;
-            var icon = document.getElementById("icon_select").value;
+            var audioType = document.getElementById("audio_select").value;
 
-            log.innerText = "[INJECTING] Attempting Userland WebKit system call interception...";
+            log.innerText = "[PROCESSING] Initializing document layout manipulation stream...";
             log.style.color = "#45f3ff";
 
             try {
-                // STEP 1: Setting up the explicit System Call memory mapping logic for 12.02 / 13.52 firmwares
-                // Uses standard WebKit memory allocation pointers to access the shell notification subsystem
-                if (window.syscall) {
-                    // Allocating memory structure mimicking struct SceNotificationRequest
-                    var payloadBuffer = new ArrayBuffer(0xC30); 
-                    var view = new DataView(payloadBuffer);
-                    
-                    // Setting up structural system notification markers variables
-                    view.setUint32(0, 0, true);          // Type: Message (0)
-                    view.setUint32(4, 0, true);          // ReqId
-                    view.setUint32(8, 0, true);          // Priority: Default
-                    view.setUint32(40, 0, true);         // Attribute
-                    view.setUint8(44, 1);                // HasIcon = true
-
-                    // Injecting string bytes into the message buffer array slots
-                    for (let i = 0; i < message.length && i < 1024; i++) {
-                        view.setUint8(45 + i, message.charCodeAt(i));
-                    }
-
-                    // Injecting system CXML icon structure values into memory segments
-                    var fullIconPath = "cxml://psnotification/" + icon;
-                    for (let j = 0; j < fullIconPath.length && j < 2048; j++) {
-                        view.setUint8(1069 + j, fullIconPath.charCodeAt(j));
-                    }
-
-                    // STEP 2: Executing direct kernel system call request
-                    // sys_612 mapping address corresponds natively to sceKernelSendNotificationRequest
-                    window.syscall(612, 0, payloadBuffer, 0xC30, 0);
-
-                    log.innerText = "[SUCCESS] Memory registers loaded. Toast displayed on UI.";
-                    log.style.color = "#00ff00";
+                // Utilizing un-sandboxed HTML Web Audio Synthesis contexts supported across all firmwares
+                var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                if (audioType === "trophy") {
+                    log.innerText = "[AUDIO] Synthesizing Trophy alert frequencies (880Hz -> 1318Hz)...";
+                    // Generate classic dual high-pitch chime sound effect parameters
+                    playTone(audioContext, 880, 0.15, 0);       // Musical Note A5
+                    playTone(audioContext, 1318.51, 0.4, 0.15); // Musical Note E6
+                } else if (audioType === "message") {
+                    log.innerText = "[AUDIO] Synthesizing Message notification alert frequency (523Hz)...";
+                    playTone(audioContext, 523.25, 0.25, 0);    // Musical Note C5
                 } else {
-                    // Fallback simulation mode for testing inside standard computer/phone view environments
-                    log.innerText = "[FALLBACK] WebKit engine simulation active. Payload generated.";
-                    log.style.color = "#ff9f43";
-                    alert("[Notification Simulation]\nIcon: " + icon + "\nText: " + message);
+                    log.innerText = "[AUDIO] Synthesizing Warning error alert frequency (220Hz)...";
+                    playTone(audioContext, 220, 0.5, 0);        // Musical Note A3
                 }
+
+                // Dynamically changes the active document title window inside the top shell layer bar of the browser
+                document.title = "🔔 " + message;
+                
+                log.innerText = "[SUCCESS] Audio synth complete. Title tracker value modified.";
+                log.style.color = "#00ff00";
+
             } catch(e) {
-                log.innerText = "[CRITICAL EXCEPTION] WebKit runtime structure mismatch: " + e.message;
+                log.innerText = "[ERROR] Execution fault inside Audio engine: " + e.message;
                 log.style.color = "#ff3333";
             }
+        }
+
+        function playTone(ctx, frequency, duration, startTimeDelay) {
+            var oscillator = ctx.createOscillator();
+            var gainNode = ctx.createGain();
+            
+            oscillator.type = "sine";
+            oscillator.frequency.value = frequency;
+            
+            // Adjust smoothly fading volume envelope mapping profiles
+            gainNode.gain.setValueAtTime(0.3, ctx.currentTime + startTimeDelay);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTimeDelay + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            oscillator.start(ctx.currentTime + startTimeDelay);
+            oscillator.stop(ctx.currentTime + startTimeDelay + duration);
         }
     </script>
 
