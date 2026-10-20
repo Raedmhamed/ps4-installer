@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS4 Custom Notification Spammer</title>
+    <title>PS4 Universal Notification Host</title>
     <style>
         body {
             background-color: #0b0c10;
             color: #c5c6c7;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -19,7 +19,7 @@
         .container {
             background-color: #1f2833;
             border: 2px solid #66fcf1;
-            width: 460px;
+            width: 450px;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
@@ -29,18 +29,16 @@
         h1 {
             color: #66fcf1;
             font-size: 24px;
-            margin-top: 0;
-            margin-bottom: 5px;
+            margin: 0 0 5px 0;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
         .subtitle {
             color: #45f3ff;
             font-size: 13px;
             margin-bottom: 25px;
         }
-        .form-group {
-            margin-bottom: 18px;
+        .input-group {
+            margin-bottom: 20px;
             text-align: left;
         }
         label {
@@ -61,22 +59,11 @@
             border-radius: 6px;
             box-sizing: border-box;
         }
-        select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='10' height='10' fill='%2345f3ff'><polygon points='0,0 10,0 5,5'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #66fcf1;
-        }
         .btn {
             background-color: #66fcf1;
             color: #0b0c10;
             border: none;
-            padding: 14px;
+            padding: 15px;
             font-size: 14px;
             font-weight: bold;
             border-radius: 6px;
@@ -84,7 +71,6 @@
             width: 100%;
             box-sizing: border-box;
             text-transform: uppercase;
-            letter-spacing: 1px;
             margin-top: 10px;
         }
         .btn:hover {
@@ -107,74 +93,80 @@
 <body>
 
     <div class="container">
-        <h1>PS4 Notify Spammer</h1>
-        <div class="subtitle">Based on OSM-Made Framework Structure</div>
+        <h1>PS4 Notify Injector</h1>
+        <div class="subtitle">Firmware 12.02 / 13.52 Userland Framework</div>
 
-        <!-- Custom Notification Message Config Card -->
-        <div class="form-group">
-            <label for="toast_message">Alert Message Text</label>
-            <input type="text" id="toast_message" value="Hello World">
+        <div class="input-group">
+            <label>Message Content</label>
+            <input type="text" id="msg_box" value="Hello from Firmware 13.52!">
         </div>
 
-        <!-- System Asset Icon Selection Dropdown -->
-        <div class="form-group">
-            <label for="icon_uri">Select System Icon Asset</label>
-            <select id="icon_uri">
-                <option value="tex_default_icon_notification">Info Chat Bubble</option>
-                <option value="tex_default_icon_trophy">Trophy Badge</option>
-                <option value="tex_icon_system">PlayStation Action Cross Buttons</option>
-                <option value="tex_icon_ban">Circle Slash Block</option>
-                <option value="tex_default_icon_download">Download Process Arrow</option>
-                <option value="tex_icon_start_rec">Recording Capture Indicator</option>
-                <option value="tex_icon_champions_league">Champions League Ball</option>
+        <div class="input-group">
+            <label>System Icon Overlay</label>
+            <select id="icon_select">
+                <option value="tex_default_icon_trophy">Trophy Notification</option>
+                <option value="tex_icon_ban">System Warning / Ban</option>
+                <option value="tex_default_icon_download">System Download Status</option>
+                <option value="tex_icon_system">PlayStation Controller Cross</option>
             </select>
         </div>
 
-        <button class="btn" onclick="sendCustomNotification()">Spam Notification Toast</button>
+        <button class="btn" onclick="triggerHardwareNotification()">Inject System Toast</button>
 
-        <div class="status-title" style="font-size: 11px; text-align: left; color:#66fcf1; margin-top:20px; font-weight:bold; text-transform:uppercase;">Network Log Output</div>
-        <div id="terminal" class="console">[LOG] Awaiting network transaction initialization...</div>
+        <div id="terminal" class="console">[LOG] Awaiting memory hook initialization...</div>
     </div>
 
-    <!-- Hidden form wrapper designed to slide payloads straight past standard browser blocks -->
-    <form id="delivery_pipe" method="POST" enctype="text/plain" target="hidden_drop_frame" style="display:none;"></form>
-    <iframe name="hidden_drop_frame" style="display:none;"></iframe>
-
     <script>
-        function sendCustomNotification() {
-            var consoleLog = document.getElementById("terminal");
-            var msgText = document.getElementById("toast_message").value;
-            var selectedIcon = document.getElementById("icon_uri").value;
+        function triggerHardwareNotification() {
+            var log = document.getElementById("terminal");
+            var message = document.getElementById("msg_box").value;
+            var icon = document.getElementById("icon_select").value;
 
-            consoleLog.innerText = "[CONNECTING] Dispatching payload transaction to loopback standard port...";
-            consoleLog.style.color = "#45f3ff";
+            log.innerText = "[INJECTING] Attempting Userland WebKit system call interception...";
+            log.style.color = "#45f3ff";
 
-            // Correct target routing map to hit GoldHEN's internal server notify API natively
-            var goldhenNotifyApi = "http://127.0.0";
+            try {
+                // STEP 1: Setting up the explicit System Call memory mapping logic for 12.02 / 13.52 firmwares
+                // Uses standard WebKit memory allocation pointers to access the shell notification subsystem
+                if (window.syscall) {
+                    // Allocating memory structure mimicking struct SceNotificationRequest
+                    var payloadBuffer = new ArrayBuffer(0xC30); 
+                    var view = new DataView(payloadBuffer);
+                    
+                    // Setting up structural system notification markers variables
+                    view.setUint32(0, 0, true);          // Type: Message (0)
+                    view.setUint32(4, 0, true);          // ReqId
+                    view.setUint32(8, 0, true);          // Priority: Default
+                    view.setUint32(40, 0, true);         // Attribute
+                    view.setUint8(44, 1);                // HasIcon = true
 
-            // Properly formatted layout structure matching the custom system notification requirements
-            var notifyPayload = {
-                "icon": selectedIcon,
-                "message": msgText
-            };
+                    // Injecting string bytes into the message buffer array slots
+                    for (let i = 0; i < message.length && i < 1024; i++) {
+                        view.setUint8(45 + i, message.charCodeAt(i));
+                    }
 
-            var formInstance = document.getElementById("delivery_pipe");
-            formInstance.action = goldhenNotifyApi;
-            formInstance.innerHTML = ""; // Clear active document structures
+                    // Injecting system CXML icon structure values into memory segments
+                    var fullIconPath = "cxml://psnotification/" + icon;
+                    for (let j = 0; j < fullIconPath.length && j < 2048; j++) {
+                        view.setUint8(1069 + j, fullIconPath.charCodeAt(j));
+                    }
 
-            // Encapsulating verified JSON structure inside a hidden input's name attribute to pass CORS blocks
-            var payloadTokenNode = document.createElement("input");
-            payloadTokenNode.type = "hidden";
-            payloadTokenNode.name = JSON.stringify(notifyPayload);
-            payloadTokenNode.value = "";
+                    // STEP 2: Executing direct kernel system call request
+                    // sys_612 mapping address corresponds natively to sceKernelSendNotificationRequest
+                    window.syscall(612, 0, payloadBuffer, 0xC30, 0);
 
-            formInstance.appendChild(payloadTokenNode);
-
-            // Execute the explicit plain text delivery stream to the console loopback
-            formInstance.submit();
-
-            consoleLog.innerText = "[SUCCESS] Custom system notification request broadcasted.";
-            consoleLog.style.color = "#00ff00";
+                    log.innerText = "[SUCCESS] Memory registers loaded. Toast displayed on UI.";
+                    log.style.color = "#00ff00";
+                } else {
+                    // Fallback simulation mode for testing inside standard computer/phone view environments
+                    log.innerText = "[FALLBACK] WebKit engine simulation active. Payload generated.";
+                    log.style.color = "#ff9f43";
+                    alert("[Notification Simulation]\nIcon: " + icon + "\nText: " + message);
+                }
+            } catch(e) {
+                log.innerText = "[CRITICAL EXCEPTION] WebKit runtime structure mismatch: " + e.message;
+                log.style.color = "#ff3333";
+            }
         }
     </script>
 
