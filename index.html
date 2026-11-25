@@ -55,6 +55,15 @@ button:disabled { opacity: .5; cursor: wait; }
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; }
 
+/* PS4 connection bar */
+.conn {
+  background: #05070d; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px;
+}
+.conn .row { align-items: end; }
+.conn .row > div { flex: 1; }
+.conn .row button { margin: 0; }
+.conn-status { font-size: 12px; margin-top: 6px; color: var(--muted); min-height: 16px; }
+
 /* Store grid */
 .toolbar { display: flex; gap: 8px; margin: 10px 0 14px; flex-wrap: wrap; }
 .toolbar input, .toolbar select { flex: 1 1 180px; }
@@ -106,8 +115,26 @@ a.link { color: var(--accent); text-decoration: none; }
 
 <header>
   <h1>PS4 PKG Homebrew Store</h1>
-  <p class="subtitle">Browse &amp; download .pkg files directly on your PS4</p>
+  <p class="subtitle">Install .pkg files directly on your PS4 via Remote Package Installer</p>
 </header>
+
+<!-- PS4 connection -->
+<div class="conn">
+  <div class="row">
+    <div>
+      <label for="ps4ip">PS4 IP Address</label>
+      <input id="ps4ip" type="text" placeholder="192.168.1.100" autocomplete="off">
+    </div>
+    <div>
+      <label for="ps4port">RPI Port</label>
+      <input id="ps4port" type="number" value="12800" min="1" max="65535">
+    </div>
+    <div style="flex:0 0 140px">
+      <button class="secondary" onclick="testConnection()">Test PS4</button>
+    </div>
+  </div>
+  <div class="conn-status" id="connStatus">Enter your PS4 IP. RPI homebrew must be running on the PS4.</div>
+</div>
 
 <div class="tabs">
   <button class="tab active" data-tab="store" onclick="switchTab('store')">Store</button>
@@ -131,7 +158,6 @@ a.link { color: var(--accent); text-decoration: none; }
 <div id="tab-add" class="section">
   <label for="aName">Name *</label>
   <input id="aName" type="text" placeholder="GoldHEN 2.4">
-
   <div class="grid2">
     <div>
       <label for="aVersion">Version</label>
@@ -142,7 +168,6 @@ a.link { color: var(--accent); text-decoration: none; }
       <input id="aAuthor" type="text" placeholder="sirox">
     </div>
   </div>
-
   <div class="grid2">
     <div>
       <label for="aCategory">Category</label>
@@ -154,16 +179,12 @@ a.link { color: var(--accent); text-decoration: none; }
     </div>
   </div>
   <datalist id="catList"></datalist>
-
   <label for="aIcon">Icon (emoji or image URL)</label>
   <input id="aIcon" type="text" placeholder="📦 or https://…/icon.png">
-
   <label for="aUrl">PKG URL *</label>
   <input id="aUrl" type="url" placeholder="https://example.com/package.pkg">
-
   <label for="aDesc">Description</label>
   <textarea id="aDesc" placeholder="What this package does…"></textarea>
-
   <div class="row">
     <button class="primary" onclick="addPackage()">Add to Store</button>
     <button class="secondary" onclick="clearAddForm()">Clear</button>
@@ -186,10 +207,8 @@ a.link { color: var(--accent); text-decoration: none; }
     <b>My added packages</b> are stored in this browser (localStorage) — use <b>Export</b> to get a
     <code>packages.json</code> you can commit to the repo to share them.
   </div>
-
   <h3 style="color:var(--accent2);margin:16px 0 6px;font-size:14px;">Built-in</h3>
   <div class="list" id="builtinList"></div>
-
   <h3 style="color:var(--accent2);margin:16px 0 6px;font-size:14px;">My Added</h3>
   <div class="list" id="customList"></div>
 </div>
@@ -206,28 +225,31 @@ a.link { color: var(--accent); text-decoration: none; }
 <!-- HELP -->
 <div id="tab-help" class="section">
   <div class="note">
-    <b>How it works</b><br>
-    1. Open this page in your PS4 browser.<br>
-    2. Browse the store, tap <b>Download</b> on a package.<br>
-    3. The PS4 browser hands the <code>.pkg</code> to the system package installer.<br><br>
+    <b>How it works (no more "no memory" error)</b><br>
+    Instead of downloading the PKG in the browser (which overflows PS4 memory),
+    this page sends the PKG URL to your PS4's <b>Remote Package Installer</b> (RPI)
+    on port 12800. The PS4 downloads &amp; installs it itself.<br><br>
 
-    <b>Add your own packages</b><br>
-    • Use the <b>Add PKG</b> tab, or edit <code>packages.json</code> in the repo.<br>
-    • To share added packages with everyone, use <b>Manage → Export packages.json</b> and commit it.<br><br>
+    <b>Setup on PS4</b><br>
+    1. Start GoldHEN (1.8+ / latest).<br>
+    2. Install &amp; launch <b>Remote Package Installer</b> homebrew (port 12800) — keep it in the foreground.<br>
+       (GoldHEN → Debug Settings → Package Installer also works for manual URL entry.)<br>
+    3. Make sure PS4 and this device are on the same network.<br><br>
 
-    <b>Requirements</b><br>
-    • PS4 firmware with a working browser &amp; package installer.<br>
-    • Direct links to <code>.pkg</code> files (no HTML wrapper pages).<br>
-    • Enough free storage on the PS4.<br><br>
+    <b>Usage</b><br>
+    1. Enter your PS4 IP above and tap <b>Test PS4</b>.<br>
+    2. Browse the store, tap <b>Install</b> on a package.<br>
+    3. Watch progress on the PS4 (RPI screen).<br><br>
 
     <b>Troubleshooting</b><br>
-    • Nothing happens → enable pop-ups/downloads in PS4 browser settings.<br>
-    • Host blocks hotlinking → try a different mirror.<br>
+    • "Failed to fetch" → RPI not running / wrong IP / firewall. Keep RPI in foreground.<br>
+    • Mixed-content blocked → open this page over HTTP or run a local server.<br>
+    • Package rejected → host must serve the .pkg with proper headers; try a different mirror.<br>
     • Large PKGs → keep PS4 awake; downloads may pause in rest mode.<br><br>
 
     <b>Privacy</b><br>
     Everything runs locally in your browser. History and added packages live in localStorage.
-    Nothing is sent anywhere except the PKG host you choose.
+    Nothing is sent anywhere except your PS4 (12800) and the PKG host you choose.
   </div>
 </div>
 
@@ -242,33 +264,110 @@ a.link { color: var(--accent); text-decoration: none; }
 "use strict";
 
 var BUILTIN_URL = "packages.json";
-var CUSTOM_KEY = "ps4pkg_custom_v2";
-var HISTORY_KEY = "ps4pkg_history_v2";
+var CUSTOM_KEY = "ps4pkg_custom_v3";
+var HISTORY_KEY = "ps4pkg_history_v3";
+var CONN_KEY = "ps4pkg_conn_v3";
 
 var state = { builtin: [], custom: [], history: [] };
 
 function $(id){ return document.getElementById(id); }
-
 function uid(){ return "pkg_" + Math.random().toString(36).slice(2, 10); }
 
 function loadCustom(){ try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "[]"); } catch(e){ return []; } }
 function saveCustom(list){ try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); } catch(e){} }
 function loadHistory(){ try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch(e){ return []; } }
 function saveHistory(list){ try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch(e){} }
+function loadConn(){ try { return JSON.parse(localStorage.getItem(CONN_KEY) || "{}"); } catch(e){ return {}; } }
+function saveConn(o){ try { localStorage.setItem(CONN_KEY, JSON.stringify(o)); } catch(e){} }
 
 function allPackages(){ return state.builtin.concat(state.custom); }
-
 function validUrl(u){ try { var x = new URL(u); return x.protocol === "http:" || x.protocol === "https:"; } catch(e){ return false; } }
 function fileNameFromUrl(u){ try { var p = new URL(u).pathname; var parts = p.split("/"); var last = parts[parts.length-1]; return last && last.length ? decodeURIComponent(last) : "package.pkg"; } catch(e){ return "package.pkg"; } }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
 
-function triggerDownload(url, name){
+function rpiBase(){
+  var ip = ($("ps4ip").value || "").trim();
+  var port = ($("ps4port").value || "12800").trim();
+  return "http://" + ip + ":" + port;
+}
+
+function setConnStatus(text, color){
+  $("connStatus").textContent = text;
+  $("connStatus").style.color = color || "#ffcc66";
+}
+
+async function testConnection(){
+  var ip = ($("ps4ip").value || "").trim();
+  if (!ip){ setConnStatus("Enter PS4 IP first.", "#ff5555"); return; }
+  saveConn({ ip: ip, port: $("ps4port").value });
+  setConnStatus("Testing connection…", "#ffcc66");
   try {
-    var a = document.createElement("a"); a.href = url; a.download = name || fileNameFromUrl(url);
-    a.rel = "noopener"; a.style.display = "none"; document.body.appendChild(a); a.click(); document.body.removeChild(a); return true;
+    // try nextgen system endpoint, then root
+    var res = await fetch(rpiBase() + "/api/v2/system", { method: "GET", mode: "cors" });
+    if (res.ok){ setConnStatus("Connected to RPI (nextgen).", "#00ff88"); return; }
   } catch(e){}
-  try { window.open(url, "_blank"); return true; } catch(e){}
-  return false;
+  try {
+    var res2 = await fetch(rpiBase() + "/", { method: "GET", mode: "no-cors" });
+    setConnStatus("Reached PS4 port (opaque response). RPI likely running.", "#00ff88");
+    return;
+  } catch(e){
+    setConnStatus("Cannot reach PS4: " + e.message + ". Is RPI running & in foreground?", "#ff5555");
+  }
+}
+
+async function installPkg(id){
+  var p = allPackages().find(function(x){ return x.id === id; });
+  if (!p){ return; }
+  var ip = ($("ps4ip").value || "").trim();
+  if (!ip){ setConnStatus("Enter PS4 IP first.", "#ff5555"); switchTab("help"); return; }
+  if (!validUrl(p.url)){ alert("Invalid URL for " + p.name); return; }
+  if (!/\.pkg(\?.*)?$/i.test(p.url)){
+    if (!confirm(p.name + " URL does not end with .pkg. Send anyway?")) return;
+  }
+  saveConn({ ip: ip, port: $("ps4port").value });
+  var btn = event && event.target;
+  if (btn){ btn.disabled = true; btn.textContent = "Sending…"; }
+  setConnStatus("Sending " + p.name + " to PS4…", "#ffcc66");
+  try {
+    var res = await fetch(rpiBase() + "/api/install", {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "direct", packages: [p.url] })
+    });
+    var text = await res.text();
+    var ok = res.ok;
+    var msg = text;
+    try { var j = JSON.parse(text); if (j && j.task_id) msg = "Task started (id " + j.task_id + ")"; } catch(e){}
+    var hist = loadHistory();
+    hist.unshift({ name: p.name, url: p.url, time: Date.now(), ok: ok, note: msg });
+    if (hist.length > 200) hist = hist.slice(0,200);
+    saveHistory(hist);
+    if (ok){
+      setConnStatus("Sent: " + p.name + " — " + msg, "#00ff88");
+    } else {
+      setConnStatus("PS4 rejected: " + (msg || res.status), "#ff5555");
+    }
+  } catch(e){
+    var hist2 = loadHistory();
+    hist2.unshift({ name: p.name, url: p.url, time: Date.now(), ok: false, note: e.message });
+    if (hist2.length > 200) hist2 = hist2.slice(0,200);
+    saveHistory(hist2);
+    setConnStatus("Failed to send: " + e.message + ". Is RPI running in foreground?", "#ff5555");
+  } finally {
+    if (btn){ btn.disabled = false; btn.textContent = "Install"; }
+  }
+}
+
+function directDownload(id){
+  var p = allPackages().find(function(x){ return x.id === id; });
+  if (!p) return;
+  if (!validUrl(p.url)){ alert("Invalid URL"); return; }
+  if (!/\.pkg(\?.*)?$/i.test(p.url)){
+    if (!confirm(p.name + " URL does not end with .pkg. Download anyway?")) return;
+  }
+  var a = document.createElement("a"); a.href = p.url; a.download = p.name + ".pkg";
+  a.rel = "noopener"; a.style.display = "none"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 function renderIcon(pkg){
@@ -295,6 +394,7 @@ function renderStore(){
   list.forEach(function(p){
     var card = document.createElement("div");
     card.className = "card";
+    var safeId = p.id.replace(/'/g, "");
     card.innerHTML =
       renderIcon(p) +
       '<div class="head" style="margin-top:-46px;margin-left:56px;min-height:46px;display:flex;flex-direction:column;justify-content:center">' +
@@ -304,34 +404,11 @@ function renderStore(){
       '<div><span class="cat-chip">' + escapeHtml(p.category || "Uncategorized") + '</span></div>' +
       '<div class="desc">' + escapeHtml(p.description || "") + '</div>' +
       '<div class="actions">' +
-        '<button class="primary" onclick="downloadPkg(\'' + p.id.replace(/'/g,"") + '\')">Download</button>' +
-        '<button class="secondary" onclick="openPkg(\'' + p.id.replace(/'/g,"") + '\')">Open</button>' +
+        '<button class="primary" onclick="installPkg(\'' + safeId + '\')">Install</button>' +
+        '<button class="secondary" onclick="directDownload(\'' + safeId + '\')">Direct</button>' +
       '</div>';
     grid.appendChild(card);
   });
-}
-
-function findPkg(id){ return allPackages().find(function(p){ return p.id === id; }); }
-
-function downloadPkg(id){
-  var p = findPkg(id); if (!p) return;
-  if (!validUrl(p.url)){ alert("Invalid URL for " + p.name); return; }
-  if (!/\.pkg(\?.*)?$/i.test(p.url)){
-    if (!confirm(p.name + " URL does not end with .pkg. Download anyway?")) return;
-  }
-  var ok = triggerDownload(p.url, p.name + ".pkg");
-  var hist = loadHistory();
-  hist.unshift({ name: p.name, url: p.url, time: Date.now(), ok: !!ok });
-  if (hist.length > 200) hist = hist.slice(0,200);
-  saveHistory(hist);
-  // tiny status flash via console in store? use alert-ish: update storeStatus
-  $("storeStatus").textContent = ok ? ("Download triggered: " + p.name) : ("Failed to trigger: " + p.name);
-  $("storeStatus").style.color = ok ? "#00ff88" : "#ff5555";
-}
-
-function openPkg(id){
-  var p = findPkg(id); if (!p) return;
-  try { window.open(p.url, "_blank"); } catch(e){}
 }
 
 function populateCategories(){
@@ -344,7 +421,6 @@ function populateCategories(){
     var o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o);
   });
   if (cur) sel.value = cur;
-  // datalist
   var dl = $("catList");
   dl.innerHTML = "";
   Object.keys(cats).sort().forEach(function(c){ var o = document.createElement("option"); o.value = c; dl.appendChild(o); });
@@ -356,7 +432,6 @@ function switchTab(name){
   if (name === "store"){ renderStore(); populateCategories(); }
   if (name === "manage"){ renderManage(); }
   if (name === "history"){ renderHistory(); }
-  if (name === "add"){ /* nothing */ }
 }
 
 /* Add */
@@ -407,12 +482,10 @@ function renderManage(){
     cu.appendChild(div);
   });
 }
-
 function clearCustom(){
   if (!confirm("Delete all your added packages?")) return;
   saveCustom([]); state.custom = []; renderManage(); populateCategories(); renderStore();
 }
-
 function exportPackages(){
   var combined = { version: 1, packages: state.builtin.concat(state.custom) };
   var blob = new Blob([JSON.stringify(combined, null, 2)], { type: "application/json" });
@@ -420,7 +493,6 @@ function exportPackages(){
   var a = document.createElement("a"); a.href = url; a.download = "packages.json"; a.click();
   URL.revokeObjectURL(url);
 }
-
 function importPackages(e){
   var file = e.target.files && e.target.files[0]; if (!file) return;
   var reader = new FileReader();
@@ -429,10 +501,8 @@ function importPackages(e){
       var data = JSON.parse(reader.result);
       var pkgs = Array.isArray(data) ? data : (data.packages || []);
       if (!pkgs.length){ alert("No packages found in file."); return; }
-      // assign ids
       pkgs.forEach(function(p){ if (!p.id) p.id = uid(); });
       var list = loadCustom();
-      // merge, avoid dup by id
       var ids = {}; list.forEach(function(p){ ids[p.id]=1; });
       pkgs.forEach(function(p){ if (!ids[p.id]){ list.push(p); ids[p.id]=1; } });
       saveCustom(list); state.custom = list;
@@ -448,20 +518,18 @@ function importPackages(e){
 function renderHistory(){
   var box = $("historyBox");
   var list = loadHistory();
-  if (!list.length){ box.innerHTML = '<div class="empty">No downloads yet.</div>'; return; }
+  if (!list.length){ box.innerHTML = '<div class="empty">No installs yet.</div>'; return; }
   box.innerHTML = "";
   list.forEach(function(h){
     var div = document.createElement("div"); div.className = "list-item";
     var d = new Date(h.time);
-    div.innerHTML = '<div class="info"><div class="name">' + escapeHtml(h.name) + '</div><div class="url">' + escapeHtml(h.url) + '<br>' + d.toLocaleString() + '</div></div>';
-    var btn = document.createElement("button"); btn.className = "secondary"; btn.textContent = "Re-download";
-    btn.onclick = function(){ triggerDownload(h.url, h.name + ".pkg"); };
-    div.appendChild(btn);
+    var color = h.ok ? "#00ff88" : "#ff5555";
+    div.innerHTML = '<div class="info"><div class="name">' + escapeHtml(h.name) + '</div><div class="url">' + escapeHtml(h.url) + '<br>' + d.toLocaleString() + (h.note ? '<br><span style="color:' + color + '">' + escapeHtml(h.note) + '</span>' : '') + '</div></div>';
     box.appendChild(div);
   });
 }
 function clearHistory(){
-  if (!confirm("Clear all download history?")) return;
+  if (!confirm("Clear all history?")) return;
   saveHistory([]); state.history = []; renderHistory();
 }
 
@@ -469,6 +537,9 @@ function clearHistory(){
 async function init(){
   state.custom = loadCustom();
   state.history = loadHistory();
+  var c = loadConn();
+  if (c.ip) $("ps4ip").value = c.ip;
+  if (c.port) $("ps4port").value = c.port;
   try {
     var res = await fetch(BUILTIN_URL, { cache: "no-store" });
     if (res.ok){
@@ -476,13 +547,14 @@ async function init(){
       state.builtin = (data.packages || (Array.isArray(data) ? data : []));
       state.builtin.forEach(function(p){ if (!p.id) p.id = uid(); });
     }
-  } catch(e){
-    state.builtin = [];
-  }
+  } catch(e){ state.builtin = []; }
   populateCategories();
   renderStore();
-  $("storeStatus").textContent = state.builtin.length + state.custom.length + " package(s) available";
+  $("storeStatus").textContent = (state.builtin.length + state.custom.length) + " package(s) available";
   $("storeStatus").style.color = "#a2aed2";
+  // persist conn on change
+  $("ps4ip").addEventListener("change", function(){ saveConn({ ip: $("ps4ip").value.trim(), port: $("ps4port").value }); });
+  $("ps4port").addEventListener("change", function(){ saveConn({ ip: $("ps4ip").value.trim(), port: $("ps4port").value }); });
 }
 
 init();
