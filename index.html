@@ -148,7 +148,7 @@ a.link { color: #60a5fa; text-decoration: none; }
 <script>
 "use strict";
 
-var state = { running: false, stopFlag: false, logs: [], attempts: 0, successes: 0, autoRetry: true };
+var state = { running: false, stopFlag: false, logs: [], attempts: 0, successes: 0, autoRetry: true, lastAttemptErrors: 0 };
 
 var consoleEl = document.getElementById('console');
 
@@ -160,6 +160,7 @@ function log(message, color) {
   if (color) span.style.color = color;
   consoleEl.appendChild(span);
   state.logs.push((color ? '['+color+'] ' : '') + message);
+  if (color === '#f87171') { state.lastAttemptErrors = (state.lastAttemptErrors || 0) + 1; }
   var panel = document.getElementById('DebugConsole');
   if (panel) panel.scrollTop = panel.scrollHeight;
   try { localStorage.setItem('ps5jb_logs', JSON.stringify(state.logs.slice(-500))); } catch(e){}
@@ -192,6 +193,11 @@ window.addEventListener('unhandledrejection', function (event) {
 });
 
 function $(id){ return document.getElementById(id); }
+
+function isPS5Web(){
+  try { return /PlayStation\s*5/i.test(navigator.userAgent || ''); }
+  catch(e){ return false; }
+}
 
 function now(){ return new Date().toLocaleTimeString(); }
 
@@ -257,6 +263,7 @@ async function notificationDebugTest(attempt){
 
 async function runOneAttempt(){
   state.attempts++;
+  state.lastAttemptErrors = 0;
   updateRate();
   log(now() + " [WRN] === Attempt " + state.attempts + " started ===", "#facc15");
 
@@ -321,12 +328,14 @@ async function runOneAttempt(){
   } else { log(now() + " [WRN] Vibration not supported", "#facc15"); }
 
   await sleep(300);
-  state.successes++;
+  if (state.lastAttemptErrors === 0) { state.successes++; }
+  else { log(now() + " [WRN] Attempt had " + state.lastAttemptErrors + " error(s)", "#facc15"); }
   log(now() + " [OK ] === Attempt " + state.attempts + " completed ===", "#4ade80");
   updateRate();
 }
 
 async function startJailbreak(){
+  if (!isPS5Web()){ log(now() + " [ERR] Not running on PS5 web browser", "#f87171"); return; }
   $('initial-screen').style.display = 'none';
   $('exploit-main-screen').style.display = 'flex';
   state.running = true; state.stopFlag = false;
@@ -399,6 +408,10 @@ function sendLogsToElena(){
 
 // Init
 (function init(){
+  if (!isPS5Web()){
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#111827;color:#f87171;font-family:system-ui;font-size:20px;text-align:center;padding:24px;">This page only works on the PS5 web browser.<br><span style="color:#9ca3af;font-size:14px;">Open it in the PlayStation 5 browser.</span></div>';
+    return;
+  }
   try {
     var stored = JSON.parse(localStorage.getItem('ps5jb_logs') || '[]');
     if (stored.length){
