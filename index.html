@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PS4 PKG Web Downloader</title>
+<title>PS4 PKG Homebrew Store</title>
 <style>
 * { box-sizing: border-box; }
 :root {
@@ -20,88 +20,84 @@
   --muted: #7a8a9e;
 }
 body {
-  margin: 0;
-  min-height: 100vh;
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  margin: 0; min-height: 100vh; padding: 16px;
+  display: flex; justify-content: center; align-items: flex-start;
   background: radial-gradient(ellipse at top, #0a1a2f 0%, var(--bg) 70%);
-  color: var(--text);
-  font-family: "Segoe UI", Arial, sans-serif;
+  color: var(--text); font-family: "Segoe UI", Arial, sans-serif;
 }
-.container {
-  width: 100%;
-  max-width: 720px;
-  padding: 22px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 12px 40px #000a;
-  margin: 12px auto;
-}
-header { text-align: center; margin-bottom: 18px; }
+.container { width: 100%; max-width: 920px; padding: 22px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 12px 40px #000a; margin: 12px auto; }
+header { text-align: center; margin-bottom: 14px; }
 h1 { color: var(--accent2); font-size: 26px; margin: 0 0 4px; letter-spacing: 1px; }
 .subtitle { color: var(--accent); font-size: 13px; margin: 0; }
-.tabs { display: flex; gap: 8px; margin: 16px 0; }
-.tab {
-  flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+
+.tabs { display: flex; gap: 6px; margin: 14px 0; flex-wrap: wrap; }
+.tab { flex: 1 1 120px; padding: 9px 6px; border: 1px solid var(--border); border-radius: 8px;
   background: var(--panel2); color: var(--muted); cursor: pointer; font-weight: bold;
-  font-size: 13px; text-transform: uppercase; letter-spacing: .5px;
-}
+  font-size: 12px; text-transform: uppercase; letter-spacing: .4px; min-width: 90px; }
 .tab.active { background: var(--accent); color: #05070d; border-color: var(--accent); }
+
 .section { display: none; }
 .section.active { display: block; }
-label { display: block; margin: 14px 0 6px; font-size: 12px; font-weight: bold; color: var(--accent2); text-transform: uppercase; letter-spacing: .5px; }
+
+label { display: block; margin: 12px 0 5px; font-size: 12px; font-weight: bold; color: var(--accent2);
+  text-transform: uppercase; letter-spacing: .5px; }
 input, textarea, select {
-  width: 100%; padding: 12px; background: #05070d; color: #fff;
-  border: 1px solid var(--border); border-radius: 8px; font-size: 15px; font-family: inherit;
-}
-textarea { min-height: 110px; resize: vertical; font-family: monospace; font-size: 13px; }
-button {
-  width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 8px;
-  cursor: pointer; font-weight: bold; font-size: 14px; letter-spacing: .5px;
-}
+  width: 100%; padding: 11px; background: #05070d; color: #fff;
+  border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+textarea { min-height: 90px; resize: vertical; font-family: monospace; font-size: 13px; }
+button { width: 100%; padding: 12px; margin-top: 8px; border: none; border-radius: 8px;
+  cursor: pointer; font-weight: bold; font-size: 13px; letter-spacing: .4px; }
 .primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #05070d; }
 .secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
 .danger { background: #3a1a1a; color: var(--err); border: 1px solid #5a2a2a; }
 button:disabled { opacity: .5; cursor: wait; }
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; }
-.console {
-  margin-top: 14px; padding: 12px; background: #05070d; border: 1px solid var(--border);
+
+/* Store grid */
+.toolbar { display: flex; gap: 8px; margin: 10px 0 14px; flex-wrap: wrap; }
+.toolbar input, .toolbar select { flex: 1 1 180px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.card {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; display: flex; flex-direction: column; gap: 8px;
+}
+.card .head { display: flex; align-items: center; gap: 10px; }
+.card .icon { width: 46px; height: 46px; border-radius: 10px; background: #05070d;
+  display: flex; align-items: center; justify-content: center; font-size: 26px; overflow: hidden; flex-shrink: 0; }
+.card .icon img { width: 100%; height: 100%; object-fit: cover; }
+.card .title { font-weight: bold; color: var(--accent2); font-size: 15px; line-height: 1.2; }
+.card .meta { font-size: 11px; color: var(--muted); }
+.card .desc { font-size: 12px; color: var(--text); line-height: 1.5; flex: 1; }
+.card .actions { display: flex; gap: 6px; margin-top: 4px; }
+.card .actions button { margin: 0; padding: 9px; font-size: 12px; }
+.cat-chip { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 999px;
+  background: #0a2a3f; color: var(--accent); border: 1px solid #1a4a6f; }
+
+.console { margin-top: 12px; padding: 11px; background: #05070d; border: 1px solid var(--border);
   border-radius: 8px; font-family: monospace; font-size: 12px; color: #a2aed2;
-  overflow-wrap: anywhere; white-space: pre-wrap; max-height: 220px; overflow-y: auto;
-}
+  overflow-wrap: anywhere; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
 .status { text-align: center; font-size: 13px; margin: 8px 0; color: var(--warn); min-height: 18px; }
-.note { margin-top: 12px; font-size: 12px; line-height: 1.6; color: var(--muted); }
+.note { margin-top: 10px; font-size: 12px; line-height: 1.6; color: var(--muted); }
 .note b { color: var(--text); }
-.queue {
-  margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 10px;
-  background: #05070d; max-height: 200px; overflow-y: auto;
-}
-.queue-item {
-  display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid #1a2a3f;
-  font-size: 12px; font-family: monospace; word-break: break-all;
-}
-.queue-item:last-child { border-bottom: none; }
-.queue-item .name { flex: 1; color: var(--text); }
-.queue-item .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--panel2); color: var(--muted); }
-.queue-item .tag.done { background: #0a2a1a; color: var(--ok); }
-.queue-item .tag.fail { background: #2a0a0a; color: var(--err); }
-.history { margin-top: 12px; }
-.history-item {
-  display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid #1a2a3f;
-  font-size: 12px; font-family: monospace;
-}
-.history-item .url { flex: 1; word-break: break-all; color: var(--muted); }
-.history-item button { width: auto; padding: 4px 10px; margin: 0; font-size: 11px; }
+.empty { color: var(--muted); font-size: 13px; text-align: center; padding: 30px; font-style: italic; }
+
+.list { margin-top: 10px; }
+.list-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #1a2a3f;
+  font-size: 12px; }
+.list-item .info { flex: 1; min-width: 0; }
+.list-item .info .name { color: var(--text); font-weight: bold; }
+.list-item .info .url { color: var(--muted); word-break: break-all; font-family: monospace; font-size: 11px; }
+.list-item button { width: auto; padding: 6px 10px; margin: 0; font-size: 11px; }
+
 .progress { height: 6px; background: #05070d; border-radius: 3px; margin-top: 8px; overflow: hidden; display: none; }
 .progress .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .3s; }
 .progress.active { display: block; }
-.empty { color: var(--muted); font-size: 12px; text-align: center; padding: 14px; font-style: italic; }
 footer { text-align: center; margin-top: 16px; font-size: 11px; color: var(--muted); }
 a.link { color: var(--accent); text-decoration: none; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -109,97 +105,135 @@ a.link { color: var(--accent); text-decoration: none; }
 <div class="container">
 
 <header>
-  <h1>PS4 PKG Web Downloader</h1>
-  <p class="subtitle">Download &amp; install .pkg files directly from the PS4 browser</p>
+  <h1>PS4 PKG Homebrew Store</h1>
+  <p class="subtitle">Browse &amp; download .pkg files directly on your PS4</p>
 </header>
 
 <div class="tabs">
-  <button class="tab active" data-tab="download" onclick="switchTab('download')">Download</button>
-  <button class="tab" data-tab="batch" onclick="switchTab('batch')">Batch</button>
+  <button class="tab active" data-tab="store" onclick="switchTab('store')">Store</button>
+  <button class="tab" data-tab="add" onclick="switchTab('add')">Add PKG</button>
+  <button class="tab" data-tab="manage" onclick="switchTab('manage')">Manage</button>
   <button class="tab" data-tab="history" onclick="switchTab('history')">History</button>
   <button class="tab" data-tab="help" onclick="switchTab('help')">Help</button>
 </div>
 
-<!-- DOWNLOAD TAB -->
-<div id="tab-download" class="section active">
-  <label for="pkgUrl">PKG URL</label>
-  <input id="pkgUrl" type="url" placeholder="https://example.com/game.pkg" autocomplete="off">
+<!-- STORE -->
+<div id="tab-store" class="section active">
+  <div class="toolbar">
+    <input id="search" type="text" placeholder="Search packages…" oninput="renderStore()">
+    <select id="catFilter" onchange="renderStore()"><option value="">All categories</option></select>
+  </div>
+  <div class="status" id="storeStatus">Loading catalog…</div>
+  <div class="grid" id="storeGrid"></div>
+</div>
 
-  <label for="pkgName">Display name (optional)</label>
-  <input id="pkgName" type="text" placeholder="My Game PKG" autocomplete="off">
+<!-- ADD PKG -->
+<div id="tab-add" class="section">
+  <label for="aName">Name *</label>
+  <input id="aName" type="text" placeholder="GoldHEN 2.4">
 
-  <div class="row">
-    <button class="primary" onclick="downloadOne()">Download PKG</button>
-    <button class="secondary" onclick="addToQueue()">Add to Queue</button>
+  <div class="grid2">
+    <div>
+      <label for="aVersion">Version</label>
+      <input id="aVersion" type="text" placeholder="2.4">
+    </div>
+    <div>
+      <label for="aAuthor">Author</label>
+      <input id="aAuthor" type="text" placeholder="sirox">
+    </div>
   </div>
 
-  <div class="status" id="status">Ready. Paste a direct .pkg link.</div>
-  <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
-  <div class="console" id="console">[READY] Waiting for URL.</div>
+  <div class="grid2">
+    <div>
+      <label for="aCategory">Category</label>
+      <input id="aCategory" type="text" placeholder="Homebrew" list="catList">
+    </div>
+    <div>
+      <label for="aSize">Size</label>
+      <input id="aSize" type="text" placeholder="5 MB">
+    </div>
+  </div>
+  <datalist id="catList"></datalist>
 
+  <label for="aIcon">Icon (emoji or image URL)</label>
+  <input id="aIcon" type="text" placeholder="📦 or https://…/icon.png">
+
+  <label for="aUrl">PKG URL *</label>
+  <input id="aUrl" type="url" placeholder="https://example.com/package.pkg">
+
+  <label for="aDesc">Description</label>
+  <textarea id="aDesc" placeholder="What this package does…"></textarea>
+
+  <div class="row">
+    <button class="primary" onclick="addPackage()">Add to Store</button>
+    <button class="secondary" onclick="clearAddForm()">Clear</button>
+  </div>
+  <div class="status" id="addStatus">Fill in at least Name and PKG URL.</div>
+</div>
+
+<!-- MANAGE -->
+<div id="tab-manage" class="section">
+  <div class="row">
+    <button class="secondary" onclick="exportPackages()">Export packages.json</button>
+    <button class="secondary" onclick="$('importFile').click()">Import JSON</button>
+    <input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importPackages(event)">
+  </div>
+  <div class="row">
+    <button class="danger" onclick="clearCustom()">Clear My Added Packages</button>
+  </div>
   <div class="note">
-    <b>Tip:</b> The link must be a <b>direct</b> download to a <code>.pkg</code> file.
-    On PS4, open this page in the browser and tap Download — the system installer will take over.
+    <b>Built-in catalog</b> comes from <code>packages.json</code> in the repo.<br>
+    <b>My added packages</b> are stored in this browser (localStorage) — use <b>Export</b> to get a
+    <code>packages.json</code> you can commit to the repo to share them.
   </div>
+
+  <h3 style="color:var(--accent2);margin:16px 0 6px;font-size:14px;">Built-in</h3>
+  <div class="list" id="builtinList"></div>
+
+  <h3 style="color:var(--accent2);margin:16px 0 6px;font-size:14px;">My Added</h3>
+  <div class="list" id="customList"></div>
 </div>
 
-<!-- BATCH TAB -->
-<div id="tab-batch" class="section">
-  <label for="batchUrls">One PKG URL per line</label>
-  <textarea id="batchUrls" placeholder="https://example.com/a.pkg
-https://example.com/b.pkg"></textarea>
-
-  <div class="row">
-    <button class="primary" onclick="startBatch()">Download All</button>
-    <button class="secondary" onclick="clearBatch()">Clear</button>
-  </div>
-
-  <div class="status" id="batchStatus">No batch running.</div>
-  <div class="progress" id="batchProgress"><div class="bar" id="batchBar"></div></div>
-
-  <div class="queue" id="queueBox">
-    <div class="empty">Queue is empty.</div>
-  </div>
-</div>
-
-<!-- HISTORY TAB -->
+<!-- HISTORY -->
 <div id="tab-history" class="section">
   <div class="row">
     <button class="secondary" onclick="renderHistory()">Refresh</button>
     <button class="danger" onclick="clearHistory()">Clear History</button>
   </div>
-  <div class="history" id="historyBox">
-    <div class="empty">No downloads yet.</div>
-  </div>
+  <div class="list" id="historyBox"><div class="empty">No downloads yet.</div></div>
 </div>
 
-<!-- HELP TAB -->
+<!-- HELP -->
 <div id="tab-help" class="section">
   <div class="note">
     <b>How it works</b><br>
-    1. Host this page (GitHub Pages works).<br>
-    2. Open the page in your PS4 browser.<br>
-    3. Paste a direct <code>.pkg</code> URL and tap <b>Download PKG</b>.<br>
-    4. The PS4 browser hands the file to the system package installer.<br><br>
+    1. Open this page in your PS4 browser.<br>
+    2. Browse the store, tap <b>Download</b> on a package.<br>
+    3. The PS4 browser hands the <code>.pkg</code> to the system package installer.<br><br>
+
+    <b>Add your own packages</b><br>
+    • Use the <b>Add PKG</b> tab, or edit <code>packages.json</code> in the repo.<br>
+    • To share added packages with everyone, use <b>Manage → Export packages.json</b> and commit it.<br><br>
 
     <b>Requirements</b><br>
     • PS4 firmware with a working browser &amp; package installer.<br>
-    • A direct link to the .pkg (no HTML wrapper / redirect-only pages).<br>
+    • Direct links to <code>.pkg</code> files (no HTML wrapper pages).<br>
     • Enough free storage on the PS4.<br><br>
 
     <b>Troubleshooting</b><br>
-    • If nothing happens, enable pop-ups/downloads in the PS4 browser settings.<br>
-    • Some hosts block hotlinking — try a different mirror.<br>
-    • Large PKGs: keep the PS4 awake; downloads may pause in rest mode.<br>
-    • Use the <b>Batch</b> tab to queue several PKGs; they download one at a time with a short delay to avoid browser blocking.<br><br>
+    • Nothing happens → enable pop-ups/downloads in PS4 browser settings.<br>
+    • Host blocks hotlinking → try a different mirror.<br>
+    • Large PKGs → keep PS4 awake; downloads may pause in rest mode.<br><br>
 
     <b>Privacy</b><br>
-    Everything runs locally in your browser. URLs and history are stored only in this browser's localStorage. Nothing is sent to any server except the PKG host you choose.
+    Everything runs locally in your browser. History and added packages live in localStorage.
+    Nothing is sent anywhere except the PKG host you choose.
   </div>
 </div>
 
 <footer>
-  PS4 PKG Web Downloader &middot; Open source &middot; <a class="link" href="https://github.com/Raedmhamed/ps4-installer" target="_blank" rel="noopener">GitHub</a>
+  PS4 PKG Homebrew Store &middot; Open source &middot;
+  <a class="link" href="https://github.com/Raedmhamed/ps4-installer" target="_blank" rel="noopener">GitHub</a>
 </footer>
 
 </div>
@@ -207,234 +241,251 @@ https://example.com/b.pkg"></textarea>
 <script>
 "use strict";
 
-var STORAGE_KEY = "ps4pkg_history";
-var QUEUE_KEY = "ps4pkg_queue";
+var BUILTIN_URL = "packages.json";
+var CUSTOM_KEY = "ps4pkg_custom_v2";
+var HISTORY_KEY = "ps4pkg_history_v2";
+
+var state = { builtin: [], custom: [], history: [] };
 
 function $(id){ return document.getElementById(id); }
 
-function log(text, color) {
-  var c = $("console");
-  c.textContent = text;
-  c.style.color = color || "#a2aed2";
-}
+function uid(){ return "pkg_" + Math.random().toString(36).slice(2, 10); }
 
-function setStatus(text, color) {
-  $("status").textContent = text;
-  $("status").style.color = color || "#ffcc66";
-}
+function loadCustom(){ try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "[]"); } catch(e){ return []; } }
+function saveCustom(list){ try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); } catch(e){} }
+function loadHistory(){ try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch(e){ return []; } }
+function saveHistory(list){ try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch(e){} }
 
-function setProgress(active, pct) {
-  var p = $("progress");
-  if (active) { p.classList.add("active"); } else { p.classList.remove("active"); }
-  $("bar").style.width = (pct || 0) + "%";
-}
+function allPackages(){ return state.builtin.concat(state.custom); }
 
-function setBusy(busy) {
-  document.querySelectorAll("button").forEach(function(b){ b.disabled = busy; });
-}
+function validUrl(u){ try { var x = new URL(u); return x.protocol === "http:" || x.protocol === "https:"; } catch(e){ return false; } }
+function fileNameFromUrl(u){ try { var p = new URL(u).pathname; var parts = p.split("/"); var last = parts[parts.length-1]; return last && last.length ? decodeURIComponent(last) : "package.pkg"; } catch(e){ return "package.pkg"; } }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
 
-function switchTab(name) {
-  document.querySelectorAll(".tab").forEach(function(t){
-    t.classList.toggle("active", t.dataset.tab === name);
-  });
-  document.querySelectorAll(".section").forEach(function(s){
-    s.classList.toggle("active", s.id === "tab-" + name);
-  });
-  if (name === "history") renderHistory();
-  if (name === "batch") renderQueue();
-}
-
-function validUrl(u) {
-  try { var x = new URL(u); return x.protocol === "http:" || x.protocol === "https:"; }
-  catch (e) { return false; }
-}
-
-function fileNameFromUrl(u) {
+function triggerDownload(url, name){
   try {
-    var p = new URL(u).pathname;
-    var parts = p.split("/");
-    var last = parts[parts.length-1];
-    return last && last.length ? decodeURIComponent(last) : "package.pkg";
-  } catch (e) { return "package.pkg"; }
-}
-
-function triggerDownload(url, name) {
-  // Method 1: anchor with download attribute
-  try {
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = name || fileNameFromUrl(url);
-    a.rel = "noopener";
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    return true;
-  } catch (e) {}
-  // Method 2: window.open
-  try { window.open(url, "_blank"); return true; } catch (e) {}
+    var a = document.createElement("a"); a.href = url; a.download = name || fileNameFromUrl(url);
+    a.rel = "noopener"; a.style.display = "none"; document.body.appendChild(a); a.click(); document.body.removeChild(a); return true;
+  } catch(e){}
+  try { window.open(url, "_blank"); return true; } catch(e){}
   return false;
 }
 
-function recordHistory(url, name, ok) {
-  var list = loadHistory();
-  list.unshift({ url: url, name: name || fileNameFromUrl(url), time: Date.now(), ok: !!ok });
-  if (list.length > 200) list = list.slice(0, 200);
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {}
+function renderIcon(pkg){
+  var icon = pkg.icon || "📦";
+  if (/^https?:\/\//i.test(icon)) {
+    return '<div class="icon"><img src="' + escapeHtml(icon) + '" alt="" onerror="this.parentElement.textContent=\'📦\'"></div>';
+  }
+  return '<div class="icon">' + escapeHtml(icon) + '</div>';
 }
 
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { return []; }
+function renderStore(){
+  var grid = $("storeGrid");
+  var status = $("storeStatus");
+  var q = ($("search").value || "").toLowerCase();
+  var cat = $("catFilter").value;
+  var list = allPackages().filter(function(p){
+    if (cat && p.category !== cat) return false;
+    if (!q) return true;
+    return (p.name + " " + (p.description||"") + " " + (p.category||"") + " " + (p.author||"")).toLowerCase().indexOf(q) !== -1;
+  });
+  grid.innerHTML = "";
+  if (!list.length){ grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No packages match. Add some in the Add PKG tab.</div>'; status.textContent = "0 packages"; return; }
+  status.textContent = list.length + " package" + (list.length===1?"":"s");
+  list.forEach(function(p){
+    var card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML =
+      renderIcon(p) +
+      '<div class="head" style="margin-top:-46px;margin-left:56px;min-height:46px;display:flex;flex-direction:column;justify-content:center">' +
+        '<div class="title">' + escapeHtml(p.name) + '</div>' +
+        '<div class="meta">' + escapeHtml(p.version||"") + (p.author ? " · " + escapeHtml(p.author) : "") + (p.size ? " · " + escapeHtml(p.size) : "") + '</div>' +
+      '</div>' +
+      '<div><span class="cat-chip">' + escapeHtml(p.category || "Uncategorized") + '</span></div>' +
+      '<div class="desc">' + escapeHtml(p.description || "") + '</div>' +
+      '<div class="actions">' +
+        '<button class="primary" onclick="downloadPkg(\'' + p.id.replace(/'/g,"") + '\')">Download</button>' +
+        '<button class="secondary" onclick="openPkg(\'' + p.id.replace(/'/g,"") + '\')">Open</button>' +
+      '</div>';
+    grid.appendChild(card);
+  });
 }
 
-function renderHistory() {
+function findPkg(id){ return allPackages().find(function(p){ return p.id === id; }); }
+
+function downloadPkg(id){
+  var p = findPkg(id); if (!p) return;
+  if (!validUrl(p.url)){ alert("Invalid URL for " + p.name); return; }
+  if (!/\.pkg(\?.*)?$/i.test(p.url)){
+    if (!confirm(p.name + " URL does not end with .pkg. Download anyway?")) return;
+  }
+  var ok = triggerDownload(p.url, p.name + ".pkg");
+  var hist = loadHistory();
+  hist.unshift({ name: p.name, url: p.url, time: Date.now(), ok: !!ok });
+  if (hist.length > 200) hist = hist.slice(0,200);
+  saveHistory(hist);
+  // tiny status flash via console in store? use alert-ish: update storeStatus
+  $("storeStatus").textContent = ok ? ("Download triggered: " + p.name) : ("Failed to trigger: " + p.name);
+  $("storeStatus").style.color = ok ? "#00ff88" : "#ff5555";
+}
+
+function openPkg(id){
+  var p = findPkg(id); if (!p) return;
+  try { window.open(p.url, "_blank"); } catch(e){}
+}
+
+function populateCategories(){
+  var cats = {};
+  allPackages().forEach(function(p){ cats[p.category || "Uncategorized"] = 1; });
+  var sel = $("catFilter");
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">All categories</option>';
+  Object.keys(cats).sort().forEach(function(c){
+    var o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+  // datalist
+  var dl = $("catList");
+  dl.innerHTML = "";
+  Object.keys(cats).sort().forEach(function(c){ var o = document.createElement("option"); o.value = c; dl.appendChild(o); });
+}
+
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){ t.classList.toggle("active", t.dataset.tab === name); });
+  document.querySelectorAll(".section").forEach(function(s){ s.classList.toggle("active", s.id === "tab-" + name); });
+  if (name === "store"){ renderStore(); populateCategories(); }
+  if (name === "manage"){ renderManage(); }
+  if (name === "history"){ renderHistory(); }
+  if (name === "add"){ /* nothing */ }
+}
+
+/* Add */
+function addPackage(){
+  var name = $("aName").value.trim();
+  var url = $("aUrl").value.trim();
+  if (!name || !url){ $("addStatus").textContent = "Name and PKG URL are required."; $("addStatus").style.color = "#ff5555"; return; }
+  if (!validUrl(url)){ $("addStatus").textContent = "Invalid URL."; $("addStatus").style.color = "#ff5555"; return; }
+  var pkg = {
+    id: uid(),
+    name: name,
+    version: $("aVersion").value.trim(),
+    author: $("aAuthor").value.trim(),
+    category: $("aCategory").value.trim() || "Uncategorized",
+    size: $("aSize").value.trim(),
+    icon: $("aIcon").value.trim() || "📦",
+    description: $("aDesc").value.trim(),
+    url: url
+  };
+  var list = loadCustom(); list.unshift(pkg); saveCustom(list); state.custom = list;
+  $("addStatus").textContent = "Added: " + name; $("addStatus").style.color = "#00ff88";
+  clearAddForm(false);
+  populateCategories();
+  renderStore();
+}
+function clearAddForm(resetStatus){
+  ["aName","aVersion","aAuthor","aCategory","aSize","aIcon","aUrl","aDesc"].forEach(function(id){ $(id).value = ""; });
+  if (resetStatus !== false){ $("addStatus").textContent = "Fill in at least Name and PKG URL."; $("addStatus").style.color = "#ffcc66"; }
+}
+
+/* Manage */
+function renderManage(){
+  var bi = $("builtinList"); var cu = $("customList");
+  bi.innerHTML = ""; cu.innerHTML = "";
+  if (!state.builtin.length){ bi.innerHTML = '<div class="empty">No built-in packages. Edit packages.json to add.</div>'; }
+  state.builtin.forEach(function(p){
+    var div = document.createElement("div"); div.className = "list-item";
+    div.innerHTML = '<div class="info"><div class="name">' + escapeHtml(p.name) + '</div><div class="url">' + escapeHtml(p.url) + '</div></div><span class="cat-chip">' + escapeHtml(p.category||"") + '</span>';
+    bi.appendChild(div);
+  });
+  if (!state.custom.length){ cu.innerHTML = '<div class="empty">You haven\'t added any packages yet.</div>'; }
+  state.custom.forEach(function(p, i){
+    var div = document.createElement("div"); div.className = "list-item";
+    div.innerHTML = '<div class="info"><div class="name">' + escapeHtml(p.name) + '</div><div class="url">' + escapeHtml(p.url) + '</div></div>';
+    var del = document.createElement("button"); del.className = "danger"; del.textContent = "Delete";
+    del.onclick = function(){ var list = loadCustom(); list.splice(i,1); saveCustom(list); state.custom = list; renderManage(); populateCategories(); renderStore(); };
+    div.appendChild(del);
+    cu.appendChild(div);
+  });
+}
+
+function clearCustom(){
+  if (!confirm("Delete all your added packages?")) return;
+  saveCustom([]); state.custom = []; renderManage(); populateCategories(); renderStore();
+}
+
+function exportPackages(){
+  var combined = { version: 1, packages: state.builtin.concat(state.custom) };
+  var blob = new Blob([JSON.stringify(combined, null, 2)], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a"); a.href = url; a.download = "packages.json"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importPackages(e){
+  var file = e.target.files && e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try {
+      var data = JSON.parse(reader.result);
+      var pkgs = Array.isArray(data) ? data : (data.packages || []);
+      if (!pkgs.length){ alert("No packages found in file."); return; }
+      // assign ids
+      pkgs.forEach(function(p){ if (!p.id) p.id = uid(); });
+      var list = loadCustom();
+      // merge, avoid dup by id
+      var ids = {}; list.forEach(function(p){ ids[p.id]=1; });
+      pkgs.forEach(function(p){ if (!ids[p.id]){ list.push(p); ids[p.id]=1; } });
+      saveCustom(list); state.custom = list;
+      renderManage(); populateCategories(); renderStore();
+      alert("Imported " + pkgs.length + " package(s).");
+    } catch(err){ alert("Invalid JSON: " + err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+
+/* History */
+function renderHistory(){
   var box = $("historyBox");
   var list = loadHistory();
-  if (!list.length) { box.innerHTML = '<div class="empty">No downloads yet.</div>'; return; }
+  if (!list.length){ box.innerHTML = '<div class="empty">No downloads yet.</div>'; return; }
   box.innerHTML = "";
-  list.forEach(function(h, i){
-    var div = document.createElement("div");
-    div.className = "history-item";
+  list.forEach(function(h){
+    var div = document.createElement("div"); div.className = "list-item";
     var d = new Date(h.time);
-    div.innerHTML = '<span class="url">' + escapeHtml(h.name) + '<br><small style="color:#5a6a7e">' + escapeHtml(h.url) + '</small><br><small style="color:#5a6a7e">' + d.toLocaleString() + '</small></span>';
-    var btn = document.createElement("button");
-    btn.className = "secondary";
-    btn.textContent = "Re-download";
-    btn.onclick = function(){ triggerDownload(h.url, h.name); recordHistory(h.url, h.name, true); };
+    div.innerHTML = '<div class="info"><div class="name">' + escapeHtml(h.name) + '</div><div class="url">' + escapeHtml(h.url) + '<br>' + d.toLocaleString() + '</div></div>';
+    var btn = document.createElement("button"); btn.className = "secondary"; btn.textContent = "Re-download";
+    btn.onclick = function(){ triggerDownload(h.url, h.name + ".pkg"); };
     div.appendChild(btn);
     box.appendChild(div);
   });
 }
-
-function clearHistory() {
+function clearHistory(){
   if (!confirm("Clear all download history?")) return;
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-  renderHistory();
+  saveHistory([]); state.history = []; renderHistory();
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; });
-}
-
-/* Single download */
-function downloadOne() {
-  var url = $("pkgUrl").value.trim();
-  var name = $("pkgName").value.trim();
-  if (!url) { setStatus("Enter a PKG URL first.", "#ff5555"); log("[ERROR] No URL provided.", "#ff5555"); return; }
-  if (!validUrl(url)) { setStatus("Invalid URL.", "#ff5555"); log("[ERROR] URL must start with http:// or https://", "#ff5555"); return; }
-  if (!/\.pkg(\?.*)?$/i.test(url)) {
-    if (!confirm("URL does not end with .pkg. Download anyway?")) return;
-  }
-  setBusy(true);
-  setProgress(true, 30);
-  setStatus("Starting download...", "#ffcc66");
-  log("[DOWNLOAD] " + url, "#a2aed2");
-  var ok = triggerDownload(url, name || fileNameFromUrl(url));
-  setTimeout(function(){
-    setProgress(true, 100);
-    if (ok) {
-      setStatus("Download triggered. Check PS4 installer.", "#00ff88");
-      log("[SUCCESS] Browser handed off to system installer.\n" + (name||fileNameFromUrl(url)), "#00ff88");
-      recordHistory(url, name || fileNameFromUrl(url), true);
-    } else {
-      setStatus("Download failed to trigger.", "#ff5555");
-      log("[ERROR] Browser blocked the download. Enable pop-ups/downloads.", "#ff5555");
-      recordHistory(url, name || fileNameFromUrl(url), false);
+/* Init */
+async function init(){
+  state.custom = loadCustom();
+  state.history = loadHistory();
+  try {
+    var res = await fetch(BUILTIN_URL, { cache: "no-store" });
+    if (res.ok){
+      var data = await res.json();
+      state.builtin = (data.packages || (Array.isArray(data) ? data : []));
+      state.builtin.forEach(function(p){ if (!p.id) p.id = uid(); });
     }
-    setBusy(false);
-    setTimeout(function(){ setProgress(false, 0); }, 1200);
-  }, 600);
-}
-
-/* Queue */
-function loadQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); } catch (e) { return []; } }
-function saveQueue(q) { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch (e) {} }
-function addToQueue() {
-  var url = $("pkgUrl").value.trim();
-  var name = $("pkgName").value.trim();
-  if (!url || !validUrl(url)) { setStatus("Enter a valid URL first.", "#ff5555"); return; }
-  var q = loadQueue();
-  q.push({ url: url, name: name || fileNameFromUrl(url), status: "pending" });
-  saveQueue(q);
-  renderQueue();
-  setStatus("Added to queue.", "#00ff88");
-}
-function renderQueue() {
-  var box = $("queueBox");
-  var q = loadQueue();
-  if (!q.length) { box.innerHTML = '<div class="empty">Queue is empty.</div>'; return; }
-  box.innerHTML = "";
-  q.forEach(function(item, i){
-    var div = document.createElement("div");
-    div.className = "queue-item";
-    var tag = item.status === "done" ? "done" : (item.status === "fail" ? "fail" : "");
-    var label = item.status === "done" ? "DONE" : (item.status === "fail" ? "FAIL" : "PENDING");
-    div.innerHTML = '<span class="name">' + escapeHtml(item.name) + '<br><small style="color:#5a6a7e">' + escapeHtml(item.url) + '</small></span><span class="tag ' + tag + '">' + label + '</span>';
-    var rm = document.createElement("button");
-    rm.className = "secondary";
-    rm.textContent = "×";
-    rm.style.width = "32px";
-    rm.onclick = function(){ var qq = loadQueue(); qq.splice(i,1); saveQueue(qq); renderQueue(); };
-    div.appendChild(rm);
-    box.appendChild(div);
-  });
-}
-function clearBatch() {
-  $("batchUrls").value = "";
-  saveQueue([]);
-  renderQueue();
-  $("batchStatus").textContent = "Cleared.";
-  $("batchStatus").style.color = "#ffcc66";
-}
-
-async function startBatch() {
-  // collect from textarea + existing queue
-  var lines = $("batchUrls").value.split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
-  var q = loadQueue();
-  lines.forEach(function(u){
-    if (validUrl(u)) q.push({ url: u, name: fileNameFromUrl(u), status: "pending" });
-  });
-  // dedupe by url
-  var seen = {};
-  q = q.filter(function(it){ if (seen[it.url]) return false; seen[it.url]=true; return true; });
-  if (!q.length) { $("batchStatus").textContent = "No valid URLs to download."; $("batchStatus").style.color = "#ff5555"; return; }
-  saveQueue(q);
-  renderQueue();
-
-  setBusy(true);
-  var total = q.length;
-  var done = 0;
-  for (var i = 0; i < q.length; i++) {
-    var item = q[i];
-    $("batchStatus").textContent = "Downloading " + (i+1) + " / " + total + " : " + item.name;
-    $("batchStatus").style.color = "#ffcc66";
-    var pct = Math.round((i / total) * 100);
-    $("batchProgress").classList.add("active");
-    $("batchBar").style.width = pct + "%";
-    var ok = triggerDownload(item.url, item.name);
-    item.status = ok ? "done" : "fail";
-    recordHistory(item.url, item.name, ok);
-    saveQueue(q);
-    renderQueue();
-    done++;
-    // delay between downloads so PS4 browser doesn't block
-    await new Promise(function(res){ setTimeout(res, 2500); });
+  } catch(e){
+    state.builtin = [];
   }
-  $("batchBar").style.width = "100%";
-  $("batchStatus").textContent = "Batch complete: " + done + " / " + total;
-  $("batchStatus").style.color = "#00ff88";
-  setBusy(false);
-  setTimeout(function(){ $("batchProgress").classList.remove("active"); $("batchBar").style.width = "0%"; }, 1500);
+  populateCategories();
+  renderStore();
+  $("storeStatus").textContent = state.builtin.length + state.custom.length + " package(s) available";
+  $("storeStatus").style.color = "#a2aed2";
 }
 
-// init
-try {
-  var savedUrl = localStorage.getItem("ps4pkg_lasturl");
-  if (savedUrl) $("pkgUrl").value = savedUrl;
-} catch (e) {}
-$("pkgUrl").addEventListener("change", function(){ try { localStorage.setItem("ps4pkg_lasturl", $("pkgUrl").value.trim()); } catch(e){} });
-
-renderQueue();
+init();
 </script>
 
 </body>
