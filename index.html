@@ -128,12 +128,13 @@ a.link { color: #60a5fa; text-decoration: none; }
       <div id="notifDebug" style="font-size:12px;color:#9ca3af;">Permission: — · Supported: —</div>
       <div style="margin-top:8px;font-size:12px;color:#9ca3af;">Notification test runs automatically during each attempt and is logged above.</div>
       <div style="margin-top:16px;">
-        <h2>Collect Logs</h2>
+        <h2>Logs (send to Elena)</h2>
+        <textarea id="logsBox" readonly style="width:100%;height:160px;margin-top:8px;background:rgba(0,0,0,.5);color:#a2aed2;border:1px solid #1f3355;border-radius:8px;padding:8px;font-family:monospace;font-size:11px;resize:vertical;"></textarea>
         <div class="row" style="justify-content:flex-start;margin-top:8px;">
-          <button onclick="collectLogs()" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Collect</button>
-          <button onclick="exportLogs()" style="background:#374151;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Export .txt</button>
-          <button onclick="clearLogs()" style="background:#7f1d1d;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Clear</button>
+          <button onclick="copyLogs()" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Copy Logs</button>
+          <button onclick="sendLogsToElena()" style="background:#16a34a;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Send to Elena</button>
         </div>
+        <div id="sendStatus" style="margin-top:6px;font-size:11px;color:#9ca3af;"></div>
       </div>
     </div>
   </div>
@@ -326,22 +327,18 @@ async function runOneAttempt(){
 }
 
 async function startJailbreak(){
-  // switch to exploit screen
   $('initial-screen').style.display = 'none';
   $('exploit-main-screen').style.display = 'flex';
   state.running = true; state.stopFlag = false;
   $('stopAutoJb').style.display = 'block';
-  log(now() + " [WRN] Jailbreak sequence started", "#facc15");
-  do {
-    if (state.stopFlag) break;
-    await runOneAttempt();
-    if (state.stopFlag) break;
-    if (state.autoRetry){ await sleep(1200); }
-    else { break; }
-  } while (state.autoRetry && state.running && !state.stopFlag);
+  log(now() + " [WRN] Jailbreak attempt started (single attempt)", "#facc15");
+  await runOneAttempt();
   state.running = false;
-  log(now() + " [WRN] Jailbreak sequence stopped", "#facc15");
   $('stopAutoJb').style.display = 'none';
+  log(now() + " [WRN] Jailbreak attempt finished", "#facc15");
+  // collect logs for sending
+  collectLogs();
+  renderLogsBox();
 }
 
 function stopJailbreak(){
@@ -365,15 +362,39 @@ function collectLogs(){
     combined.forEach(function(l){ if (!seen[l]){ seen[l]=1; out.push(l); } });
     state.logs = out;
     log(now() + " [OK ] Collected " + out.length + " log lines", "#4ade80");
+    renderLogsBox();
   } catch(e){ log(now() + " [ERR] Collect error: " + e.message, "#f87171"); }
 }
-function exportLogs(){
+function renderLogsBox(){
+  var box = $('logsBox');
+  if (box) box.value = state.logs.join("\n");
+}
+function copyLogs(){
   collectLogs();
-  var blob = new Blob([state.logs.join("\n")], { type: "text/plain" });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement("a"); a.href = url; a.download = "ps5-webkitty-logs.txt"; a.click();
-  URL.revokeObjectURL(url);
-  log(now() + " [OK ] Logs exported", "#4ade80");
+  renderLogsBox();
+  var box = $('logsBox');
+  try {
+    box.select();
+    document.execCommand('copy');
+    $('sendStatus').textContent = "Logs copied to clipboard. Paste them to Elena.";
+    $('sendStatus').style.color = "#4ade80";
+  } catch(e){
+    $('sendStatus').textContent = "Copy failed: " + e.message + ". Select manually.";
+    $('sendStatus').style.color = "#f87171";
+  }
+}
+function sendLogsToElena(){
+  collectLogs();
+  renderLogsBox();
+  var text = state.logs.join("\n");
+  // encode into a downloadable + clipboard; also try to open mailto as a "send" channel
+  try { navigator.clipboard.writeText(text); } catch(e){}
+  var subject = encodeURIComponent("PS5 jailbreak logs");
+  var body = encodeURIComponent(text.slice(0, 1800));
+  // open mailto as best-effort "send to you"
+  window.location.href = "mailto:?subject=" + subject + "&body=" + body;
+  $('sendStatus').textContent = "Prepared logs (" + state.logs.length + " lines). Copied + mailto opened; paste to Elena if needed.";
+  $('sendStatus').style.color = "#4ade80";
 }
 
 // Init
