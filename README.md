@@ -1,33 +1,39 @@
-# PS4 PKG Web Downloader
+# PS4 PKG Homebrew Store
 
-A simple web page that lets you **download and install `.pkg` files directly on your PS4** through the PS4 browser — no PC tooling required.
+A web-based **homebrew store** for PS4: browse a catalog of `.pkg` files and download/install them **directly on your PS4** through the PS4 browser — no PC tooling required.
 
 ## Features
 
-- Paste a direct `.pkg` link and download/install in one tap
-- Batch queue: paste many URLs (one per line) and download them one at a time
-- Download history (stored locally in the browser)
-- Works as a static site — host it anywhere (GitHub Pages included)
-- PS4-themed dark UI, mobile-friendly
+- Storefront of packages loaded from `packages.json`
+- Search + category filter
+- One-tap **Download** that hands the `.pkg` to the PS4 system installer
+- **Add PKG** tab to add your own packages (stored in your browser)
+- **Manage** tab: export/import `packages.json`, clear added packages
+- Download history
+- Works as a static site (GitHub Pages)
 
 ## Usage
 
 1. Host this repo (enable **GitHub Pages** on `main` / root).
 2. Open the page in your PS4 browser.
-3. Paste a direct link to a `.pkg` file.
-4. Tap **Download PKG** — the PS4 browser hands the file to the system package installer.
+3. Tap **Download** on a package.
+
+## Add your own packages
+
+- **Option A (personal):** use the **Add PKG** tab — saved in your browser.
+- **Option B (shared):** edit `packages.json` in the repo, or use **Manage → Export packages.json** and commit it.
+
+Each entry needs at least `name` and `url` (direct link to a `.pkg`). Optional: `version`, `author`, `category`, `size`, `icon` (emoji or image URL), `description`.
 
 ## Requirements
 
 - PS4 with a working browser & package installer
-- A **direct** link to the `.pkg` (no HTML wrapper / redirect-only pages)
+- Direct links to `.pkg` files
 - Enough free storage on the PS4
 
-## Notes
+## Privacy
 
-- Everything runs locally in the browser. URLs and history live only in `localStorage`.
-- Nothing is sent to any server except the PKG host you choose.
-- Some hosts block hotlinking — try a different mirror if a download does not start.
+Everything runs locally in your browser. Added packages and history live in `localStorage`. Nothing is sent anywhere except the PKG host you choose.
 
 ## License
 
