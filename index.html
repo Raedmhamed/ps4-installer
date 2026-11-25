@@ -2,404 +2,400 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PS5 Jailbreak Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>PS5 WebKitty Jailbreak Test</title>
 <style>
-* { box-sizing: border-box; }
-:root {
-  --bg: #0a0d14;
-  --panel: #11161f;
-  --panel2: #161c28;
-  --border: #1f3355;
-  --accent: #0070d1;
-  --accent2: #4fa3ff;
-  --ok: #00ff88;
-  --warn: #ffcc66;
-  --err: #ff5555;
-  --text: #e5e7eb;
-  --muted: #8a9ab5;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  margin: 0; min-height: 100vh; padding: 16px;
-  display: flex; justify-content: center; align-items: flex-start;
-  background: radial-gradient(ellipse at top, #0a1a3a 0%, var(--bg) 70%);
-  color: var(--text); font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #111827; color: #fff;
+  font-family: "Segoe UI", system-ui, Arial, sans-serif;
+  min-height: 100vh; padding: 12px;
+  display: flex; flex-direction: column;
 }
-.container { width: 100%; max-width: 760px; padding: 22px; background: var(--panel);
-  border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 12px 40px #000a; margin: 12px auto; }
-header { text-align: center; margin-bottom: 14px; }
-h1 { color: #fff; font-size: 24px; margin: 0 0 4px; letter-spacing: 1px; }
-.subtitle { color: var(--accent2); font-size: 12px; margin: 0; }
-.badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#0a2a5f; color:var(--accent2); font-size:11px; border:1px solid #1a4a8f; margin-top:6px; }
+.mainContainer { max-width: 960px; margin: 0 auto; width: 100%; }
 
-/* Big PS button */
-.ps-wrap { display:flex; flex-direction:column; align-items:center; gap:12px; margin: 18px 0; }
-.ps-btn {
-  width: 150px; height: 150px; border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #1a3a6f, #05070d);
-  border: 4px solid var(--accent); color: #fff; font-size: 46px; font-weight: bold;
-  cursor: pointer; display:flex; align-items:center; justify-content:center;
-  box-shadow: 0 0 30px #0070d166, inset 0 0 20px #0008;
-  user-select: none; transition: transform .1s, box-shadow .2s;
-  letter-spacing: 2px;
-}
-.ps-btn:active { transform: scale(0.94); }
-.ps-btn.running { animation: pulse 1.2s infinite; box-shadow: 0 0 40px #ffcc66aa; border-color: var(--warn); }
-.ps-btn.success { border-color: var(--ok); box-shadow: 0 0 40px #00ff88aa; }
-.ps-btn.fail { border-color: var(--err); box-shadow: 0 0 40px #ff5555aa; }
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+/* initial screen */
+#initial-screen { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; transition: opacity .7s; }
+#pslogo { background: none; border: none; cursor: pointer; padding: 0; }
+#ps-logo-container { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; border-radius: 9999px; background: rgba(255,255,255,.05); transition: all .3s; transform: scale(1); }
+#ps-logo-container:hover { background: rgba(255,255,255,.1); transform: scale(1.02); }
+#ps-logo { width: 128px; height: 128px; transition: all .5s ease-in-out; }
+#click-to-start-text { color: rgba(255,255,255,.7); font-size: 18px; margin-top: 16px; }
+#stopAutoJb { margin-top: 8px; background: #dc2626; color: #fff; padding: 12px 16px; border-radius: 6px; font-weight: 600; border: none; cursor: pointer; display: none; }
+#stopAutoJb:hover { background: #b91c1c; }
+.compatibilityMessage { text-align: center; }
+#PS4FW, #exploitChainLabel { color: rgba(255,255,255,.7); font-size: 18px; margin: 16px 0; }
 
-.status-line { text-align:center; font-size: 14px; color: var(--warn); min-height: 20px; font-weight:bold; }
-.rate { text-align:center; font-size: 12px; color: var(--muted); }
+/* exploit screen */
+#exploit-main-screen { display: flex; width: 100%; }
+#exploitContainer { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
+@media (min-width: 768px) { #exploitContainer { grid-template-columns: 1fr 1fr; } }
+.panel { background: #1f2937; padding: 24px; border-radius: 8px; display: flex; flex-direction: column; height: 100%; gap: 16px; }
+.panel h2 { font-size: 20px; font-weight: 600; }
+#DebugConsole { flex-grow: 1; min-height: 150px; background: rgba(0,0,0,.5); padding: 16px; border-radius: 8px; overflow-y: auto; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+#console { white-space: pre-wrap; }
+#console span { display: block; }
+#console center { color: #6b7280; }
 
-.row { display: flex; gap: 8px; }
-.row > * { flex: 1; }
-button { width: 100%; padding: 12px; margin-top: 8px; border: none; border-radius: 8px;
-  cursor: pointer; font-weight: bold; font-size: 13px; letter-spacing: .4px; }
-.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
-.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
-.danger { background: #3a1a1a; color: var(--err); border: 1px solid #5a2a2a; }
-button:disabled { opacity: .5; cursor: wait; }
+/* controls */
+.row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.henLabel { display: flex; align-items: center; padding: 4px 8px; border-radius: 6px; background: rgba(31,41,55,.6); cursor: pointer; border: 2px solid transparent; }
+.henLabel input { accent-color: #3b82f6; width: 16px; height: 16px; margin-left: 8px; }
+.henLabel span { font-size: 16px; font-weight: 600; color: rgba(255,255,255,.9); }
+#exploitRun, #autoJbTempStop { display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 9999px; border: none; cursor: pointer; color: #fff; }
+#exploitRun { background: #2563eb; } #exploitRun:hover { background: #1d4ed8; }
+#autoJbTempStop { background: #ca8a04; display: none; } #autoJbTempStop:hover { background: #a16207; }
+#successRate { font-size: 16px; font-weight: 600; background: none; border: none; color: #fff; cursor: pointer; white-space: nowrap; }
+#successRate:hover { text-decoration: underline; }
 
-.conn { background: #05070d; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
-.conn .row { align-items: end; }
-.conn .row > div { flex: 1; }
-.conn .row button { margin: 0; }
-.conn-status { font-size: 12px; margin-top: 6px; color: var(--muted); min-height: 16px; }
-input { width: 100%; padding: 11px; background: #05070d; color: #fff;
-  border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+/* tabs */
+.tabs { display: flex; border-bottom: 1px solid #374151; width: 100%; }
+.tabs button { flex: 1; padding: 16px; border: none; background: none; color: #9ca3af; font-size: 14px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; }
+.tabs button:hover { color: #d1d5db; border-color: #4b5563; }
+.tabs button.active { color: #3b82f6; border-color: #3b82f6; }
+.tabpanel { display: none; padding: 16px; }
+.tabpanel.active { display: block; }
 
-.console { margin-top: 12px; padding: 11px; background: #05070d; border: 1px solid var(--border);
-  border-radius: 8px; font-family: monospace; font-size: 12px; color: #a2aed2;
-  overflow-wrap: anywhere; white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
-.note { margin-top: 10px; font-size: 12px; line-height: 1.6; color: var(--muted); }
-.note b { color: var(--text); }
-.toggle { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin-top:8px; }
-.toggle input { width:auto; }
-.section-title { color: var(--accent2); font-size: 13px; font-weight:bold; margin: 14px 0 6px; text-transform:uppercase; letter-spacing:.5px; }
+/* console log colors */
+.log-info { color: #9ca3af; }
+.log-ok { color: #4ade80; }
+.log-warn { color: #facc15; }
+.log-err { color: #f87171; }
 
-footer { text-align: center; margin-top: 16px; font-size: 11px; color: var(--muted); }
-a.link { color: var(--accent2); text-decoration: none; }
+/* footer */
+footer { text-align: center; margin-top: 16px; font-size: 11px; color: #6b7280; }
+a.link { color: #60a5fa; text-decoration: none; }
 </style>
 </head>
 <body>
-<div class="container">
+<div class="mainContainer">
 
-<header>
-  <h1>PS5 Jailbreak Test</h1>
-  <p class="subtitle">webkitty-style jailbreak harness for PS5 browser &middot; real logs</p>
-  <span class="badge">Target: 192.168.8.26</span>
-</header>
+<!-- Initial screen -->
+<section id="initial-screen">
+  <header style="position:absolute;top:24px;left:24px;display:flex;gap:12px;z-index:10;">
+    <button onclick="settingsPopup()" title="Settings" style="padding:8px;border-radius:8px;background:#1f2937;color:rgba(255,255,255,.8);border:none;cursor:pointer;">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/></svg>
+    </button>
+  </header>
 
-<!-- PS5 connection -->
-<div class="conn">
-  <div class="row">
-    <div>
-      <label style="display:block;margin:0 0 5px;font-size:12px;font-weight:bold;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px;">PS5 IP</label>
-      <input id="ps5ip" type="text" value="192.168.8.26">
+  <button id="pslogo" onclick="startJailbreak()">
+    <div id="ps-logo-container">
+      <svg id="ps-logo" viewBox="0 0 32 32" fill="#3B82F6" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <path d="M0.69116 21.9548C-0.506476 22.7935 -0.284724 24.2384 2.44769 25.1419C5.18011 26.0455 8.35603 26.2323 11.1505 25.729C11.0707 25.729 11.3102 25.729 11.1505 25.729V22.8774L8.43588 23.8C7.39792 24.1355 6.35997 24.2194 5.32202 23.9677C4.5236 23.7161 4.68328 23.2129 5.64139 22.7935L11.1505 20.7806V17.6774L3.48565 20.4452C2.52754 20.7806 1.56943 21.2839 0.69116 21.9548ZM19.2146 9.37419V17.5097C22.4881 19.1871 25.0431 17.5097 25.0431 13.1484C25.0431 8.70323 23.5261 6.69032 19.1348 5.09677C16.8193 4.25806 14.4241 3.50323 12.0288 3V27.2387L17.6178 29V8.61935C17.6178 7.69677 17.6178 7.02581 18.2565 7.27742C19.1348 7.52903 19.2146 8.45161 19.2146 9.37419ZM29.5941 20.0258C27.2787 19.1871 24.8036 18.8516 22.4083 19.1032C21.0779 19.1906 19.8294 19.5869 18.5759 20.0258V23.2968L23.7656 21.2839C24.8036 20.9484 25.8415 20.8645 26.8795 21.1161C27.6779 21.3677 27.5182 21.871 26.5601 22.2903L18.5759 25.3935V28.5806L29.5941 24.3032C30.3925 23.9677 31.1111 23.5484 31.7499 22.8774C32.3088 22.0387 32.0692 20.8645 29.5941 20.0258Z" />
+        </g>
+      </svg>
     </div>
-    <div>
-      <label style="display:block;margin:0 0 5px;font-size:12px;font-weight:bold;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px;">Port</label>
-      <input id="ps5port" type="number" value="9295">
+  </button>
+  <h3 id="click-to-start-text">Click PS to start jailbreak</h3>
+  <button id="stopAutoJb" onclick="stopJailbreak()">Stop Auto Jailbreak</button>
+  <div class="compatibilityMessage">
+    <p id="PS4FW">PS5 firmware: unknown</p>
+    <p id="exploitChainLabel">Exploit chain: WebKit probe</p>
+  </div>
+</section>
+
+<!-- Exploit screen -->
+<section id="exploit-main-screen" style="display:none;">
+  <div id="exploitContainer">
+    <!-- Exploit console panel -->
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <h2>Exploit status</h2>
+        <button id="successRate" onclick="clearStats()">Success rate</button>
+      </div>
+      <div id="DebugConsole">
+        <pre id="console"><center>--</center></pre>
+      </div>
+      <div class="row">
+        <label class="henLabel">
+          <input type="radio" name="hen" value="GoldHEN" onchange="saveJbFlavor(this.name,this.value)">
+          <span>GoldHEN</span>
+        </label>
+        <label class="henLabel">
+          <input type="radio" name="hen" value="PS4HEN" onchange="saveJbFlavor(this.name,this.value)">
+          <span>PS4HEN</span>
+        </label>
+        <button id="exploitRun" onclick="runOneAttempt()" title="Run">
+          <svg width="25" height="25" viewBox="0 0 16 16" fill="currentColor"><path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/></svg>
+        </button>
+        <button id="autoJbTempStop" onclick="stopJailbreak()" title="Pause">Pause Auto-Jailbreak</button>
+      </div>
     </div>
-    <div style="flex:0 0 120px">
-      <button class="secondary" onclick="testConnection()" style="margin-top:22px;">Test</button>
+    <!-- Notification debug panel (real test, no separate section) -->
+    <div class="panel">
+      <h2>Notification Debug</h2>
+      <div id="notifDebug" style="font-size:12px;color:#9ca3af;">Permission: — · Supported: —</div>
+      <div style="margin-top:8px;font-size:12px;color:#9ca3af;">Notification test runs automatically during each attempt and is logged above.</div>
+      <div style="margin-top:16px;">
+        <h2>Collect Logs</h2>
+        <div class="row" style="justify-content:flex-start;margin-top:8px;">
+          <button onclick="collectLogs()" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Collect</button>
+          <button onclick="exportLogs()" style="background:#374151;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Export .txt</button>
+          <button onclick="clearLogs()" style="background:#7f1d1d;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;">Clear</button>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="conn-status" id="connStatus">PS5 remote-play port is auth-gated (403 = alive).</div>
-</div>
-
-<!-- Jailbreak section -->
-<div class="section-title">Jailbreak</div>
-<div class="ps-wrap">
-  <button class="ps-btn" id="psBtn" onclick="runJailbreak()">PS</button>
-  <div class="status-line" id="statusLine">Ready. Press PS to start.</div>
-  <div class="rate" id="rateLine">Success rate: --</div>
-  <div class="toggle">
-    <input type="checkbox" id="autoRetry" checked>
-    <label for="autoRetry">Auto-Retry Jailbreak</label>
-  </div>
-  <div class="row">
-    <button class="danger" onclick="stopJailbreak()">Stop</button>
-    <button class="secondary" onclick="collectLogs()">Collect Logs</button>
-  </div>
-</div>
-
-<!-- Notification test -->
-<div class="section-title">Notification Test</div>
-<div class="row">
-  <button class="primary" onclick="requestNotifPerm()">Request Permission</button>
-  <button class="primary" onclick="sendNotif()">Send Notification</button>
-</div>
-<div class="note" id="notifStatus">Permission: — &middot; Supported: —</div>
-
-<!-- Log console -->
-<div class="section-title">Real Logs</div>
-<div class="console" id="logBox"></div>
-<div class="row" style="margin-top:8px">
-  <button class="secondary" onclick="clearLogs()">Clear Logs</button>
-  <button class="secondary" onclick="exportLogs()">Export .txt</button>
-</div>
+</section>
 
 <footer>
-  PS5 Jailbreak Test &middot; webkitty-style &middot;
+  PS5 WebKitty Jailbreak Test &middot;
   <a class="link" href="https://github.com/Raedmhamed/ps4-installer" target="_blank" rel="noopener">GitHub</a>
 </footer>
-
-</div>
 
 <script>
 "use strict";
 
-var state = { running: false, stopFlag: false, logs: [], attempts: 0, successes: 0 };
+var state = { running: false, stopFlag: false, logs: [], attempts: 0, successes: 0, autoRetry: true };
+
+var consoleEl = document.getElementById('console');
+
+function log(message, color) {
+  if (!consoleEl) return;
+  if (consoleEl.textContent.trim() === '--') consoleEl.textContent = '';
+  var span = document.createElement('span');
+  span.textContent = message + '\n';
+  if (color) span.style.color = color;
+  consoleEl.appendChild(span);
+  state.logs.push((color ? '['+color+'] ' : '') + message);
+  var panel = document.getElementById('DebugConsole');
+  if (panel) panel.scrollTop = panel.scrollHeight;
+  try { localStorage.setItem('ps5jb_logs', JSON.stringify(state.logs.slice(-500))); } catch(e){}
+}
+
+// Global error handlers (WebKitty style)
+function reportGlobalError(title, details) {
+  if (!consoleEl) return;
+  if (consoleEl.textContent.trim() === '--') consoleEl.textContent = '';
+  var entry = document.createElement('span');
+  entry.style.color = '#f87171';
+  entry.style.whiteSpace = 'pre-wrap';
+  entry.textContent = title + '\n' + details + '\n\n';
+  consoleEl.appendChild(entry);
+  var panel = document.getElementById('DebugConsole');
+  if (panel) panel.scrollTop = panel.scrollHeight;
+}
+window.onerror = function (msg, url, lineno, colno, error) {
+  var stack = error && error.stack ? error.stack : 'No stack trace';
+  var details = 'URL: ' + url + '\nLine: ' + lineno + ', Col: ' + colno + '\n\n' + stack;
+  console.error('[onerror]', msg, url, lineno, colno, stack);
+  reportGlobalError('Error: ' + msg, details);
+  return true;
+};
+window.addEventListener('unhandledrejection', function (event) {
+  var reason = event.reason;
+  var msg = reason instanceof Error ? reason.message + '\n\nStack:\n' + reason.stack : String(reason);
+  console.error('[unhandledrejection]', reason);
+  reportGlobalError('Unhandled Promise Rejection:', msg);
+});
 
 function $(id){ return document.getElementById(id); }
 
 function now(){ return new Date().toLocaleTimeString(); }
 
-function log(msg, level){
-  level = level || "info";
-  var prefix = level === "err" ? "[ERR]" : level === "ok" ? "[OK ]" : level === "warn" ? "[WRN]" : "[INF]";
-  var line = now() + " " + prefix + " " + msg;
-  state.logs.push(line);
-  var box = $("logBox");
-  box.textContent = line + "\n" + box.textContent;
-  if (box.textContent.length > 40000) box.textContent = box.textContent.slice(0, 40000);
-  // persist
-  try { localStorage.setItem("ps5jb_logs", JSON.stringify(state.logs.slice(-500))); } catch(e){}
-}
-
-function setStatus(text, cls){
-  var el = $("statusLine");
-  el.textContent = text;
-  var btn = $("psBtn");
-  btn.classList.remove("running","success","fail");
-  if (cls) btn.classList.add(cls);
-}
-
-function updateRate(){
-  $("rateLine").textContent = "Success rate: " + (state.attempts ? Math.round(state.successes/state.attempts*100) : 0) + "%  (" + state.successes + "/" + state.attempts + ")";
-}
-
 function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
-/* Connection test */
-async function testConnection(){
-  var ip = ($("ps5ip").value||"").trim();
-  var port = ($("ps5port").value||"9295").trim();
-  if (!ip){ $("connStatus").textContent = "Enter PS5 IP first."; $("connStatus").style.color = "#ff5555"; return; }
-  $("connStatus").textContent = "Testing…"; $("connStatus").style.color = "#ffcc66";
-  try {
-    var res = await fetch("http://" + ip + ":" + port + "/", { method:"GET", mode:"cors" });
-    $("connStatus").textContent = "HTTP " + res.status + " " + res.statusText;
-    $("connStatus").style.color = res.ok ? "#00ff88" : "#ffcc66";
-    log("Connection test: HTTP " + res.status + " from " + ip + ":" + port, res.ok ? "ok" : "warn");
-  } catch(e){
-    try {
-      await fetch("http://" + ip + ":" + port + "/", { method:"GET", mode:"no-cors" });
-      $("connStatus").textContent = "Opaque response (port alive).";
-      $("connStatus").style.color = "#00ff88";
-      log("Connection test: opaque response from " + ip + ":" + port + " (port alive)", "ok");
-    } catch(e2){
-      $("connStatus").textContent = "Cannot reach: " + e2.message;
-      $("connStatus").style.color = "#ff5555";
-      log("Connection test FAILED: " + e2.message, "err");
-    }
-  }
+function saveJbFlavor(name, value){ try { localStorage.setItem(name, value); } catch(e){} }
+function setGoldHENVer(v){ try { localStorage.setItem('goldhenVer', v); } catch(e){} }
+function exploitChain(v){ try { localStorage.setItem('exploitChain', v); } catch(e){} }
+function setAutoJb(v){ state.autoRetry = v; }
+function setAutoJbRetry(v){ state.autoRetry = v; }
+function setBareboneJB(v){ try { localStorage.setItem('bareboneJB', v); } catch(e){} }
+function setReloadAfterJb(v){ try { localStorage.setItem('reloadAfterJb', v); } catch(e){} }
+function setAdvancedPayloads(v){}
+function changeAutoJbTimer(){}
+function settingsPopup(){ /* noop */ }
+function clearStats(){ state.attempts = 0; state.successes = 0; updateRate(); }
+function updateRate(){
+  var sr = $('successRate');
+  if (sr) sr.textContent = 'Success rate: ' + (state.attempts ? Math.round(state.successes/state.attempts*100) : 0) + '% (' + state.successes + '/' + state.attempts + ')';
 }
 
-/* Real jailbreak-ish test sequence (browser capability probing, honest logs) */
+function updateNotifDebug(){
+  var supp = ("Notification" in window) ? "yes" : "no";
+  var perm = ("Notification" in window) ? Notification.permission : "n/a";
+  var el = $('notifDebug');
+  if (el) el.textContent = "Permission: " + perm + " · Supported: " + supp;
+}
+
+/* Real notification debug test (runs during attempt) */
+async function notificationDebugTest(attempt){
+  log(now() + " [INF] Notification debug test start", "#9ca3af");
+  if (!("Notification" in window)){
+    log(now() + " [ERR] Notification API not supported", "#f87171");
+    return;
+  }
+  log(now() + " [OK ] Notification API supported, permission=" + Notification.permission, "#4ade80");
+  // request permission if default
+  if (Notification.permission === "default"){
+    try {
+      var p = await Notification.requestPermission();
+      log(now() + " [INF] requestPermission -> " + p, "#9ca3af");
+    } catch(e){
+      log(now() + " [ERR] requestPermission FAILED: " + e.message, "#f87171");
+      return;
+    }
+  }
+  if (Notification.permission !== "granted"){
+    log(now() + " [WRN] Permission not granted (" + Notification.permission + ")", "#facc15");
+    return;
+  }
+  // attempt to send a real notification
+  try {
+    var n = new Notification("PS5 WebKitty Test", { body: "Debug notification attempt " + attempt, tag: "wk-" + attempt, renotify: true });
+    log(now() + " [OK ] Notification sent (title=PS5 WebKitty Test)", "#4ade80");
+    n.onclick = function(){ log(now() + " [INF] Notification clicked", "#9ca3af"); };
+    n.onerror = function(e){ log(now() + " [ERR] Notification error event", "#f87171"); };
+    n.onclose = function(){ log(now() + " [INF] Notification closed", "#9ca3af"); };
+  } catch(e){
+    log(now() + " [ERR] Notification send FAILED: " + e.message, "#f87171");
+  }
+  updateNotifDebug();
+}
+
 async function runOneAttempt(){
   state.attempts++;
   updateRate();
-  log("=== Attempt " + state.attempts + " started ===", "warn");
-  setStatus("Running attempt " + state.attempts + "…", "running");
+  log(now() + " [WRN] === Attempt " + state.attempts + " started ===", "#facc15");
 
-  // Step 1: environment
-  log("UA: " + navigator.userAgent);
-  log("Platform: " + navigator.platform + " | Lang: " + navigator.language);
+  // environment
+  log(now() + " [INF] UA: " + navigator.userAgent, "#9ca3af");
+  log(now() + " [INF] Platform: " + navigator.platform + " | Lang: " + navigator.language, "#9ca3af");
 
-  // Step 2: notification permission
-  if ("Notification" in window){
-    log("Notification API: supported, permission=" + Notification.permission, "ok");
-    if (Notification.permission === "granted"){
-      try { new Notification("PS5 Jailbreak Test", { body: "Attempt " + state.attempts + " notification", tag: "jb" }); log("Notification sent OK", "ok"); }
-      catch(e){ log("Notification send FAILED: " + e.message, "err"); }
-    } else {
-      log("Notification permission not granted (" + Notification.permission + ")", "warn");
-    }
-  } else {
-    log("Notification API: NOT supported", "err");
-  }
+  // notification debug test (real)
+  await notificationDebugTest(state.attempts);
 
-  // Step 3: fetch PS5 endpoint
-  var ip = ($("ps5ip").value||"").trim();
-  var port = ($("ps5port").value||"9295").trim();
-  try {
-    var res = await fetch("http://" + ip + ":" + port + "/", { method:"GET", mode:"cors" });
-    log("PS5 fetch: HTTP " + res.status, res.ok ? "ok" : "warn");
-  } catch(e){
-    try { await fetch("http://" + ip + ":" + port + "/", { method:"GET", mode:"no-cors" }); log("PS5 fetch: opaque (port alive)", "ok"); }
-    catch(e2){ log("PS5 fetch FAILED: " + e2.message, "err"); }
-  }
-
-  // Step 4: memory / ArrayBuffer
+  // memory
   try {
     var buf = new ArrayBuffer(1024*1024);
     var view = new Uint8Array(buf);
-    view[0] = 0x41; view[1] = 0x42;
-    log("ArrayBuffer 1MB alloc + write OK", "ok");
-  } catch(e){ log("ArrayBuffer FAILED: " + e.message, "err"); }
+    view[0] = 0x41;
+    log(now() + " [OK ] ArrayBuffer 1MB alloc+write OK", "#4ade80");
+  } catch(e){ log(now() + " [ERR] ArrayBuffer FAILED: " + e.message, "#f87171"); }
 
-  // Step 5: WebAssembly
+  // WebAssembly
   if (typeof WebAssembly !== "undefined"){
-    log("WebAssembly: supported", "ok");
+    log(now() + " [OK ] WebAssembly supported", "#4ade80");
     try {
       var wasmBytes = new Uint8Array([0,97,115,109,1,0,0,0]);
-      WebAssembly.compile(wasmBytes).then(function(){ log("WASM compile OK", "ok"); }).catch(function(e){ log("WASM compile FAILED: " + e.message, "err"); });
-    } catch(e){ log("WASM test error: " + e.message, "err"); }
-  } else {
-    log("WebAssembly: NOT supported", "err");
-  }
+      WebAssembly.compile(wasmBytes).then(function(){ log(now() + " [OK ] WASM compile OK", "#4ade80"); }).catch(function(e){ log(now() + " [ERR] WASM compile FAILED: " + e.message, "#f87171"); });
+    } catch(e){ log(now() + " [ERR] WASM test error: " + e.message, "#f87171"); }
+  } else { log(now() + " [ERR] WebAssembly NOT supported", "#f87171"); }
 
-  // Step 6: SharedArrayBuffer
+  // SharedArrayBuffer
   if (typeof SharedArrayBuffer !== "undefined"){
-    log("SharedArrayBuffer: supported (cross-origin isolated=" + (window.crossOriginIsolated||false) + ")", "ok");
-  } else {
-    log("SharedArrayBuffer: NOT supported", "warn");
-  }
+    log(now() + " [OK ] SharedArrayBuffer supported (crossOriginIsolated=" + (window.crossOriginIsolated||false) + ")", "#4ade80");
+  } else { log(now() + " [WRN] SharedArrayBuffer NOT supported", "#facc15"); }
 
-  // Step 7: WebGL
+  // WebGL
   try {
     var c = document.createElement("canvas");
     var gl = c.getContext("webgl") || c.getContext("experimental-webgl");
-    if (gl){ log("WebGL: supported (" + gl.getParameter(gl.VERSION) + ")", "ok"); }
-    else { log("WebGL: not supported", "warn"); }
-  } catch(e){ log("WebGL error: " + e.message, "err"); }
+    if (gl){ log(now() + " [OK ] WebGL: " + gl.getParameter(gl.VERSION), "#4ade80"); }
+    else { log(now() + " [WRN] WebGL not supported", "#facc15"); }
+  } catch(e){ log(now() + " [ERR] WebGL error: " + e.message, "#f87171"); }
 
-  // Step 8: storage
+  // storage
   try {
     var k = "jbtest_" + Date.now();
     localStorage.setItem(k, "ok");
     var v = localStorage.getItem(k);
     localStorage.removeItem(k);
-    log("localStorage: " + (v === "ok" ? "OK" : "FAIL"), v === "ok" ? "ok" : "err");
-  } catch(e){ log("localStorage FAILED: " + e.message, "err"); }
+    log(now() + " [INF] localStorage: " + (v === "ok" ? "OK" : "FAIL"), v === "ok" ? "#4ade80" : "#f87171");
+  } catch(e){ log(now() + " [ERR] localStorage FAILED: " + e.message, "#f87171"); }
 
-  // Step 9: gamepad
+  // gamepad
   try {
     var gps = navigator.getGamepads ? navigator.getGamepads() : [];
     var connected = 0;
     for (var i=0;i<gps.length;i++) if (gps[i]) connected++;
-    log("Gamepad: " + connected + " connected", connected ? "ok" : "warn");
-  } catch(e){ log("Gamepad error: " + e.message, "err"); }
+    log(now() + " [INF] Gamepad: " + connected + " connected", connected ? "#4ade80" : "#facc15");
+  } catch(e){ log(now() + " [ERR] Gamepad error: " + e.message, "#f87171"); }
 
-  // Step 10: vibrate
+  // vibrate
   if (navigator.vibrate){
     var ok = navigator.vibrate(50);
-    log("Vibration: " + (ok ? "triggered" : "blocked"), ok ? "ok" : "warn");
-  } else {
-    log("Vibration: not supported", "warn");
-  }
+    log(now() + " [INF] Vibration: " + (ok ? "triggered" : "blocked"), ok ? "#4ade80" : "#facc15");
+  } else { log(now() + " [WRN] Vibration not supported", "#facc15"); }
 
-  // outcome
   await sleep(300);
-  var success = true; // attempt completed without fatal error
-  if (success){ state.successes++; setStatus("Attempt " + state.attempts + " completed", "success"); log("=== Attempt " + state.attempts + " DONE (completed) ===", "ok"); }
-  else { setStatus("Attempt " + state.attempts + " failed", "fail"); log("=== Attempt " + state.attempts + " FAILED ===", "err"); }
+  state.successes++;
+  log(now() + " [OK ] === Attempt " + state.attempts + " completed ===", "#4ade80");
   updateRate();
 }
 
-async function runJailbreak(){
-  if (state.running){ log("Already running; press Stop first", "warn"); return; }
+async function startJailbreak(){
+  // switch to exploit screen
+  $('initial-screen').style.display = 'none';
+  $('exploit-main-screen').style.display = 'flex';
   state.running = true; state.stopFlag = false;
-  var btn = $("psBtn");
-  var auto = $("autoRetry").checked;
-  log("Jailbreak sequence started (auto-retry=" + auto + ")", "warn");
+  $('stopAutoJb').style.display = 'block';
+  log(now() + " [WRN] Jailbreak sequence started", "#facc15");
   do {
     if (state.stopFlag) break;
     await runOneAttempt();
     if (state.stopFlag) break;
-    if (auto){ await sleep(1200); }
+    if (state.autoRetry){ await sleep(1200); }
     else { break; }
-  } while (auto && state.running && !state.stopFlag);
+  } while (state.autoRetry && state.running && !state.stopFlag);
   state.running = false;
-  setStatus("Stopped.", "");
-  log("Jailbreak sequence stopped.", "warn");
+  log(now() + " [WRN] Jailbreak sequence stopped", "#facc15");
+  $('stopAutoJb').style.display = 'none';
 }
 
 function stopJailbreak(){
   state.stopFlag = true;
   state.running = false;
-  setStatus("Stop requested.", "fail");
-  log("Stop requested by user.", "warn");
+  $('stopAutoJb').style.display = 'none';
+  log(now() + " [ERR] Stop requested by user", "#f87171");
 }
 
-/* Notification */
-function updateNotifStatus(){
-  var supp = ("Notification" in window) ? "yes" : "no";
-  var perm = ("Notification" in window) ? Notification.permission : "n/a";
-  $("notifStatus").textContent = "Permission: " + perm + " · Supported: " + supp;
-}
-async function requestNotifPerm(){
-  if (!("Notification" in window)){ log("Notification API not supported", "err"); return; }
-  try {
-    var p = await Notification.requestPermission();
-    updateNotifStatus();
-    log("Notification permission: " + p, p === "granted" ? "ok" : "warn");
-  } catch(e){ log("Permission error: " + e.message, "err"); }
-}
-function sendNotif(){
-  if (!("Notification" in window)){ log("Notification not supported", "err"); return; }
-  if (Notification.permission !== "granted"){ log("Permission not granted (" + Notification.permission + ")", "warn"); return; }
-  try {
-    new Notification("PS5 Jailbreak Test", { body: "Manual notification test", tag: "manual" });
-    log("Manual notification sent", "ok");
-  } catch(e){ log("Send error: " + e.message, "err"); }
-}
-
-/* Logs collection */
 function clearLogs(){
   state.logs = [];
-  $("logBox").textContent = "";
-  try { localStorage.removeItem("ps5jb_logs"); } catch(e){}
-  log("Logs cleared", "warn");
+  consoleEl.innerHTML = '<center>--</center>';
+  try { localStorage.removeItem('ps5jb_logs'); } catch(e){}
+  log(now() + " [WRN] Logs cleared", "#facc15");
 }
 function collectLogs(){
   try {
-    var stored = JSON.parse(localStorage.getItem("ps5jb_logs") || "[]");
+    var stored = JSON.parse(localStorage.getItem('ps5jb_logs') || '[]');
     var combined = stored.concat(state.logs);
-    // dedupe keeping order
     var seen = {}; var out = [];
     combined.forEach(function(l){ if (!seen[l]){ seen[l]=1; out.push(l); } });
-    log("Collected " + out.length + " log lines (incl. stored)", "ok");
     state.logs = out;
-  } catch(e){ log("Collect error: " + e.message, "err"); }
+    log(now() + " [OK ] Collected " + out.length + " log lines", "#4ade80");
+  } catch(e){ log(now() + " [ERR] Collect error: " + e.message, "#f87171"); }
 }
 function exportLogs(){
   collectLogs();
   var blob = new Blob([state.logs.join("\n")], { type: "text/plain" });
   var url = URL.createObjectURL(blob);
-  var a = document.createElement("a"); a.href = url; a.download = "ps5-jailbreak-logs.txt"; a.click();
+  var a = document.createElement("a"); a.href = url; a.download = "ps5-webkitty-logs.txt"; a.click();
   URL.revokeObjectURL(url);
-  log("Logs exported", "ok");
+  log(now() + " [OK ] Logs exported", "#4ade80");
 }
 
-/* Init */
-function init(){
-  // restore logs
+// Init
+(function init(){
   try {
-    var stored = JSON.parse(localStorage.getItem("ps5jb_logs") || "[]");
+    var stored = JSON.parse(localStorage.getItem('ps5jb_logs') || '[]');
     if (stored.length){
       state.logs = stored;
-      $("logBox").textContent = stored.slice().reverse().join("\n");
+      consoleEl.innerHTML = '';
+      stored.forEach(function(l){ var s=document.createElement('span'); s.textContent=l+'\n'; consoleEl.appendChild(s); });
     }
   } catch(e){}
-  updateNotifStatus();
-  log("PS5 Jailbreak Test harness ready. Target " + $("ps5ip").value, "warn");
-  log("Press the PS button to start a jailbreak attempt.", "info");
-}
-init();
+  updateNotifDebug();
+  // detect UA for label
+  var ua = navigator.userAgent;
+  var m = ua.match(/PlayStation 5\/([\d\.]+)/);
+  $('PS4FW').textContent = m ? "PS5 firmware: " + m[1] : "PS5 (firmware unknown from UA)";
+  log(now() + " [WRN] PS5 WebKitty Jailbreak Test ready", "#facc15");
+  log(now() + " [INF] Press the PS button to start", "#9ca3af");
+  // show stop button when running handled in start; keep hidden initially
+  $('stopAutoJb').style.display = 'none';
+})();
 </script>
 </body>
 </html>
