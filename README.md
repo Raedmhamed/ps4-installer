@@ -1,39 +1,27 @@
-# PS4 PKG Homebrew Store
+# PS5 Web Click Test
 
-A web-based **homebrew store** for PS4: browse a catalog of `.pkg` files and download/install them **directly on your PS4** through the PS4 browser — no PC tooling required.
+A web-based **test harness** for the PS5 browser: click tests, notification tests, gamepad (DualSense) reading, vibration, audio, fullscreen, pointer lock, storage, and device info — all runnable directly on the PS5.
 
 ## Features
 
-- Storefront of packages loaded from `packages.json`
-- Search + category filter
-- One-tap **Download** that hands the `.pkg` to the PS4 system installer
-- **Add PKG** tab to add your own packages (stored in your browser)
-- **Manage** tab: export/import `packages.json`, clear added packages
-- Download history
-- Works as a static site (GitHub Pages)
+- Big **click counter** with latency measurement
+- **Notification test** (permission flow + send, custom title/body)
+- **Gamepad API** polling for the DualSense controller
+- Vibration, audio beep, fullscreen, pointer lock, storage tests
+- Device / screen info dump
+- Network test against the PS5 (default IP `192.168.8.26`, remote-play port `9295`)
+- Exportable log
 
 ## Usage
 
 1. Host this repo (enable **GitHub Pages** on `main` / root).
-2. Open the page in your PS4 browser.
-3. Tap **Download** on a package.
+2. Open the page in the PS5 browser (target IP `192.168.8.26`).
+3. Run the tests from the tabs.
 
-## Add your own packages
+## Notes
 
-- **Option A (personal):** use the **Add PKG** tab — saved in your browser.
-- **Option B (shared):** edit `packages.json` in the repo, or use **Manage → Export packages.json** and commit it.
-
-Each entry needs at least `name` and `url` (direct link to a `.pkg`). Optional: `version`, `author`, `category`, `size`, `icon` (emoji or image URL), `description`.
-
-## Requirements
-
-- PS4 with a working browser & package installer
-- Direct links to `.pkg` files
-- Enough free storage on the PS4
-
-## Privacy
-
-Everything runs locally in your browser. Added packages and history live in `localStorage`. Nothing is sent anywhere except the PKG host you choose.
+- PS5 remote-play port `9295` is auth-gated: an opaque/403 response means the console is alive (expected).
+- Notification delivery on PS5 varies by firmware; use this page to probe support.
 
 ## License
 
