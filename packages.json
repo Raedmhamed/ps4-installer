@@ -1,27 +1,4 @@
 {
   "version": 1,
-  "packages": [
-    {
-      "id": "example-1",
-      "name": "Example Homebrew PKG",
-      "version": "1.0",
-      "author": "You",
-      "category": "Homebrew",
-      "size": "—",
-      "icon": "📦",
-      "description": "Replace this entry with your own PKG. Edit packages.json or use the Add PKG tab.",
-      "url": "https://example.com/your-package.pkg"
-    },
-    {
-      "id": "example-2",
-      "name": "Another PKG",
-      "version": "2.0",
-      "author": "You",
-      "category": "Tools",
-      "size": "—",
-      "icon": "🛠️",
-      "description": "Add as many entries as you like. Each becomes a clickable download card.",
-      "url": "https://example.com/another.pkg"
-    }
-  ]
+  "packages": []
 }
